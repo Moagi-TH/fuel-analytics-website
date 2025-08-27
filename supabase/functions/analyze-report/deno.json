@@ -1,0 +1,10 @@
+{
+  "tasks": {
+    "start": "deno run -A --watch=static/,index.ts"
+  },
+  "imports": {
+    "openai": "npm:openai@4"
+  }
+}
+
+
