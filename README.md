@@ -2,6 +2,8 @@
 
 A professional analytics dashboard for fuel business intelligence and performance tracking.
 
+> **🔄 GitHub Sync Test**: This project is now connected to GitHub repository!
+
 ## 🚀 Recent Fixes (Latest Update)
 
 ### ✅ Issues Resolved:
