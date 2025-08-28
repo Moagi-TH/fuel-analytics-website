@@ -221,6 +221,22 @@
             <h3>Manual Data Entry</h3>
             <p>Enter your fuel and shop data manually for accurate analysis</p>
             
+            <!-- Data Source Controls -->
+            <div class="recent-report-info" id="manual-data-source">
+              <div class="info-card">
+                <h4>💡 Smart Data Loading Available</h4>
+                <p>Load fuel sales data from your most recent report to save time</p>
+                <button id="load-from-reports" class="button secondary" style="margin-top: 10px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 8px;">
+                    <path d="M3 3V9H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M21 21V15H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M18.49 9A9 9 0 0 0 3.64 5.64L3 9M21 15L20.36 18.36A9 9 0 0 1 5.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Load from Latest Report
+                </button>
+              </div>
+            </div>
+            
             <!-- Fuel Prices Section -->
             <div class="form-section">
               <h4>Fuel Prices (Manual Input Required)</h4>
@@ -2171,6 +2187,7 @@
       const cancelUploadBtn = el('cancel-upload');
       const saveDataBtn = el('save-data');
       const cancelManualBtn = el('cancel-manual');
+      const loadFromReportsBtn = el('load-from-reports');
       // Sample data buttons removed - now using real report data
       const analyzeStatus = document.getElementById('analyze-status');
       const uploadArea = el('upload-area');
@@ -2302,6 +2319,14 @@
         
         // Load fuel price history when manual entry is opened
         updateFuelPriceHistoryDisplay();
+        
+        // Update smart loading availability
+        updateManualDataSourceInfo();
+      });
+
+      // Load from reports button event listener
+      loadFromReportsBtn?.addEventListener('click', async () => {
+        await loadFuelDataFromLatestReport();
       });
 
       viewHistoryBtn?.addEventListener('click', async () => {
@@ -2789,6 +2814,150 @@
         updatePersonnelCharts(personnelData);
         
         console.log('Personnel data loaded from report:', personnelData);
+      }
+      
+      // Function to update manual data source info
+      function updateManualDataSourceInfo() {
+        const manualDataSourceElement = document.getElementById('manual-data-source');
+        if (!manualDataSourceElement) return;
+        
+        // Check if we have stored reports
+        const months = Object.keys(monthlyData);
+        if (months.length === 0) {
+          manualDataSourceElement.innerHTML = `
+            <div class="info-card" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+              <h4>📄 No Reports Available</h4>
+              <p>Upload a period report first to enable smart data loading</p>
+            </div>
+          `;
+          return;
+        }
+        
+        const sortedMonths = months.sort((a, b) => {
+          const [monthA, yearA] = a.split('/').map(Number);
+          const [monthB, yearB] = b.split('/').map(Number);
+          return yearA - yearB || monthA - monthB;
+        });
+        
+        const latestMonth = sortedMonths[sortedMonths.length - 1];
+        const latestReport = monthlyData[latestMonth][0];
+        
+        manualDataSourceElement.innerHTML = `
+          <div class="info-card">
+            <h4>💡 Smart Data Loading Available</h4>
+            <p>Load fuel sales data from "${latestReport.filename}" (${latestMonth})</p>
+            <button id="load-from-reports" class="button secondary" style="margin-top: 10px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 8px;">
+                <path d="M3 3V9H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M21 21V15H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M18.49 9A9 9 0 0 0 3.64 5.64L3 9M21 15L20.36 18.36A9 9 0 0 1 5.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Load from Latest Report
+            </button>
+          </div>
+        `;
+        
+        // Re-attach event listener after updating DOM
+        const newLoadBtn = document.getElementById('load-from-reports');
+        newLoadBtn?.addEventListener('click', async () => {
+          await loadFuelDataFromLatestReport();
+        });
+      }
+      
+      // Function to load fuel data from latest report into manual entry form
+      async function loadFuelDataFromLatestReport() {
+        console.log('Loading fuel data from latest report...');
+        
+        // Find the most recent report
+        const months = Object.keys(monthlyData).sort((a, b) => {
+          const [monthA, yearA] = a.split('/').map(Number);
+          const [monthB, yearB] = b.split('/').map(Number);
+          return yearA - yearB || monthA - monthB;
+        });
+        
+        if (months.length === 0) {
+          alert('No reports available to load data from. Please upload a report first.');
+          return;
+        }
+        
+        const mostRecentMonth = months[months.length - 1];
+        const mostRecentReport = monthlyData[mostRecentMonth][0];
+        const reportData = mostRecentReport.data;
+        
+        if (!reportData || !reportData.fuels) {
+          alert('No fuel data available in the latest report.');
+          return;
+        }
+        
+        // Populate fuel data from report
+        const fuelData = reportData.fuels;
+        
+        // Update Diesel Ex field
+        if (fuelData.diesel_ex) {
+          const dieselField = document.getElementById('diesel-ex-revenue');
+          if (dieselField) {
+            dieselField.value = fuelData.diesel_ex.total_revenue_zar?.toFixed(2) || '';
+          }
+          const dieselVolumeField = document.getElementById('diesel-ex-volume');
+          if (dieselVolumeField) {
+            dieselVolumeField.value = fuelData.diesel_ex.quantity_liters?.toFixed(2) || '';
+          }
+        }
+        
+        // Update Diesel IC field
+        if (fuelData.diesel_ic) {
+          const dieselIcField = document.getElementById('diesel-ic-revenue');
+          if (dieselIcField) {
+            dieselIcField.value = fuelData.diesel_ic.total_revenue_zar?.toFixed(2) || '';
+          }
+          const dieselIcVolumeField = document.getElementById('diesel-ic-volume');
+          if (dieselIcVolumeField) {
+            dieselIcVolumeField.value = fuelData.diesel_ic.quantity_liters?.toFixed(2) || '';
+          }
+        }
+        
+        // Update 95 ULP field
+        if (fuelData.ulp_95) {
+          const ulp95Field = document.getElementById('95-ulp-revenue');
+          if (ulp95Field) {
+            ulp95Field.value = fuelData.ulp_95.total_revenue_zar?.toFixed(2) || '';
+          }
+          const ulp95VolumeField = document.getElementById('95-ulp-volume');
+          if (ulp95VolumeField) {
+            ulp95VolumeField.value = fuelData.ulp_95.quantity_liters?.toFixed(2) || '';
+          }
+        }
+        
+        // Update shop data if available
+        if (reportData.shop_lines && reportData.shop_lines.length > 0) {
+          reportData.shop_lines.forEach((shopItem, index) => {
+            const categoryField = document.querySelector(`input[placeholder="Category ${index + 1}"]`);
+            const revenueField = document.querySelector(`input[placeholder="Revenue ${index + 1}"]`);
+            
+            if (categoryField && revenueField) {
+              categoryField.value = shopItem.category || '';
+              revenueField.value = shopItem.total_revenue_zar?.toFixed(2) || '';
+            }
+          });
+        }
+        
+        // Show success message
+        const manualDataSourceElement = document.getElementById('manual-data-source');
+        if (manualDataSourceElement) {
+          manualDataSourceElement.innerHTML = `
+            <div class="info-card" style="background: linear-gradient(135deg, #10b981, #059669);">
+              <h4>✅ Data Loaded Successfully</h4>
+              <p>Fuel sales data loaded from "${mostRecentReport.filename}" (${mostRecentMonth})</p>
+            </div>
+          `;
+          
+          // Revert back to original state after 3 seconds
+          setTimeout(() => {
+            updateManualDataSourceInfo();
+          }, 3000);
+        }
+        
+        console.log('Fuel data loaded successfully from report:', mostRecentReport.filename);
       }
       
       // Function to extract personnel data from report
