@@ -4,6 +4,29 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>FUEL FLUX · Analytics Dashboard</title>
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Fuel Analytics">
+  <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+  
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+          .then(function(registration) {
+            console.log('✅ Service Worker registered successfully:', registration.scope);
+          })
+          .catch(function(error) {
+            console.log('❌ Service Worker registration failed:', error);
+          });
+      });
+    }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -15,6 +38,26 @@
   <script src="./visual-analytics.js?v=2"></script>
   <script src="./data-integration.js?v=1"></script>
   <script src="./renovation-client.js?v=1"></script>
+  
+  <!-- Load utility extensions -->
+  <script src="./utils/stateManager.js"></script>
+  <script src="./utils/errorHandler.js"></script>
+  <script src="./utils/logger.js"></script>
+  <script src="./utils/validator.js"></script>
+  <script src="./utils/analyticsEngine.js"></script>
+  <script src="./utils/reportingEngine.js"></script>
+  <script src="./utils/realTimeDataService.js"></script>
+  <script src="./utils/cacheManager.js"></script>
+  <script src="./utils/memoryManager.js"></script>
+  <script src="./utils/databaseSchema.js"></script>
+  <script src="./utils/dataIntegrationPlan.js"></script>
+  <script src="./utils/sampleDataGenerator.js"></script>
+  <script src="./utils/performanceOptimizer.js"></script>
+  <script src="./utils/offlineManager.js"></script>
+  <script src="./utils/accessibility.js"></script>
+  
+  <!-- Load main extensions configuration -->
+  <script src="./extensions-config.js"></script>
 </head>
 <body>
   <!-- Header -->
@@ -1906,10 +1949,22 @@
         testPersonnelAndManualIntegrations();
         removePlaceholderAugustReport();
       }, 100);
-      
-      // Now load personnel data after reports are loaded
-      console.log('Reports loaded, now loading personnel data...');
-      loadPersonnelDataFromReport();
+              
+              // Now load personnel data after reports are loaded
+              console.log('Reports loaded, now loading personnel data...');
+              loadPersonnelDataFromReport();
+
+              // Auto-refresh metrics into Overview and Overview Over Time on open
+              try {
+                await refreshAllDashboardData();
+                // If there is historical data, render the Overview Over Time section once
+                const hasHistory = Object.keys(window.monthlyData || {}).length > 0;
+                if (hasHistory) {
+                  renderOverviewOverTime();
+                }
+              } catch (e) {
+                console.warn('Initial refresh/render failed:', e);
+              }
       
       // Add event listener for personnel section to refresh data when clicked
       document.addEventListener('DOMContentLoaded', () => {
@@ -2842,16 +2897,16 @@
         }
         
         try {
-          // Extract personnel data from the report
-          const personnelData = extractPersonnelDataFromReport(reportData, mostRecentMonth);
+        // Extract personnel data from the report
+        const personnelData = extractPersonnelDataFromReport(reportData, mostRecentMonth);
           console.log('👥 Extracted personnel data:', personnelData);
-          
-          // Update personnel metrics
-          updatePersonnelMetrics(personnelData);
+        
+        // Update personnel metrics
+        updatePersonnelMetrics(personnelData);
           console.log('✅ Personnel metrics updated');
-          
-          // Update personnel charts
-          updatePersonnelCharts(personnelData);
+        
+        // Update personnel charts
+        updatePersonnelCharts(personnelData);
           console.log('📊 Personnel charts updated');
           
           console.log('✅ Personnel data successfully loaded from Supabase report');
@@ -3359,6 +3414,12 @@
           // 4. Update any other sections that depend on report data
           updateFuelMargins();
           updateFuelDistributionChart();
+
+          // 5. If Overview Over Time is visible, re-render it with fresh data
+          const oot = document.getElementById('overview-over-time');
+          if (oot && oot.style.display !== 'none') {
+            renderOverviewOverTime();
+          }
           
         } catch (error) {
           console.error('❌ Error refreshing dashboard data:', error);
@@ -3636,6 +3697,22 @@
         });
         
         console.log('Automatic data refresh enabled');
+
+        // Also subscribe to realtime DB changes (if available)
+        try {
+          if (window.db && typeof window.db.subscribeToMonthlyReportChanges === 'function') {
+            window.db.subscribeToMonthlyReportChanges(() => {
+              // Debounce rapid changes
+              if (window.__refreshTimer) clearTimeout(window.__refreshTimer);
+              window.__refreshTimer = setTimeout(() => {
+                refreshAllDashboardData();
+              }, 300);
+            });
+            console.log('Realtime subscriptions enabled');
+          }
+        } catch (e) {
+          console.warn('Realtime subscription setup failed:', e.message || e);
+        }
       }
       
       // Function to set up fuel price tracking
@@ -3727,6 +3804,27 @@
         if (reportsHistory) reportsHistory.style.display = 'none';
         if (monthlyPerformance) monthlyPerformance.style.display = 'none';
         
+        // Aggregate totals for overview over time
+        const allReports = Object.values(monthlyData).flat();
+        let totalRevenue = 0;
+        let totalShopRevenue = 0;
+        let totalVolume = 0;
+        allReports.forEach(report => {
+          if (report?.data?.fuels) {
+            Object.values(report.data.fuels).forEach(fuel => {
+              totalRevenue += fuel.total_revenue_zar || 0;
+              totalVolume += fuel.quantity_liters || 0;
+            });
+          }
+          if (report?.data?.shop_lines) {
+            report.data.shop_lines.forEach(shop => {
+              totalShopRevenue += shop.total_revenue_zar || 0;
+            });
+          }
+        });
+        totalRevenue += totalShopRevenue;
+        const shopFuelRatio = totalVolume > 0 ? (totalShopRevenue / totalVolume).toFixed(2) : '0.00';
+
         // Create or show overview over time section
         let overviewOverTimeSection = document.getElementById('overview-over-time');
         if (!overviewOverTimeSection) {
@@ -3740,7 +3838,7 @@
         
         // Load overview data efficiently
         setTimeout(() => {
-          loadOverviewOverTimeData();
+        loadOverviewOverTimeData();
         }, 50); // Quick delay to allow UI to update first
         
         overviewOverTimeSection.innerHTML = `

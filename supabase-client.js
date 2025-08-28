@@ -30,6 +30,7 @@ class FuelAnalyticsDB {
         this.currentUser = null;
         this.currentCompany = null;
         this.isInitialized = false;
+        this.reportChannel = null;
     }
 
     // Initialize the database connection
@@ -373,6 +374,53 @@ class FuelAnalyticsDB {
 
     onAuthStateChange(callback) {
         return supabase.auth.onAuthStateChange(callback);
+    }
+
+    // Subscribe to real-time changes on reports and dependent tables
+    subscribeToMonthlyReportChanges(onChangeCallback) {
+        try {
+            if (!this.isInitialized || !this.currentCompany) return null;
+
+            // Clean up existing subscription
+            if (this.reportChannel) {
+                this.reportChannel.unsubscribe();
+                this.reportChannel = null;
+            }
+
+            const companyId = this.currentCompany.id;
+
+            this.reportChannel = supabase
+                .channel('realtime-monthly-reports')
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'monthly_reports',
+                    filter: `company_id=eq.${companyId}`
+                }, (payload) => {
+                    console.log('Realtime change (monthly_reports):', payload);
+                    if (typeof onChangeCallback === 'function') onChangeCallback(payload);
+                })
+                .on('postgres_changes', {
+                    event: '*', schema: 'public', table: 'fuel_data'
+                }, (payload) => {
+                    console.log('Realtime change (fuel_data):', payload);
+                    if (typeof onChangeCallback === 'function') onChangeCallback(payload);
+                })
+                .on('postgres_changes', {
+                    event: '*', schema: 'public', table: 'shop_data'
+                }, (payload) => {
+                    console.log('Realtime change (shop_data):', payload);
+                    if (typeof onChangeCallback === 'function') onChangeCallback(payload);
+                })
+                .subscribe((status) => {
+                    console.log('Realtime channel status:', status);
+                });
+
+            return this.reportChannel;
+        } catch (error) {
+            console.error('Failed to subscribe to realtime changes:', error);
+            return null;
+        }
     }
 }
 
