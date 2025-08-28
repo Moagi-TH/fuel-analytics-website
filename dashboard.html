@@ -1900,6 +1900,13 @@
               // Also load from storage as backup
               await loadReportsFromStorage();
               
+              // Test integrations first
+              console.log('Testing integrations before loading personnel data...');
+              testPersonnelAndManualIntegrations();
+              
+              // Remove placeholder August report if it exists
+              removePlaceholderAugustReport();
+              
               // Now load personnel data after reports are loaded
               console.log('Reports loaded, now loading personnel data...');
               loadPersonnelDataFromReport();
@@ -2958,6 +2965,120 @@
         }
         
         console.log('Fuel data loaded successfully from report:', mostRecentReport.filename);
+      }
+      
+      // Function to remove placeholder August report that may be interfering
+      function removePlaceholderAugustReport() {
+        console.log('Checking for and removing placeholder August report...');
+        
+        // Check if August 2025 data exists
+        const augustKey = '8/2025';
+        if (monthlyData[augustKey]) {
+          // Check if it's a placeholder/sample report
+          const augustReports = monthlyData[augustKey];
+          const placeholderReports = augustReports.filter(report => 
+            report.filename.includes('Period Report 8 Aug 2025') ||
+            report.filename.includes('placeholder') ||
+            report.data.isPlaceholder ||
+            report.data.isSample
+          );
+          
+          if (placeholderReports.length > 0) {
+            console.log('Found placeholder August reports:', placeholderReports.length);
+            
+            // Remove placeholder reports, keep real ones
+            monthlyData[augustKey] = augustReports.filter(report => 
+              !report.filename.includes('Period Report 8 Aug 2025') &&
+              !report.filename.includes('placeholder') &&
+              !report.data.isPlaceholder &&
+              !report.data.isSample
+            );
+            
+            // If no real reports left for August, remove the entire month
+            if (monthlyData[augustKey].length === 0) {
+              delete monthlyData[augustKey];
+              console.log('Removed entire placeholder August 2025 month data');
+            } else {
+              console.log('Kept real August reports, removed placeholders');
+            }
+            
+            // Update local storage
+            saveReportsToStorage();
+            
+            // Update UI displays
+            loadPersonnelDataFromReport();
+            updateManualDataSourceInfo();
+            
+            // Refresh reports list if visible
+            loadReportsFromStorage();
+            
+            console.log('Placeholder August report removed successfully');
+            return true;
+          }
+        }
+        
+        console.log('No placeholder August report found');
+        return false;
+      }
+      
+      // Function to test Personnel and Manual Entry integrations
+      function testPersonnelAndManualIntegrations() {
+        console.log('🧪 Testing Personnel and Manual Entry integrations...');
+        
+        // Test 1: Check if monthlyData has reports
+        const availableMonths = Object.keys(monthlyData);
+        console.log('Available months in data:', availableMonths);
+        
+        if (availableMonths.length === 0) {
+          console.log('❌ No reports found - integrations cannot be tested');
+          return false;
+        }
+        
+        // Test 2: Test Personnel data extraction
+        console.log('Testing Personnel data extraction...');
+        try {
+          loadPersonnelDataFromReport();
+          const personnelReportSource = document.getElementById('personnel-report-source');
+          if (personnelReportSource && !personnelReportSource.textContent.includes('No reports uploaded yet')) {
+            console.log('✅ Personnel integration working - data source updated');
+          } else {
+            console.log('⚠️ Personnel integration may have issues');
+          }
+        } catch (error) {
+          console.log('❌ Personnel integration error:', error);
+        }
+        
+        // Test 3: Test Manual Entry data loading capability
+        console.log('Testing Manual Entry data loading...');
+        try {
+          updateManualDataSourceInfo();
+          const manualDataSource = document.getElementById('manual-data-source');
+          if (manualDataSource && manualDataSource.textContent.includes('Smart Data Loading Available')) {
+            console.log('✅ Manual Entry integration working - smart loading available');
+          } else {
+            console.log('⚠️ Manual Entry integration may have issues');
+          }
+        } catch (error) {
+          console.log('❌ Manual Entry integration error:', error);
+        }
+        
+        // Test 4: Check data quality
+        const latestMonth = availableMonths.sort((a, b) => {
+          const [monthA, yearA] = a.split('/').map(Number);
+          const [monthB, yearB] = b.split('/').map(Number);
+          return yearA - yearB || monthA - monthB;
+        })[availableMonths.length - 1];
+        
+        const latestReport = monthlyData[latestMonth][0];
+        if (latestReport && latestReport.data && latestReport.data.fuels) {
+          console.log('✅ Report data structure is valid');
+          console.log('Available fuel types:', Object.keys(latestReport.data.fuels));
+        } else {
+          console.log('⚠️ Report data structure may be incomplete');
+        }
+        
+        console.log('🧪 Integration testing completed');
+        return true;
       }
       
       // Function to extract personnel data from report
