@@ -559,6 +559,186 @@
             </div>
           </div>
 
+          <!-- Renovation Planning Tools -->
+          <div class="renovation-planning">
+            <div class="planning-header">
+              <h3>Renovation Planning</h3>
+              <button id="add-renovation-item" class="button primary">+ Add Renovation Item</button>
+            </div>
+
+            <!-- Renovation Groups -->
+            <div class="renovation-groups">
+              <h4>Renovation Groups</h4>
+              <div class="groups-grid">
+                <div class="group-card active" data-group="forecourt">
+                  <div class="group-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="currentColor"/>
+                      <rect x="6" y="18" width="12" height="4" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+                    </svg>
+                  </div>
+                  <div class="group-name">Forecourt</div>
+                </div>
+                <div class="group-card" data-group="pumps">
+                  <div class="group-icon">🔧</div>
+                  <div class="group-name">Pumps & Nozzles</div>
+                </div>
+                <div class="group-card" data-group="canopy">
+                  <div class="group-icon">🏗️</div>
+                  <div class="group-name">Canopy</div>
+                </div>
+                <div class="group-card" data-group="shop">
+                  <div class="group-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+                      <path d="M9 9H15V15H9V9Z" stroke="currentColor" stroke-width="2" fill="none"/>
+                      <path d="M9 12H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                  <div class="group-name">Shop Fit-out</div>
+                </div>
+                <div class="group-card" data-group="security">
+                  <div class="group-icon">🔒</div>
+                  <div class="group-name">IT & Security</div>
+                </div>
+                <div class="group-card" data-group="compliance">
+                  <div class="group-icon">📋</div>
+                  <div class="group-name">Compliance</div>
+                </div>
+                <div class="group-card" data-group="other">
+                  <div class="group-icon">➕</div>
+                  <div class="group-name">Other</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Renovation Item Form -->
+            <div id="renovation-item-form" class="renovation-form" style="display: none;">
+              <h4>Add Renovation Item</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="item-name">Item Name</label>
+                  <input type="text" id="item-name" class="form-input" placeholder="e.g., Nozzle Replacement" required>
+                </div>
+                <div class="form-group">
+                  <label for="item-category">Category</label>
+                  <select id="item-category" class="form-select" required>
+                    <option value="forecourt">Forecourt</option>
+                    <option value="pumps">Pumps & Nozzles</option>
+                    <option value="canopy">Canopy</option>
+                    <option value="shop">Shop Fit-out</option>
+                    <option value="security">IT & Security</option>
+                    <option value="compliance">Compliance</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="item-cost">Total Cost (ZAR)</label>
+                  <input type="number" id="item-cost" class="form-input" placeholder="0.00" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                  <label for="item-quantity">Quantity</label>
+                  <input type="number" id="item-quantity" class="form-input" value="1" min="1" required>
+                </div>
+                <div class="form-group">
+                  <label for="item-description">Description</label>
+                  <input type="text" id="item-description" class="form-input" placeholder="Brief description of the item">
+                </div>
+                <div class="form-group">
+                  <label for="item-supplier">Supplier</label>
+                  <input type="text" id="item-supplier" class="form-input" placeholder="Supplier name">
+                </div>
+              </div>
+
+              <!-- Phasing Options -->
+              <div class="phasing-section">
+                <h5>Implementation Phasing</h5>
+                <div class="phasing-grid">
+                  <div class="checkbox-group">
+                    <input type="radio" id="one-off" name="phasing" value="one-off" checked>
+                    <label for="one-off">One-off Payment</label>
+                  </div>
+                  <div class="checkbox-group">
+                    <input type="radio" id="monthly" name="phasing" value="monthly">
+                    <label for="monthly">Monthly Over Period</label>
+                  </div>
+                  <div class="checkbox-group">
+                    <input type="radio" id="quarterly" name="phasing" value="quarterly">
+                    <label for="quarterly">Quarterly Payments</label>
+                  </div>
+                  <div class="checkbox-group">
+                    <input type="radio" id="custom" name="phasing" value="custom">
+                    <label for="custom">Custom Schedule</label>
+                  </div>
+                </div>
+
+                <!-- One-off timing -->
+                <div id="one-off-options" class="form-group" style="margin-top: 16px;">
+                  <label for="one-off-month">Payment Month</label>
+                  <input type="number" id="one-off-month" class="form-input" value="1" min="1" max="120" placeholder="Month number (1-120)">
+                </div>
+
+                <!-- Monthly/Quarterly timing -->
+                <div id="period-options" class="form-group" style="margin-top: 16px; display: none;">
+                  <div class="form-grid">
+                    <div class="form-group">
+                      <label for="start-month">Start Month</label>
+                      <input type="number" id="start-month" class="form-input" value="1" min="1" max="120">
+                    </div>
+                    <div class="form-group">
+                      <label for="duration-months">Duration (Months)</label>
+                      <input type="number" id="duration-months" class="form-input" value="12" min="1" max="120">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Custom schedule -->
+                <div id="custom-schedule" class="custom-schedule" style="display: none;">
+                  <h6>Custom Payment Schedule</h6>
+                  <div class="schedule-grid">
+                    <div class="schedule-input">
+                      <label>Month 1</label>
+                      <input type="number" class="form-input" placeholder="Amount" step="0.01" min="0">
+                    </div>
+                    <div class="schedule-input">
+                      <label>Month 6</label>
+                      <input type="number" class="form-input" placeholder="Amount" step="0.01" min="0">
+                    </div>
+                    <div class="schedule-input">
+                      <label>Month 12</label>
+                      <input type="number" class="form-input" placeholder="Amount" step="0.01" min="0">
+                    </div>
+                    <div class="schedule-input">
+                      <label>Month 24</label>
+                      <input type="number" class="form-input" placeholder="Amount" step="0.01" min="0">
+                    </div>
+                  </div>
+                  <div class="schedule-summary">
+                    <span>Total Scheduled: <strong id="custom-total">R 0.00</strong></span>
+                    <span>Remaining: <strong id="custom-remaining">R 0.00</strong></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Form Actions -->
+              <div class="form-actions">
+                <button id="save-renovation-item" class="button primary">Save Item</button>
+                <button id="cancel-renovation-item" class="button secondary">Cancel</button>
+              </div>
+            </div>
+
+            <!-- Renovation Items List -->
+            <div id="renovation-items-list" class="items-list">
+              <h4>Renovation Items</h4>
+              <div id="items-container">
+                <div class="empty-state">
+                  <p>No renovation items added yet</p>
+                  <p>Click "Add Renovation Item" to get started</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Renovation Overview -->
           <div class="renovation-overview">
             <div class="renovation-metrics">
@@ -819,161 +999,7 @@
             </div>
           </div>
 
-          <!-- Renovation Planning Tools -->
-          <div class="renovation-planning">
-            <div class="planning-header">
-              <h3>Renovation Planning</h3>
-              <button id="add-renovation-item" class="button primary">+ Add Renovation Item</button>
-            </div>
 
-            <!-- Renovation Groups -->
-            <div class="renovation-groups">
-              <h4>Renovation Groups</h4>
-              <div class="groups-grid">
-                <div class="group-card active" data-group="forecourt">
-                  <div class="group-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="currentColor"/>
-                      <rect x="6" y="18" width="12" height="4" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
-                    </svg>
-                  </div>
-                  <div class="group-name">Forecourt</div>
-                </div>
-                <div class="group-card" data-group="pumps">
-                  <div class="group-icon">🔧</div>
-                  <div class="group-name">Pumps & Nozzles</div>
-                </div>
-                <div class="group-card" data-group="canopy">
-                  <div class="group-icon">🏗️</div>
-                  <div class="group-name">Canopy</div>
-                </div>
-                <div class="group-card" data-group="shop">
-                  <div class="group-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
-                      <path d="M9 9H15V15H9V9Z" stroke="currentColor" stroke-width="2" fill="none"/>
-                      <path d="M9 12H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                  </div>
-                  <div class="group-name">Shop Fit-out</div>
-                </div>
-                <div class="group-card" data-group="security">
-                  <div class="group-icon">🔒</div>
-                  <div class="group-name">IT & Security</div>
-                </div>
-                <div class="group-card" data-group="compliance">
-                  <div class="group-icon">📋</div>
-                  <div class="group-name">Compliance</div>
-                </div>
-                <div class="group-card" data-group="other">
-                  <div class="group-icon">➕</div>
-                  <div class="group-name">Other</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Renovation Item Form -->
-            <div id="renovation-item-form" class="renovation-form" style="display: none;">
-              <h4>Add Renovation Item</h4>
-              <div class="form-grid">
-                <div class="form-group">
-                  <label for="item-name">Item Name</label>
-                  <input type="text" id="item-name" class="form-input" placeholder="e.g., Replace 4 nozzles">
-                </div>
-                <div class="form-group">
-                  <label for="item-category">Category</label>
-                  <select id="item-category" class="form-select">
-                    <option value="forecourt">Forecourt</option>
-                    <option value="pumps">Pumps & Nozzles</option>
-                    <option value="canopy">Canopy</option>
-                    <option value="shop">Shop Fit-out</option>
-                    <option value="security">IT & Security</option>
-                    <option value="compliance">Compliance</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label for="item-qty">Quantity</label>
-                  <input type="number" id="item-qty" class="form-input" value="1" min="0" step="0.01">
-                </div>
-                <div class="form-group">
-                  <label for="item-unit-cost">Unit Cost (ZAR)</label>
-                  <input type="number" id="item-unit-cost" class="form-input" value="0" min="0" step="0.01">
-                </div>
-                <div class="form-group">
-                  <label for="item-total">Total Cost (ZAR)</label>
-                  <input type="number" id="item-total" class="form-input" readonly>
-                </div>
-                <div class="form-group">
-                  <label for="item-contingency">Contingency (%)</label>
-                  <input type="number" id="item-contingency" class="form-input" value="10" min="0" max="100" step="0.1">
-                </div>
-                <div class="form-group">
-                  <label for="item-vat">VAT Applicable</label>
-                  <div class="checkbox-group">
-                    <input type="checkbox" id="item-vat" checked>
-                    <label for="item-vat">Include VAT</label>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label for="item-salvage">Salvage Value (ZAR)</label>
-                  <input type="number" id="item-salvage" class="form-input" value="0" min="0" step="0.01">
-                </div>
-              </div>
-
-              <!-- Phasing Controls -->
-              <div class="phasing-section">
-                <h5>Phasing & Schedule</h5>
-                <div class="phasing-grid">
-                  <div class="form-group">
-                    <label for="start-month">Start Month</label>
-                    <input type="number" id="start-month" class="form-input" value="0" min="0" step="1">
-                  </div>
-                  <div class="form-group">
-                    <label for="spread-type">Spread Type</label>
-                    <select id="spread-type" class="form-select">
-                      <option value="one_off">One-off Payment</option>
-                      <option value="even">Even Spread</option>
-                      <option value="custom">Custom Schedule</option>
-                    </select>
-                  </div>
-                  <div class="form-group" id="spread-months-group">
-                    <label for="spread-months">Spread Over (Months)</label>
-                    <input type="number" id="spread-months" class="form-input" value="1" min="1" step="1">
-                  </div>
-                </div>
-
-                <!-- Custom Schedule Grid -->
-                <div id="custom-schedule-grid" class="custom-schedule" style="display: none;">
-                  <h6>Custom Monthly Schedule</h6>
-                  <div class="schedule-grid" id="schedule-inputs">
-                    <!-- Dynamic schedule inputs will be generated here -->
-                  </div>
-                  <div class="schedule-summary">
-                    <span>Total Scheduled: <span id="schedule-total">R 0</span></span>
-                    <span>Remaining: <span id="schedule-remaining">R 0</span></span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Form Actions -->
-              <div class="form-actions">
-                <button id="save-renovation-item" class="button primary">Save Item</button>
-                <button id="cancel-renovation-item" class="button secondary">Cancel</button>
-              </div>
-            </div>
-
-            <!-- Renovation Items List -->
-            <div id="renovation-items-list" class="items-list">
-              <h4>Renovation Items</h4>
-              <div id="items-container">
-                <div class="empty-state">
-                  <p>No renovation items added yet</p>
-                  <p>Click "Add Renovation Item" to get started</p>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <!-- Current Projects -->
           <div class="renovation-projects">
