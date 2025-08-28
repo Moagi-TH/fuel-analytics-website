@@ -2364,6 +2364,12 @@
         reportsHistory.style.display = 'none';
         monthlyPerformance.style.display = 'none';
         
+        // Hide users section that contains API Key Management
+        const usersSection = document.getElementById('users');
+        if (usersSection) {
+          usersSection.style.display = 'none';
+        }
+        
         // Show overview over time (overall performance)
         renderOverviewOverTime();
       });
@@ -3620,7 +3626,7 @@
       
       // Function to render overview over time (overall performance)
       function renderOverviewOverTime() {
-        // Hide all dashboard sections
+        // Hide main dashboard sections but keep users section visible
         const sections = ['overview', 'reports', 'analytics', 'insights', 'personnel', 'renovation', 'expansion'];
         sections.forEach(sectionId => {
           const section = document.getElementById(sectionId);
@@ -3651,8 +3657,10 @@
         
         overviewOverTimeSection.style.display = 'block';
         
-        // Load and display data from all available months
-        loadOverviewOverTimeData();
+        // Load overview data efficiently
+        setTimeout(() => {
+          loadOverviewOverTimeData();
+        }, 50); // Quick delay to allow UI to update first
         
         overviewOverTimeSection.innerHTML = `
           <div class="container">
@@ -3727,7 +3735,7 @@
         }
         
         // Show all the original dashboard sections
-        const sections = ['overview', 'reports', 'analytics', 'insights', 'personnel', 'renovation', 'expansion'];
+        const sections = ['overview', 'reports', 'analytics', 'insights', 'personnel', 'renovation', 'expansion', 'users'];
         sections.forEach(sectionId => {
           const section = document.getElementById(sectionId);
           if (section) {
