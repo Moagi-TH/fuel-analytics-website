@@ -46,8 +46,8 @@ class AccessibilityManager {
     `;
     
     // Add styles
-    const skipStyle = document.createElement('style');
-    skipStyle.textContent = `
+    const skipStyleElement = document.createElement('style');
+    skipStyleElement.textContent = `
       .skip-links {
         position: absolute;
         top: -40px;
@@ -79,7 +79,7 @@ class AccessibilityManager {
       }
     `;
     
-    document.head.appendChild(skipStyle);
+    document.head.appendChild(skipStyleElement);
     document.body.insertBefore(skipContainer, document.body.firstChild);
     
     // Add IDs to main sections

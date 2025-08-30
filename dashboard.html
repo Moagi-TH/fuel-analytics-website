@@ -30,7 +30,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./dashboard.css?v=99999" />
+  <link rel="stylesheet" href="./dashboard.css?v=999999" />
   <!-- Critical external libraries (load first, no defer) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -63,6 +63,100 @@
   
   <!-- Load main extensions configuration (load last) -->
   <script defer src="./extensions-config.js"></script>
+  
+  <!-- SUPER NUCLEAR OPTION - Complete Dashboard Override -->
+  <script>
+    // SUPER NUCLEAR OPTION - This runs BEFORE everything else
+    (function() {
+      console.log('🚀🚀🚀 SUPER NUCLEAR OPTION ACTIVATED 🚀🚀🚀');
+      
+      // 1. Override window.location.hash immediately
+      if (window.location.hash === '#users' || window.location.hash === '') {
+        window.location.hash = '#overview';
+        history.replaceState(null, null, window.location.pathname + '#overview');
+      }
+      
+      // 2. Create a function to force overview section
+      window.FORCE_OVERVIEW_NOW = function() {
+        console.log('🚀🚀🚀 FORCING OVERVIEW SECTION NOW 🚀🚀🚀');
+        
+        // Clear any existing hash
+        window.location.hash = '#overview';
+        history.replaceState(null, null, window.location.pathname + '#overview');
+        
+        // Hide ALL sections with multiple methods
+        const allSections = ['overview', 'reports', 'analytics', 'insights', 'personnel', 'users', 'renovation', 'expansion'];
+        allSections.forEach(id => {
+          const section = document.getElementById(id);
+          if (section) {
+            section.style.display = 'none';
+            section.style.visibility = 'hidden';
+            section.style.opacity = '0';
+            section.style.position = 'absolute';
+            section.style.left = '-9999px';
+          }
+        });
+        
+        // Show ONLY overview section with multiple methods
+        const overviewSection = document.getElementById('overview');
+        if (overviewSection) {
+          overviewSection.style.display = 'block';
+          overviewSection.style.visibility = 'visible';
+          overviewSection.style.opacity = '1';
+          overviewSection.style.position = 'relative';
+          overviewSection.style.left = 'auto';
+        }
+        
+        // Reset ALL navigation links
+        const allNavLinks = document.querySelectorAll('.nav-link, a[href^="#"]');
+        allNavLinks.forEach(link => {
+          link.classList.remove('active');
+          link.classList.remove('selected');
+        });
+        
+        // Activate ONLY overview link
+        const overviewLink = document.querySelector('a[href="#overview"]');
+        if (overviewLink) {
+          overviewLink.classList.add('active');
+          overviewLink.classList.add('selected');
+        }
+        
+        console.log('✅✅✅ OVERVIEW SECTION FORCED SUCCESSFULLY ✅✅✅');
+      };
+      
+      // 3. Run immediately
+      window.FORCE_OVERVIEW_NOW();
+      
+      // 4. Run every 100ms for the first 30 seconds
+      let superNuclearCounter = 0;
+      const superNuclearInterval = setInterval(() => {
+        window.FORCE_OVERVIEW_NOW();
+        superNuclearCounter++;
+        if (superNuclearCounter >= 300) { // 30 seconds
+          clearInterval(superNuclearInterval);
+          console.log('🚀🚀🚀 SUPER NUCLEAR OPTION COMPLETED 🚀🚀🚀');
+        }
+      }, 100);
+      
+      // 5. Override hashchange event
+      window.addEventListener('hashchange', function(e) {
+        console.log('🚫🚫🚫 BLOCKING HASH CHANGE:', window.location.hash);
+        if (window.location.hash !== '#overview') {
+          window.location.hash = '#overview';
+          window.FORCE_OVERVIEW_NOW();
+        }
+      });
+      
+      // 6. Override popstate event
+      window.addEventListener('popstate', function(e) {
+        console.log('🚫🚫🚫 BLOCKING POPSTATE');
+        window.location.hash = '#overview';
+        window.FORCE_OVERVIEW_NOW();
+      });
+      
+      console.log('🚀🚀🚀 SUPER NUCLEAR OPTION SETUP COMPLETE 🚀🚀🚀');
+    })();
+  </script>
   
   <!-- Hide loading indicator when page is ready -->
   <script>
@@ -3294,18 +3388,30 @@
         // Update personnel charts with proper chart destruction
         try {
           // Destroy existing charts before creating new ones
-          if (window.cashierChart) {
+          if (window.cashierChart && typeof window.cashierChart.destroy === 'function') {
             window.cashierChart.destroy();
             window.cashierChart = null;
           }
-          if (window.attendantChart) {
+          if (window.attendantChart && typeof window.attendantChart.destroy === 'function') {
             window.attendantChart.destroy();
             window.attendantChart = null;
           }
-          if (window.performanceChart) {
+          if (window.performanceChart && typeof window.performanceChart.destroy === 'function') {
             window.performanceChart.destroy();
             window.performanceChart = null;
           }
+          
+          // Clear any existing chart canvases
+          const chartCanvases = document.querySelectorAll('canvas[id*="Chart"]');
+          chartCanvases.forEach(canvas => {
+            if (canvas.chart) {
+              try {
+                canvas.chart.destroy();
+              } catch (e) {
+                console.log('Canvas chart already destroyed');
+              }
+            }
+          });
           
           updatePersonnelCharts(personnelData);
           console.log('📊 Personnel charts updated');
