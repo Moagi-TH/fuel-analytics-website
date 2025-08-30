@@ -3381,10 +3381,17 @@
           }
         }
         
-        // Add missing delete report function
+        // Optimized delete report function with button state management
         async function deleteReport(reportId) {
           try {
             console.log('🗑️ Deleting report:', reportId);
+            
+            // Disable all delete buttons during operation
+            const deleteButtons = document.querySelectorAll('.delete-report-btn');
+            deleteButtons.forEach(btn => {
+              btn.disabled = true;
+              btn.textContent = 'Deleting...';
+            });
             
             if (!window.supabaseClient) {
               showNotification('Database not initialized', 'error');
@@ -3403,10 +3410,17 @@
           } catch (error) {
             console.error('❌ Error deleting report:', error);
             showNotification('Error deleting report', 'error');
+          } finally {
+            // Re-enable all delete buttons
+            const deleteButtons = document.querySelectorAll('.delete-report-btn');
+            deleteButtons.forEach(btn => {
+              btn.disabled = false;
+              btn.textContent = 'Delete';
+            });
           }
         }
         
-        // Add function to load reports from Supabase
+        // Optimized function to load reports from Supabase
         async function loadReports() {
           try {
             console.log('📊 Loading reports from Supabase...');
@@ -3421,29 +3435,45 @@
             if (result.success && result.reports) {
               console.log('✅ Reports loaded:', result.reports.length);
               
-              // Update the reports list in the UI
+              // Update the reports list in the UI with proper event listeners
               const reportsContainer = document.getElementById('reports-list');
               if (reportsContainer) {
                 if (result.reports.length === 0) {
                   reportsContainer.innerHTML = '<p class="no-reports">No reports found. Upload a report to get started.</p>';
                 } else {
-                  reportsContainer.innerHTML = result.reports.map(report => `
-                    <div class="report-item">
+                  // Create reports HTML
+                  reportsContainer.innerHTML = result.reports.map((report, index) => `
+                    <div class="report-item" data-report-id="${report.id}">
                       <div class="report-info">
                         <h4>${report.filename || 'Unnamed Report'}</h4>
                         <p>Uploaded: ${new Date(report.created_at).toLocaleDateString()}</p>
                         <p>Period: ${report.report_month}/${report.report_year}</p>
                       </div>
                       <div class="report-actions">
-                        <button onclick="viewReport('${report.id}')" class="btn btn-primary">View</button>
-                        <button onclick="deleteReport('${report.id}')" class="btn btn-danger">Delete</button>
+                        <button class="btn btn-primary view-report-btn" data-report-id="${report.id}">View</button>
+                        <button class="btn btn-danger delete-report-btn" data-report-id="${report.id}">Delete</button>
                       </div>
                     </div>
                   `).join('');
+                  
+                  // Add event listeners properly
+                  reportsContainer.querySelectorAll('.view-report-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                      const reportId = this.getAttribute('data-report-id');
+                      viewReport(reportId);
+                    });
+                  });
+                  
+                  reportsContainer.querySelectorAll('.delete-report-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                      const reportId = this.getAttribute('data-report-id');
+                      deleteReport(reportId);
+                    });
+                  });
                 }
               }
               
-              // Update most recent report
+              // Update most recent report with proper event listener
               if (result.reports.length > 0) {
                 const mostRecent = result.reports[0];
                 const recentReportContainer = document.getElementById('recent-report');
@@ -3452,8 +3482,17 @@
                     <h3>${mostRecent.filename || 'Unnamed Report'}</h3>
                     <p>Uploaded: ${new Date(mostRecent.created_at).toLocaleDateString()}</p>
                     <p>Period: ${mostRecent.report_month}/${mostRecent.report_year}</p>
-                    <button onclick="viewReport('${mostRecent.id}')" class="btn btn-primary">View Report</button>
+                    <button class="btn btn-primary view-recent-report-btn" data-report-id="${mostRecent.id}">View Report</button>
                   `;
+                  
+                  // Add event listener for recent report button
+                  const recentBtn = recentReportContainer.querySelector('.view-recent-report-btn');
+                  if (recentBtn) {
+                    recentBtn.addEventListener('click', function() {
+                      const reportId = this.getAttribute('data-report-id');
+                      viewReport(reportId);
+                    });
+                  }
                 }
               }
               
@@ -3467,10 +3506,20 @@
           }
         }
         
-        // Add function to view a specific report
+        // Optimized view report function with loading states
         async function viewReport(reportId) {
           try {
             console.log('👁️ Viewing report:', reportId);
+            
+            // Show loading state
+            showNotification('Loading report...', 'info');
+            
+            // Disable all view buttons during operation
+            const viewButtons = document.querySelectorAll('.view-report-btn, .view-recent-report-btn');
+            viewButtons.forEach(btn => {
+              btn.disabled = true;
+              btn.textContent = 'Loading...';
+            });
             
             if (!window.supabaseClient) {
               showNotification('Database not initialized', 'error');
@@ -3496,6 +3545,13 @@
           } catch (error) {
             console.error('❌ Error viewing report:', error);
             showNotification('Error viewing report', 'error');
+          } finally {
+            // Re-enable all view buttons
+            const viewButtons = document.querySelectorAll('.view-report-btn, .view-recent-report-btn');
+            viewButtons.forEach(btn => {
+              btn.disabled = false;
+              btn.textContent = btn.classList.contains('view-recent-report-btn') ? 'View Report' : 'View';
+            });
           }
         }
         
@@ -6871,22 +6927,22 @@
         console.log('Page initialization complete');
       }
 
-              // Initialize immediately when DOM is ready
+              // Initialize immediately when DOM is ready with optimized loading
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', async () => {
             await initializePage();
-            // Load reports after initialization
+            // Load reports after initialization with delay
             setTimeout(() => {
               loadReports();
-            }, 1000);
+            }, 2000); // Increased delay for better performance
           });
         } else {
           // DOM is already ready
           initializePage();
-          // Load reports after initialization
+          // Load reports after initialization with delay
           setTimeout(() => {
             loadReports();
-          }, 1000);
+          }, 2000); // Increased delay for better performance
         }
       
       // Simple hash change protection
