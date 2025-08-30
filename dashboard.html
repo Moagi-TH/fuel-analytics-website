@@ -141,11 +141,16 @@
     // Gentle cache management - don't break service workers
     console.log('🔄 Initializing dashboard with gentle cache management');
     
-    // Define checkForDataUpdates early to prevent errors
+    // Define checkForDataUpdates early to prevent errors (optimized for performance)
     function checkForDataUpdates() {
+      // Only check if user is actively using the page
+      if (document.hidden) {
+        return; // Don't check when tab is not visible
+      }
+      
       // Only log occasionally to reduce console spam
       const now = Date.now();
-      if (!window.lastUpdateCheck || now - window.lastUpdateCheck > 60000) { // Log once per minute
+      if (!window.lastUpdateCheck || now - window.lastUpdateCheck > 120000) { // Log once per 2 minutes
         console.log('🔄 Checking for data updates...');
         window.lastUpdateCheck = now;
       }
@@ -158,7 +163,10 @@
         console.log(`📊 New reports detected: ${lastKnownCount} → ${currentReportCount}`);
         window.lastKnownReportCount = currentReportCount;
         if (typeof refreshAllDashboardData === 'function') {
-          refreshAllDashboardData();
+          // Use requestAnimationFrame for better performance
+          requestAnimationFrame(() => {
+            refreshAllDashboardData();
+          });
         }
       } else {
         // Don't log "No new reports detected" to reduce console spam
@@ -167,10 +175,10 @@
     
     // Define setupAutomaticDataRefresh early to prevent errors
     function setupAutomaticDataRefresh() {
-      // Check for updates every 3 minutes (180000ms) instead of 30 seconds
-      setInterval(checkForDataUpdates, 180000);
+      // Check for updates every 5 minutes (300000ms) for better performance
+      setInterval(checkForDataUpdates, 300000);
       
-      console.log('🔄 Data refresh set to every 3 minutes');
+              console.log('🔄 Data refresh set to every 5 minutes');
       
       // Only check when user navigates to reports section (not all sections)
       const reportsLink = document.querySelector('a[href="#reports"]');
@@ -353,6 +361,25 @@
           loadingIndicator.style.display = 'none';
         }
       }, 10000);
+      
+      // Performance optimization: pause heavy operations when dev tools are opened
+      let devToolsOpen = false;
+      const devToolsThreshold = 160;
+      
+      setInterval(() => {
+        if (window.outerHeight - window.innerHeight > devToolsThreshold || 
+            window.outerWidth - window.innerWidth > devToolsThreshold) {
+          if (!devToolsOpen) {
+            devToolsOpen = true;
+            console.log('🛠️ Dev tools detected - pausing heavy operations');
+          }
+        } else {
+          if (devToolsOpen) {
+            devToolsOpen = false;
+            console.log('🛠️ Dev tools closed - resuming operations');
+          }
+        }
+      }, 1000);
       
       // Fix authentication after page loads
       setTimeout(fixAuthentication, 2000);
@@ -3485,12 +3512,12 @@
           try {
             console.log('🗑️ Deleting report:', reportId);
             
-            // Disable all delete buttons during operation
-            const deleteButtons = document.querySelectorAll('.delete-report-btn');
-            deleteButtons.forEach(btn => {
-              btn.disabled = true;
-              btn.textContent = 'Deleting...';
-            });
+            // Disable the specific delete button that was clicked
+            const clickedButton = event.target;
+            if (clickedButton) {
+              clickedButton.disabled = true;
+              clickedButton.textContent = 'Deleting...';
+            }
             
             if (!window.supabaseClient) {
               showNotification('Database not initialized', 'error');
@@ -3510,12 +3537,11 @@
             console.error('❌ Error deleting report:', error);
             showNotification('Error deleting report', 'error');
           } finally {
-            // Re-enable all delete buttons
-            const deleteButtons = document.querySelectorAll('.delete-report-btn');
-            deleteButtons.forEach(btn => {
-              btn.disabled = false;
-              btn.textContent = 'Delete';
-            });
+            // Re-enable the specific button
+            if (clickedButton) {
+              clickedButton.disabled = false;
+              clickedButton.textContent = 'Delete';
+            }
           }
         }
         
@@ -3549,26 +3575,13 @@
                         <p>Period: ${report.report_month}/${report.report_year}</p>
                       </div>
                       <div class="report-actions">
-                        <button class="btn btn-primary view-report-btn" data-report-id="${report.id}">View</button>
-                        <button class="btn btn-danger delete-report-btn" data-report-id="${report.id}">Delete</button>
+                        <button class="btn btn-primary view-report-btn" onclick="viewReport('${report.id}')">View</button>
+                        <button class="btn btn-danger delete-report-btn" onclick="deleteReport('${report.id}')">Delete</button>
                       </div>
                     </div>
                   `).join('');
                   
-                  // Add event listeners properly
-                  reportsContainer.querySelectorAll('.view-report-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                      const reportId = this.getAttribute('data-report-id');
-                      viewReport(reportId);
-                    });
-                  });
-                  
-                  reportsContainer.querySelectorAll('.delete-report-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                      const reportId = this.getAttribute('data-report-id');
-                      deleteReport(reportId);
-                    });
-                  });
+                  // Event listeners are now handled by onclick attributes for better performance
                 }
               }
               
