@@ -30,39 +30,81 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./dashboard.css?v=999999" />
+  <link rel="stylesheet" href="./dashboard.css?v=999999999" />
   <!-- Critical external libraries (load first, no defer) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
   <!-- Core application scripts (load second, no defer) -->
-  <script src="./supabase-client.js?v=999999"></script>
-  <script src="./utils/logger-fixed.js?v=999999"></script>
-  <script src="./utils/errorHandler.js?v=999999"></script>
-  <script src="./utils/stateManager.js?v=999999"></script>
+  <script src="./supabase-client.js?v=999999999"></script>
+  <script src="./utils/logger-fixed.js?v=999999999"></script>
+  <script src="./utils/errorHandler.js?v=999999999"></script>
+  <script src="./utils/stateManager.js?v=999999999"></script>
   
   <!-- Main application scripts (load third, no defer) -->
-  <script src="./advanced-calculations.js?v=1"></script>
-  <script src="./visual-analytics.js?v=2"></script>
-  <script src="./data-integration.js?v=1"></script>
-  <script src="./renovation-client.js?v=1"></script>
+  <script src="./advanced-calculations.js?v=999999999"></script>
+  <script src="./visual-analytics.js?v=999999999"></script>
+  <script src="./data-integration.js?v=999999999"></script>
+  <script src="./renovation-client.js?v=999999999"></script>
   
   <!-- Non-critical utilities (load last, with defer) -->
-  <script defer src="./utils/validator.js?v=999999"></script>
-  <script defer src="./utils/analyticsEngine.js?v=999999"></script>
-  <script defer src="./utils/reportingEngine.js?v=999999"></script>
-  <script defer src="./utils/realTimeDataService.js?v=999999"></script>
-  <script defer src="./utils/cacheManager.js?v=999999"></script>
-  <script defer src="./utils/memoryManager.js?v=999999"></script>
-  <script defer src="./utils/databaseSchema.js?v=999999"></script>
-  <script defer src="./utils/dataIntegrationPlan.js?v=999999"></script>
-  <script defer src="./utils/sampleDataGenerator.js?v=999999"></script>
-  <script defer src="./utils/performanceOptimizer.js?v=999999"></script>
-  <script defer src="./utils/offlineManager.js?v=999999"></script>
-  <script defer src="./utils/accessibility.js?v=999999"></script>
+  <script defer src="./utils/validator.js?v=999999999"></script>
+  <script defer src="./utils/analyticsEngine.js?v=999999999"></script>
+  <script defer src="./utils/reportingEngine.js?v=999999999"></script>
+  <script defer src="./utils/realTimeDataService.js?v=999999999"></script>
+  <script defer src="./utils/cacheManager.js?v=999999999"></script>
+  <script defer src="./utils/memoryManager.js?v=999999999"></script>
+  <script defer src="./utils/databaseSchema.js?v=999999999"></script>
+  <script defer src="./utils/dataIntegrationPlan.js?v=999999999"></script>
+  <script defer src="./utils/sampleDataGenerator.js?v=999999999"></script>
+  <script defer src="./utils/performanceOptimizer.js?v=999999999"></script>
+  <script defer src="./utils/offlineManager.js?v=999999999"></script>
+  <script defer src="./utils/accessibility.js?v=999999999"></script>
   
   <!-- Load main extensions configuration (load last) -->
   <script defer src="./extensions-config.js"></script>
+  
+  <!-- NUCLEAR CACHE CLEARING - Force Fresh File Loading -->
+  <script>
+    // NUCLEAR CACHE CLEARING - This forces the browser to load fresh files
+    (function() {
+      console.log('🚀🚀🚀 NUCLEAR CACHE CLEARING ACTIVATED 🚀🚀🚀');
+      
+      // 1. Clear all caches aggressively
+      if ('caches' in window) {
+        caches.keys().then(function(names) {
+          for (let name of names) {
+            caches.delete(name);
+            console.log('🗑️ Deleted cache:', name);
+          }
+        });
+      }
+      
+      // 2. Clear service worker registrations
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+            console.log('🗑️ Unregistered service worker:', registration.scope);
+          }
+        });
+      }
+      
+      // 3. Clear localStorage and sessionStorage
+      localStorage.clear();
+      sessionStorage.clear();
+      console.log('🗑️ Cleared all storage');
+      
+      // 4. Force reload if this is not a fresh load
+      if (performance.navigation.type !== 0) {
+        console.log('🔄 Forcing page reload for fresh files');
+        window.location.reload(true);
+        return;
+      }
+      
+      console.log('✅ NUCLEAR CACHE CLEARING COMPLETED');
+    })();
+  </script>
   
   <!-- GENTLE OVERVIEW FORCE - Safe Dashboard Override -->
   <script>
