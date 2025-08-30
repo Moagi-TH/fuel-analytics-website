@@ -35,8 +35,19 @@ class ErrorHandler {
       max-width: 400px;
     `;
 
-    document.body.appendChild(this.errorContainer);
-    document.body.appendChild(this.successContainer);
+    // Wait for body to be available
+    if (document.body) {
+      document.body.appendChild(this.errorContainer);
+      document.body.appendChild(this.successContainer);
+    } else {
+      // If body is not ready, wait for it
+      document.addEventListener('DOMContentLoaded', () => {
+        if (document.body) {
+          document.body.appendChild(this.errorContainer);
+          document.body.appendChild(this.successContainer);
+        }
+      });
+    }
   }
 
   /**

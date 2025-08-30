@@ -30,16 +30,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./dashboard.css?v=9999" />
+  <link rel="stylesheet" href="./dashboard.css?v=99999" />
   <!-- Critical external libraries (load first, no defer) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
   <!-- Core application scripts (load second, no defer) -->
   <script src="./supabase-client.js?v=99999"></script>
-  <script src="./utils/logger-fixed.js?v=99999"></script>
-  <script src="./utils/errorHandler.js?v=1000"></script>
-  <script src="./utils/stateManager.js?v=999"></script>
+  <script src="./utils/logger-fixed.js?v=999999"></script>
+  <script src="./utils/errorHandler.js?v=999999"></script>
+  <script src="./utils/stateManager.js?v=999999"></script>
   
   <!-- Main application scripts (load third, no defer) -->
   <script src="./advanced-calculations.js?v=1"></script>
@@ -48,18 +48,18 @@
   <script src="./renovation-client.js?v=1"></script>
   
   <!-- Non-critical utilities (load last, with defer) -->
-  <script defer src="./utils/validator.js?v=999"></script>
-  <script defer src="./utils/analyticsEngine.js?v=999"></script>
-  <script defer src="./utils/reportingEngine.js?v=999"></script>
-  <script defer src="./utils/realTimeDataService.js?v=999"></script>
-  <script defer src="./utils/cacheManager.js?v=999"></script>
-  <script defer src="./utils/memoryManager.js?v=999"></script>
-  <script defer src="./utils/databaseSchema.js?v=999"></script>
-  <script defer src="./utils/dataIntegrationPlan.js?v=999"></script>
-  <script defer src="./utils/sampleDataGenerator.js?v=999"></script>
-  <script defer src="./utils/performanceOptimizer.js?v=999"></script>
-  <script defer src="./utils/offlineManager.js?v=999"></script>
-  <script defer src="./utils/accessibility.js?v=999"></script>
+  <script defer src="./utils/validator.js?v=999999"></script>
+  <script defer src="./utils/analyticsEngine.js?v=999999"></script>
+  <script defer src="./utils/reportingEngine.js?v=999999"></script>
+  <script defer src="./utils/realTimeDataService.js?v=999999"></script>
+  <script defer src="./utils/cacheManager.js?v=999999"></script>
+  <script defer src="./utils/memoryManager.js?v=999999"></script>
+  <script defer src="./utils/databaseSchema.js?v=999999"></script>
+  <script defer src="./utils/dataIntegrationPlan.js?v=999999"></script>
+  <script defer src="./utils/sampleDataGenerator.js?v=999999"></script>
+  <script defer src="./utils/performanceOptimizer.js?v=999999"></script>
+  <script defer src="./utils/offlineManager.js?v=999999"></script>
+  <script defer src="./utils/accessibility.js?v=999999"></script>
   
   <!-- Load main extensions configuration (load last) -->
   <script defer src="./extensions-config.js"></script>
@@ -6587,6 +6587,25 @@
         if (window.location.hash === '#users') {
           console.log('🚫 Periodic check: Blocking unwanted hash change to users section');
           window.location.hash = '#overview';
+        }
+        
+        // Force hide users section if it's visible
+        const usersSection = document.getElementById('users');
+        if (usersSection && usersSection.style.display !== 'none') {
+          console.log('🚫 Force hiding users section');
+          usersSection.style.display = 'none';
+          
+          // Show overview section
+          const overviewSection = document.getElementById('overview');
+          if (overviewSection) {
+            overviewSection.style.display = 'block';
+          }
+          
+          // Update navigation
+          const overviewLink = document.querySelector('a[href="#overview"]');
+          const usersLink = document.querySelector('a[href="#users"]');
+          if (overviewLink) overviewLink.classList.add('active');
+          if (usersLink) usersLink.classList.remove('active');
         }
       }, 1000);
 
