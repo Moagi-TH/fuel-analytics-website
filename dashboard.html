@@ -17,12 +17,13 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/sw.js')
+        navigator.serviceWorker.register('./sw.js')
           .then(function(registration) {
             console.log('✅ Service Worker registered successfully:', registration.scope);
           })
           .catch(function(error) {
             console.log('❌ Service Worker registration failed:', error);
+            // Don't let service worker errors break the page
           });
       });
     }
@@ -64,47 +65,7 @@
   <!-- Load main extensions configuration (load last) -->
   <script defer src="./extensions-config.js"></script>
   
-  <!-- NUCLEAR CACHE CLEARING - Force Fresh File Loading -->
-  <script>
-    // NUCLEAR CACHE CLEARING - This forces the browser to load fresh files
-    (function() {
-      console.log('🚀🚀🚀 NUCLEAR CACHE CLEARING ACTIVATED 🚀🚀🚀');
-      
-      // 1. Clear all caches aggressively
-      if ('caches' in window) {
-        caches.keys().then(function(names) {
-          for (let name of names) {
-            caches.delete(name);
-            console.log('🗑️ Deleted cache:', name);
-          }
-        });
-      }
-      
-      // 2. Clear service worker registrations
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for(let registration of registrations) {
-            registration.unregister();
-            console.log('🗑️ Unregistered service worker:', registration.scope);
-          }
-        });
-      }
-      
-      // 3. Clear localStorage and sessionStorage
-      localStorage.clear();
-      sessionStorage.clear();
-      console.log('🗑️ Cleared all storage');
-      
-      // 4. Force reload if this is not a fresh load
-      if (performance.navigation.type !== 0) {
-        console.log('🔄 Forcing page reload for fresh files');
-        window.location.reload(true);
-        return;
-      }
-      
-      console.log('✅ NUCLEAR CACHE CLEARING COMPLETED');
-    })();
-  </script>
+
   
   <!-- GENTLE OVERVIEW FORCE - Safe Dashboard Override -->
   <script>
@@ -177,22 +138,24 @@
   
   <!-- Hide loading indicator when page is ready -->
   <script>
-    // Clear service worker cache and reload
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for(let registration of registrations) {
-          registration.unregister();
+    // Gentle cache management - don't break service workers
+    console.log('🔄 Initializing dashboard with gentle cache management');
+    
+    // Simple cache busting for critical files only
+    function addCacheBusting() {
+      const links = document.querySelectorAll('link[href*="dashboard.css"]');
+      links.forEach(link => {
+        if (link.href.indexOf('?') === -1) {
+          link.href += '?v=' + Date.now();
         }
       });
     }
     
-    // Clear browser cache
-    if ('caches' in window) {
-      caches.keys().then(function(names) {
-        for (let name of names) {
-          caches.delete(name);
-        }
-      });
+    // Apply cache busting after DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', addCacheBusting);
+    } else {
+      addCacheBusting();
     }
     
     // Authentication and DOM fix functions
