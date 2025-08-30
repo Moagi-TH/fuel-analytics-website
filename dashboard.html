@@ -3171,6 +3171,60 @@
         if (reportData.fuels) {
           updateFuelMarginsFromReport(reportData.fuels);
         }
+        
+        // Function to update fuel margins from report data
+        function updateFuelMarginsFromReport(fuels) {
+          try {
+            console.log('🔄 Updating fuel margins from report data:', fuels);
+            
+            // Extract fuel margin data
+            const fuelMargins = [];
+            
+            if (fuels.diesel_ex) {
+              fuelMargins.push({
+                fuel: 'Diesel',
+                volume: fuels.diesel_ex.quantity_liters || 0,
+                revenue: fuels.diesel_ex.total_revenue_zar || 0,
+                margin: fuels.diesel_ex.margin_per_liter || 0
+              });
+            }
+            
+            if (fuels.vpower_95) {
+              fuelMargins.push({
+                fuel: 'V-Power 95',
+                volume: fuels.vpower_95.quantity_liters || 0,
+                revenue: fuels.vpower_95.total_revenue_zar || 0,
+                margin: fuels.vpower_95.margin_per_liter || 0
+              });
+            }
+            
+            if (fuels.vpower_diesel) {
+              fuelMargins.push({
+                fuel: 'V-Power Diesel',
+                volume: fuels.vpower_diesel.quantity_liters || 0,
+                revenue: fuels.vpower_diesel.total_revenue_zar || 0,
+                margin: fuels.vpower_diesel.margin_per_liter || 0
+              });
+            }
+            
+            // Update the fuel margins table
+            const fuelMarginsTable = document.getElementById('fuel-margins-table');
+            if (fuelMarginsTable) {
+              fuelMarginsTable.innerHTML = fuelMargins.map(margin => `
+                <tr>
+                  <td>${margin.fuel}</td>
+                  <td>${margin.volume.toLocaleString()} L</td>
+                  <td>R ${margin.revenue.toLocaleString()}</td>
+                  <td>R ${margin.margin.toFixed(2)}/L</td>
+                </tr>
+              `).join('');
+            }
+            
+            console.log('✅ Fuel margins updated successfully');
+          } catch (error) {
+            console.error('❌ Error updating fuel margins:', error);
+          }
+        }
       }
       
       // Function to load personnel data from most recent report

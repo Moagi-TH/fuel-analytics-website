@@ -47,7 +47,7 @@ class AccessibilityManager {
     
     // Add styles
     const skipStyle = document.createElement('style');
-    style.textContent = `
+    skipStyle.textContent = `
       .skip-links {
         position: absolute;
         top: -40px;
