@@ -500,6 +500,6 @@ class DatabaseSchema {
     }
 }
 
-// Export for use in other modules
+// Export for use in other modules (if needed)
 window.DatabaseSchema = DatabaseSchema;
-export default DatabaseSchema;
+// export default DatabaseSchema;

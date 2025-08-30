@@ -688,4 +688,4 @@ class PersonnelManager {
 // Global personnel manager instance
 window.personnelManager = new PersonnelManager();
 
-export default window.personnelManager;
+// export default window.personnelManager;

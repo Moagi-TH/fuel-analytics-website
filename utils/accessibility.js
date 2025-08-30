@@ -46,7 +46,7 @@ class AccessibilityManager {
     `;
     
     // Add styles
-    const style = document.createElement('style');
+    const skipStyle = document.createElement('style');
     style.textContent = `
       .skip-links {
         position: absolute;
@@ -79,7 +79,7 @@ class AccessibilityManager {
       }
     `;
     
-    document.head.appendChild(style);
+    document.head.appendChild(skipStyle);
     document.body.insertBefore(skipContainer, document.body.firstChild);
     
     // Add IDs to main sections
@@ -259,8 +259,12 @@ class AccessibilityManager {
         overflow: hidden;
       `;
       
-      document.body.appendChild(element);
-      this.liveRegions.set(region.id, element);
+      if (document.body) {
+        document.body.appendChild(element);
+        this.liveRegions.set(region.id, element);
+      } else {
+        console.warn('Document body not available for accessibility setup');
+      }
     });
   }
 
@@ -498,7 +502,7 @@ class AccessibilityManager {
     
     if (prefersReducedMotion) {
       // Disable animations
-      const style = document.createElement('style');
+      const motionStyle = document.createElement('style');
       style.textContent = `
         *, *::before, *::after {
           animation-duration: 0.01ms !important;
@@ -506,7 +510,7 @@ class AccessibilityManager {
           transition-duration: 0.01ms !important;
         }
       `;
-      document.head.appendChild(style);
+      document.head.appendChild(motionStyle);
     }
   }
 
@@ -640,4 +644,5 @@ class AccessibilityManager {
 // Global accessibility manager instance
 window.accessibility = new AccessibilityManager();
 
-export default window.accessibility;
+// Export for module systems (if needed)
+// export default window.accessibility;

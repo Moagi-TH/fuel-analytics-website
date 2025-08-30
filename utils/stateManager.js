@@ -455,4 +455,5 @@ class StateManager {
 // Global state manager instance
 window.stateManager = new StateManager();
 
-export default window.stateManager;
+// Export for module systems (if needed)
+// export default window.stateManager;

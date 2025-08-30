@@ -1,153 +1,172 @@
-# Fuel Analytics Dashboard
+# Fuel Analytics Platform
 
-A professional analytics dashboard for fuel business intelligence and performance tracking.
+A comprehensive web-based analytics platform for fuel station management, featuring PDF report analysis, data visualization, and Supabase integration.
 
-> **🔄 GitHub Sync Test**: This project is now connected to GitHub repository!
+## 🚀 Features
 
-## 🚀 Recent Fixes (Latest Update)
+- **PDF Report Analysis**: Upload and analyze monthly fuel station reports
+- **Data Visualization**: Interactive charts and graphs for fuel sales, shop performance, and trends
+- **Supabase Integration**: Cloud database and storage for data persistence
+- **Real-time Analytics**: Live dashboard with performance metrics
+- **Multi-tenant Architecture**: Support for multiple fuel stations
+- **Responsive Design**: Works on desktop and mobile devices
 
-### ✅ Issues Resolved:
-1. **Removed duplicate upload buttons** - Now only one clear upload flow
-2. **Fixed upload functionality** - PDF files now properly upload and analyze
-3. **Pre-filled Diesel Ex** - Default value of 228,687 as requested
-4. **Improved visual feedback** - File selection shows clear status
-5. **Fixed server issues** - Dashboard now loads properly
+## 📁 Project Structure
 
-### 🎯 Key Features:
-- **Single Upload Button** - Clear, non-confusing upload flow
-- **PDF Analysis** - Automated extraction of fuel and shop data
-- **Manual Data Entry** - Alternative input method with organized forms
-- **Real-time Analytics** - Interactive charts and performance metrics
-- **Business Insights** - Automated business recommendations
-- **Professional Design** - Modern, responsive interface
-
-## 📋 Setup Instructions
-
-### 1. Start the Local Server
-```bash
-cd /Users/moagitheledi/Desktop/fuel-analytics-website
-python3 -m http.server 8000
-```
-
-### 2. Access the Dashboard
-Open your browser and go to:
-```
-http://localhost:8000/dashboard.html?v=4
-```
-
-### 3. Database Setup (Optional)
-To enable data persistence, run the SQL schema in your Supabase SQL Editor:
-```sql
--- Copy and paste the contents of database-schema.sql
-```
-
-### 4. Full Supabase Integration (Recommended)
-For complete data persistence and multi-user support:
-1. Follow the detailed setup guide in `SUPABASE_SETUP.md`
-2. Apply the database schema to your Supabase project
-3. Configure authentication and user management
-4. Test data persistence across sessions
-
-## 🎨 Dashboard Sections
-
-### 📊 Overview
-- **Key Metrics Cards**: Revenue, Profit, Volume, Margin
-- **Quick Actions**: Upload PDF, Manual Entry, View History
-
-### 📄 Reports
-- **PDF Upload**: Drag & drop or click to browse
-- **Manual Entry**: Organized form for fuel and shop data
-- **Sample Data**: Pre-filled with realistic test data
-
-### 📈 Analytics
-- **Revenue Performance**: Line chart showing trends
-- **Fuel Distribution**: Doughnut chart of fuel types
-- **Profitability Analysis**: Bar chart of profits by fuel type
-- **Shop Performance**: Bar chart of shop categories
-- **KPI Dashboard**: Key performance indicators
-
-### 🤖 Insights
-- **Performance Summary**: Detailed breakdown of data
-- **Business Recommendations**: Priority-ranked business insights
-
-## 🔧 Technical Details
-
-### File Structure
 ```
 fuel-analytics-website/
-├── dashboard.html          # Main dashboard page
-├── dashboard.css           # Professional styling
-├── database-schema.sql     # Supabase database setup
-├── supabase/
-│   └── functions/
-│       └── analyze-report/ # Automated analysis Edge Function
-└── README.md              # This file
+├── dashboard.html              # Main application dashboard
+├── index.html                  # Landing page
+├── supabase-client.js          # Supabase integration
+├── database-schema.sql         # Database schema
+├── extensions-config.js        # Extension management
+├── utils/                      # Utility modules
+│   ├── logger-fixed.js         # Logging system
+│   ├── stateManager.js         # State management
+│   ├── errorHandler.js         # Error handling
+│   └── ...                     # Other utilities
+├── test-*.html                 # Test pages for debugging
+└── README.md                   # This file
 ```
 
-### Key Technologies
-- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
-- **Charts**: Chart.js for interactive visualizations
-- **PDF Processing**: PDF.js for client-side text extraction
-- **Backend**: Supabase Edge Functions (Deno)
-- **Analysis**: Automated data extraction and processing
-- **Database**: PostgreSQL with Row Level Security
+## 🛠️ Setup Instructions
 
-### Data Persistence
-- **Local Storage**: Session-based data (default)
-- **Supabase Database**: Full persistence with multi-tenancy
-- **User Authentication**: Secure access control
-- **Row Level Security**: Data isolation between companies
-- **Real-time Sync**: Cross-device data synchronization
+### Prerequisites
+- Python 3.x (for local development server)
+- Modern web browser
+- Supabase account
 
-### Default Values
-- **Diesel Ex Revenue**: 228,687 (pre-filled)
-- **Sample Data**: Complete dataset with realistic values
-- **Charts**: Initialize with sample data for immediate visualization
+### Local Development
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd fuel-analytics-website
+   ```
 
-## 🎯 Usage Guide
+2. Start the local development server:
+   ```bash
+   python3 -m http.server 8001
+   ```
 
-### Uploading a PDF Report
-1. Click "Upload PDF" in the Overview section
-2. Select your monthly PDF report
-3. Click "Analyze Report"
-4. View extracted data and insights
+3. Open your browser and navigate to:
+   ```
+   http://localhost:8001/dashboard.html
+   ```
 
-### Manual Data Entry
-1. Click "Enter Data" in the Overview section
-2. Fill in fuel sales data (Diesel Ex pre-filled)
-3. Add shop sales categories
-4. Click "Save & Analyze"
+### Supabase Setup
+1. Create a Supabase project
+2. Run the database schema:
+   ```sql
+   -- Execute database-schema.sql in Supabase SQL Editor
+   ```
+3. Configure authentication settings
+4. Update `supabase-client.js` with your project credentials
 
-### Viewing Analytics
-- **Charts update automatically** when data changes
-- **Hover over charts** for detailed information
-- **Responsive design** works on all devices
+## 🔧 Configuration
 
-## 🔒 Security Features
+### Supabase Configuration
+Update the following in `supabase-client.js`:
+```javascript
+const SUPABASE_URL = 'your-supabase-url';
+const SUPABASE_ANON_KEY = 'your-supabase-anon-key';
+```
 
-- **Row Level Security (RLS)** on all database tables
-- **Multi-tenant architecture** for data isolation
-- **JWT authentication** with Supabase
-- **Secure API keys** stored in environment variables
+### Database Schema
+The platform uses the following main tables:
+- `companies`: Fuel station information
+- `profiles`: User profiles and company associations
+- `monthly_reports`: Uploaded PDF reports
+- `fuel_data`: Fuel sales data
+- `shop_data`: Shop sales data
 
-## 🚀 Next Steps
+## 📊 Features Overview
 
-1. **Test the dashboard** with sample data
-2. **Upload a real PDF** to test automated analysis
-3. **Set up Supabase database** for data persistence
-4. **Customize styling** if needed
-5. **Deploy to production** when ready
+### Dashboard
+- **Overview**: Key performance indicators
+- **Monthly Reports**: Upload and manage PDF reports
+- **Analytics**: Interactive charts and visualizations
+- **Personnel**: Staff management and performance tracking
+
+### Data Processing
+- **PDF Analysis**: Automatic extraction of fuel and shop data
+- **Data Validation**: Error checking and data integrity
+- **Performance Metrics**: Revenue, volume, and efficiency calculations
+
+### Storage
+- **Supabase Storage**: Secure file storage for PDF reports
+- **Database**: Structured data storage with RLS policies
+- **Local Storage**: Fallback for offline functionality
+
+## 🧪 Testing
+
+The project includes several test pages for debugging:
+- `test-upload.html`: File upload testing
+- `bucket-check.html`: Storage bucket verification
+- `check-database-reports.html`: Database connectivity testing
+- `final-upload-test.html`: Complete upload workflow testing
+
+## 🔒 Security
+
+- **Row Level Security (RLS)**: Database-level access control
+- **Authentication**: Supabase Auth integration
+- **File Access Control**: Storage bucket policies
+- **Input Validation**: Client and server-side validation
+
+## 📈 Performance
+
+- **Caching**: Browser and service worker caching
+- **Optimization**: Lazy loading and code splitting
+- **Compression**: Asset optimization
+- **CDN**: External library loading
+
+## 🐛 Troubleshooting
+
+### Common Issues
+1. **Authentication Errors**: Check Supabase Auth settings
+2. **Storage Access**: Verify RLS policies
+3. **Database Connectivity**: Confirm schema and permissions
+4. **File Uploads**: Check storage bucket configuration
+
+### Debug Tools
+- Browser Developer Tools
+- Supabase Dashboard
+- Test pages in `/test-*.html`
+
+## 📝 Development Notes
+
+### Recent Updates
+- **Supabase Integration**: Complete cloud backend setup
+- **Storage Implementation**: PDF file upload and management
+- **Authentication**: User management and company associations
+- **Database Schema**: Comprehensive data structure
+
+### Pending Work
+- **Dashboard Sync**: Connect uploaded reports to dashboard display
+- **User Profile Management**: Complete company association workflow
+- **Error Handling**: Enhanced error recovery and user feedback
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
 
 ## 📞 Support
 
-For issues or questions:
-1. Check the browser console for errors
-2. Verify the server is running on port 8000
-3. Ensure all files are in the correct directory
-4. Test with sample data first
+For support and questions:
+- Check the troubleshooting section
+- Review test pages for debugging
+- Examine browser console for errors
+- Verify Supabase configuration
 
 ---
 
-**Dashboard Version**: v4  
-**Last Updated**: August 2025  
-**Status**: ✅ Production Ready
+**Last Updated**: August 2025
+**Version**: 1.0.0
+**Status**: Development (Supabase Integration Complete)

@@ -277,4 +277,5 @@ class InputValidator {
 // Global validator instance
 window.validator = new InputValidator();
 
-export default window.validator;
+// Export for module systems (if needed)
+// export default window.validator;

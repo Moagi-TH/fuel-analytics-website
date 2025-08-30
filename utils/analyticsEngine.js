@@ -607,4 +607,5 @@ class AnalyticsEngine {
 // Global analytics engine instance
 window.analyticsEngine = new AnalyticsEngine();
 
-export default window.analyticsEngine;
+// Export for module systems (if needed)
+// export default window.analyticsEngine;

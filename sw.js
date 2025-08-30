@@ -23,7 +23,7 @@ const STATIC_FILES = [
     '/renovation-client.js',
     '/utils/stateManager.js',
     '/utils/errorHandler.js',
-    '/utils/logger.js',
+          '/utils/logger-fixed.js',
     '/utils/validator.js',
     '/utils/analyticsEngine.js',
     '/utils/reportingEngine.js',

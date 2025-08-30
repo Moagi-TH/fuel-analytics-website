@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Buttons</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #6c757d; cursor: not-allowed; }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Debug Button Issues</h1>
+        
+        <div id="status" class="status info">🔄 Checking JavaScript availability...</div>
+        
+        <div>
+            <h3>🔍 Function Availability Tests:</h3>
+            <button onclick="checkFunctionAvailability()">Check Function Availability</button>
+            <button onclick="checkGlobalObjects()">Check Global Objects</button>
+            <button onclick="testBasicFunctions()">Test Basic Functions</button>
+            <button onclick="testDashboardFunctions()">Test Dashboard Functions</button>
+        </div>
+        
+        <div>
+            <h3>🧪 Button Tests:</h3>
+            <button onclick="testSimpleAlert()">Simple Alert</button>
+            <button onclick="testConsoleLog()">Console Log</button>
+            <button onclick="testDOMUpdate()">DOM Update</button>
+            <button onclick="testAsyncFunction()">Async Function</button>
+        </div>
+        
+        <div>
+            <h3>📊 Dashboard Function Tests:</h3>
+            <button onclick="testRefreshAllDashboardData()">Test refreshAllDashboardData</button>
+            <button onclick="testInitializeDatabase()">Test initializeDatabase</button>
+            <button onclick="testFuelAnalyticsDB()">Test FuelAnalyticsDB</button>
+        </div>
+        
+        <div class="log" id="log"></div>
+    </div>
+
+    <!-- Load the same scripts as dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-client.js"></script>
+    
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #666;">[${timestamp}]</span> ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+        }
+        
+        // Function availability tests
+        function checkFunctionAvailability() {
+            log('🔍 Checking function availability...');
+            
+            const functions = [
+                'refreshAllDashboardData',
+                'initializeDatabase',
+                'loadReportsFromDatabase',
+                'loadMonthlyPerformanceFromDatabase',
+                'testSimpleAlert',
+                'testConsoleLog'
+            ];
+            
+            functions.forEach(funcName => {
+                if (typeof window[funcName] === 'function') {
+                    log(`✅ ${funcName} is available`);
+                } else {
+                    log(`❌ ${funcName} is NOT available`);
+                }
+            });
+            
+            updateStatus('✅ Function availability check complete', 'success');
+        }
+        
+        function checkGlobalObjects() {
+            log('🔍 Checking global objects...');
+            
+            const objects = [
+                'window.fuelAnalyticsDB',
+                'window.supabase',
+                'window.db',
+                'window.monthlyData',
+                'window.uploadedReports'
+            ];
+            
+            objects.forEach(objName => {
+                const value = eval(objName);
+                if (value) {
+                    log(`✅ ${objName} exists: ${typeof value}`);
+                } else {
+                    log(`❌ ${objName} does not exist`);
+                }
+            });
+            
+            updateStatus('✅ Global objects check complete', 'success');
+        }
+        
+        function testBasicFunctions() {
+            log('🧪 Testing basic functions...');
+            
+            try {
+                testSimpleAlert();
+                testConsoleLog();
+                testDOMUpdate();
+                log('✅ All basic functions working');
+                updateStatus('✅ Basic functions working', 'success');
+            } catch (error) {
+                log('❌ Basic function test failed: ' + error.message);
+                updateStatus('❌ Basic function test failed', 'error');
+            }
+        }
+        
+        function testDashboardFunctions() {
+            log('🧪 Testing dashboard functions...');
+            
+            try {
+                if (typeof refreshAllDashboardData === 'function') {
+                    log('✅ refreshAllDashboardData function exists');
+                } else {
+                    log('❌ refreshAllDashboardData function missing');
+                }
+                
+                if (typeof initializeDatabase === 'function') {
+                    log('✅ initializeDatabase function exists');
+                } else {
+                    log('❌ initializeDatabase function missing');
+                }
+                
+                if (window.fuelAnalyticsDB) {
+                    log('✅ window.fuelAnalyticsDB exists');
+                } else {
+                    log('❌ window.fuelAnalyticsDB missing');
+                }
+                
+                updateStatus('✅ Dashboard functions check complete', 'success');
+            } catch (error) {
+                log('❌ Dashboard function test failed: ' + error.message);
+                updateStatus('❌ Dashboard function test failed', 'error');
+            }
+        }
+        
+        // Basic button tests
+        function testSimpleAlert() {
+            alert('Simple alert test - JavaScript is working!');
+            log('✅ Simple alert test completed');
+        }
+        
+        function testConsoleLog() {
+            console.log('Console log test - check browser console (F12)');
+            log('✅ Console log test completed');
+        }
+        
+        function testDOMUpdate() {
+            const testDiv = document.createElement('div');
+            testDiv.textContent = 'DOM update test - ' + new Date().toLocaleTimeString();
+            testDiv.style.color = 'green';
+            document.getElementById('log').appendChild(testDiv);
+            log('✅ DOM update test completed');
+        }
+        
+        async function testAsyncFunction() {
+            log('🔄 Testing async function...');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            log('✅ Async function test completed');
+        }
+        
+        // Dashboard function tests
+        function testRefreshAllDashboardData() {
+            log('🧪 Testing refreshAllDashboardData...');
+            
+            if (typeof refreshAllDashboardData === 'function') {
+                try {
+                    refreshAllDashboardData();
+                    log('✅ refreshAllDashboardData called successfully');
+                } catch (error) {
+                    log('❌ refreshAllDashboardData failed: ' + error.message);
+                }
+            } else {
+                log('❌ refreshAllDashboardData function not available');
+            }
+        }
+        
+        function testInitializeDatabase() {
+            log('🧪 Testing initializeDatabase...');
+            
+            if (typeof initializeDatabase === 'function') {
+                try {
+                    initializeDatabase().then(() => {
+                        log('✅ initializeDatabase completed successfully');
+                    }).catch(error => {
+                        log('❌ initializeDatabase failed: ' + error.message);
+                    });
+                } catch (error) {
+                    log('❌ initializeDatabase failed: ' + error.message);
+                }
+            } else {
+                log('❌ initializeDatabase function not available');
+            }
+        }
+        
+        function testFuelAnalyticsDB() {
+            log('🧪 Testing FuelAnalyticsDB...');
+            
+            if (window.fuelAnalyticsDB) {
+                try {
+                    window.fuelAnalyticsDB.initialize().then(result => {
+                        log('✅ FuelAnalyticsDB initialized: ' + JSON.stringify(result));
+                    }).catch(error => {
+                        log('❌ FuelAnalyticsDB initialization failed: ' + error.message);
+                    });
+                } catch (error) {
+                    log('❌ FuelAnalyticsDB test failed: ' + error.message);
+                }
+            } else {
+                log('❌ FuelAnalyticsDB not available');
+            }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', function() {
+            log('🚀 Page loaded - checking JavaScript environment...');
+            updateStatus('✅ Page loaded successfully', 'success');
+            
+            // Check if basic functions are available
+            if (typeof testSimpleAlert === 'function') {
+                log('✅ Basic functions loaded');
+            } else {
+                log('❌ Basic functions not loaded');
+            }
+            
+            // Check if Supabase is loaded
+            if (typeof window.supabase !== 'undefined') {
+                log('✅ Supabase library loaded');
+            } else {
+                log('❌ Supabase library not loaded');
+            }
+            
+            // Check if FuelAnalyticsDB is loaded
+            if (window.fuelAnalyticsDB) {
+                log('✅ FuelAnalyticsDB loaded');
+            } else {
+                log('❌ FuelAnalyticsDB not loaded');
+            }
+        });
+    </script>
+</body>
+</html>

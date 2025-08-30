@@ -1,58 +1,43 @@
 /**
- * Comprehensive Logging Utility
- * Structured logging with different levels, persistence, and analytics
+ * Fixed Logger Utility
+ * Centralized logging with proper error handling and no recursive console overrides
  */
 
 class Logger {
   constructor() {
     this.logs = [];
     this.maxLogs = 1000;
-    this.levels = {
-      ERROR: 0,
-      WARN: 1,
-      INFO: 2,
-      DEBUG: 3,
-      TRACE: 4
-    };
+    this.sessionId = null;
+    this.isEnabled = true;
     
-    this.currentLevel = this.levels.INFO;
-    this.enabled = true;
-    this.persistLogs = true;
-    this.analyticsEnabled = true;
-    
-    // Load saved logs
+    // Load existing logs
     this.loadLogs();
     
     // Setup log rotation
     this.setupLogRotation();
-    
-    // Setup performance monitoring
-    this.setupPerformanceMonitoring();
   }
 
   /**
-   * Set log level
-   * @param {string} level - Log level
+   * Log info message
+   * @param {string} message - Log message
+   * @param {Object} context - Additional context
    */
-  setLevel(level) {
-    if (this.levels[level] !== undefined) {
-      this.currentLevel = this.levels[level];
-      this.info(`Log level set to: ${level}`);
-    }
+  info(message, context = {}) {
+    this.log('INFO', message, context);
   }
 
   /**
-   * Enable/disable logging
-   * @param {boolean} enabled - Whether logging is enabled
+   * Log warning message
+   * @param {string} message - Log message
+   * @param {Object} context - Additional context
    */
-  setEnabled(enabled) {
-    this.enabled = enabled;
-    this.info(`Logging ${enabled ? 'enabled' : 'disabled'}`);
+  warn(message, context = {}) {
+    this.log('WARN', message, context);
   }
 
   /**
    * Log error message
-   * @param {string} message - Error message
+   * @param {string} message - Log message
    * @param {Object} context - Additional context
    * @param {Error} error - Error object
    */
@@ -61,26 +46,8 @@ class Logger {
   }
 
   /**
-   * Log warning message
-   * @param {string} message - Warning message
-   * @param {Object} context - Additional context
-   */
-  warn(message, context = {}) {
-    this.log('WARN', message, context);
-  }
-
-  /**
-   * Log info message
-   * @param {string} message - Info message
-   * @param {Object} context - Additional context
-   */
-  info(message, context = {}) {
-    this.log('INFO', message, context);
-  }
-
-  /**
    * Log debug message
-   * @param {string} message - Debug message
+   * @param {string} message - Log message
    * @param {Object} context - Additional context
    */
   debug(message, context = {}) {
@@ -89,7 +56,7 @@ class Logger {
 
   /**
    * Log trace message
-   * @param {string} message - Trace message
+   * @param {string} message - Log message
    * @param {Object} context - Additional context
    */
   trace(message, context = {}) {
@@ -98,111 +65,52 @@ class Logger {
 
   /**
    * Log performance metric
-   * @param {string} operation - Operation name
-   * @param {number} duration - Duration in milliseconds
+   * @param {string} metric - Metric name
+   * @param {number} value - Metric value
    * @param {Object} context - Additional context
    */
-  performance(operation, duration, context = {}) {
-    this.log('INFO', `Performance: ${operation} took ${duration}ms`, {
-      ...context,
-      type: 'performance',
-      operation,
-      duration
-    });
+  performance(metric, value, context = {}) {
+    this.log('PERFORMANCE', `${metric}: ${value}ms`, context);
   }
 
   /**
-   * Log user action
-   * @param {string} action - User action
-   * @param {Object} context - Additional context
-   */
-  userAction(action, context = {}) {
-    this.log('INFO', `User action: ${action}`, {
-      ...context,
-      type: 'user_action',
-      action
-    });
-  }
-
-  /**
-   * Log API call
-   * @param {string} endpoint - API endpoint
-   * @param {string} method - HTTP method
-   * @param {number} status - Response status
-   * @param {number} duration - Duration in milliseconds
-   * @param {Object} context - Additional context
-   */
-  apiCall(endpoint, method, status, duration, context = {}) {
-    const level = status >= 400 ? 'ERROR' : 'INFO';
-    this.log(level, `API ${method} ${endpoint} - ${status} (${duration}ms)`, {
-      ...context,
-      type: 'api_call',
-      endpoint,
-      method,
-      status,
-      duration
-    });
-  }
-
-  /**
-   * Log state change
-   * @param {string} path - State path
-   * @param {any} oldValue - Previous value
-   * @param {any} newValue - New value
-   * @param {Object} context - Additional context
-   */
-  stateChange(path, oldValue, newValue, context = {}) {
-    this.log('DEBUG', `State change: ${path}`, {
-      ...context,
-      type: 'state_change',
-      path,
-      oldValue,
-      newValue
-    });
-  }
-
-  /**
-   * Core logging function
+   * Core logging method
    * @param {string} level - Log level
    * @param {string} message - Log message
    * @param {Object} context - Additional context
    * @param {Error} error - Error object
    */
   log(level, message, context = {}, error = null) {
-    if (!this.enabled || this.levels[level] > this.currentLevel) {
-      return;
-    }
+    if (!this.isEnabled) return;
 
+    const timestamp = new Date().toISOString();
     const logEntry = {
-      id: Date.now() + Math.random(),
-      timestamp: new Date().toISOString(),
+      timestamp,
       level,
       message,
       context: this.sanitizeContext(context),
-      error: error ? this.sanitizeError(error) : null,
-      userAgent: navigator.userAgent,
-      url: window.location.href,
-      sessionId: this.getSessionId()
+      sessionId: this.getSessionId(),
+      error: error ? this.sanitizeError(error) : null
     };
 
     // Add to logs array
     this.logs.push(logEntry);
 
-    // Keep logs array manageable
+    // Limit log size
     if (this.logs.length > this.maxLogs) {
       this.logs = this.logs.slice(-this.maxLogs);
     }
 
-    // Console output
+    // Output to console (using original console methods)
     this.outputToConsole(level, message, context, error);
 
-    // Persist logs
-    if (this.persistLogs) {
+    // Persist logs periodically
+    if (this.logs.length % 10 === 0) {
       this.persistLogs();
     }
 
-    // Send to analytics
-    if (this.analyticsEnabled) {
+    // Send to analytics for errors
+    if (level === 'ERROR') {
       this.sendToAnalytics(logEntry);
     }
   }
@@ -256,7 +164,7 @@ class Logger {
   }
 
   /**
-   * Output to console
+   * Output to console (using original console methods to avoid recursion)
    * @param {string} level - Log level
    * @param {string} message - Log message
    * @param {Object} context - Additional context
@@ -266,6 +174,7 @@ class Logger {
     const timestamp = new Date().toLocaleTimeString();
     const prefix = `[${timestamp}] [${level}]`;
     
+    // Use original console methods to avoid recursion
     switch (level) {
       case 'ERROR':
         console.error(prefix, message, context, error);
@@ -357,70 +266,6 @@ class Logger {
   }
 
   /**
-   * Setup performance monitoring
-   */
-  setupPerformanceMonitoring() {
-    // Monitor page load performance
-    window.addEventListener('load', () => {
-      const perfData = performance.getEntriesByType('navigation')[0];
-      if (perfData) {
-        this.performance('page_load', perfData.loadEventEnd - perfData.loadEventStart, {
-          domContentLoaded: perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart,
-          firstPaint: performance.getEntriesByName('first-paint')[0]?.startTime,
-          firstContentfulPaint: performance.getEntriesByName('first-contentful-paint')[0]?.startTime
-        });
-      }
-    });
-
-    // Monitor memory usage
-    if (performance.memory) {
-      setInterval(() => {
-        const memory = performance.memory;
-        this.performance('memory_usage', 0, {
-          usedJSHeapSize: memory.usedJSHeapSize,
-          totalJSHeapSize: memory.totalJSHeapSize,
-          jsHeapSizeLimit: memory.jsHeapSizeLimit
-        });
-      }, 30000); // Every 30 seconds
-    }
-  }
-
-  /**
-   * Get logs by level
-   * @param {string} level - Log level
-   * @returns {Array} Filtered logs
-   */
-  getLogsByLevel(level) {
-    return this.logs.filter(log => log.level === level);
-  }
-
-  /**
-   * Get logs by time range
-   * @param {Date} start - Start time
-   * @param {Date} end - End time
-   * @returns {Array} Filtered logs
-   */
-  getLogsByTimeRange(start, end) {
-    return this.logs.filter(log => {
-      const logTime = new Date(log.timestamp);
-      return logTime >= start && logTime <= end;
-    });
-  }
-
-  /**
-   * Get logs by search term
-   * @param {string} searchTerm - Search term
-   * @returns {Array} Filtered logs
-   */
-  getLogsBySearch(searchTerm) {
-    const term = searchTerm.toLowerCase();
-    return this.logs.filter(log => 
-      log.message.toLowerCase().includes(term) ||
-      JSON.stringify(log.context).toLowerCase().includes(term)
-    );
-  }
-
-  /**
    * Export logs
    * @param {string} format - Export format ('json', 'csv')
    * @returns {string} Exported logs
@@ -487,8 +332,8 @@ class Logger {
 // Global logger instance
 window.logger = new Logger();
 
-// Override console methods to capture all console output
-const originalConsole = {
+// Store original console methods for other utilities to use
+window.originalConsole = {
   log: console.log,
   info: console.info,
   warn: console.warn,
@@ -496,29 +341,4 @@ const originalConsole = {
   debug: console.debug
 };
 
-console.log = (...args) => {
-  window.logger.info(args.join(' '));
-  originalConsole.log(...args);
-};
-
-console.info = (...args) => {
-  window.logger.info(args.join(' '));
-  originalConsole.info(...args);
-};
-
-console.warn = (...args) => {
-  window.logger.warn(args.join(' '));
-  originalConsole.warn(...args);
-};
-
-console.error = (...args) => {
-  window.logger.error(args.join(' '));
-  originalConsole.error(...args);
-};
-
-console.debug = (...args) => {
-  window.logger.debug(args.join(' '));
-  originalConsole.debug(...args);
-};
-
-export default window.logger;
+// NO CONSOLE METHOD OVERRIDES - This prevents recursive loops

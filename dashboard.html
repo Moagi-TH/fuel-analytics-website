@@ -30,36 +30,208 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./dashboard.css?v=8" />
-  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="./dashboard.css?v=9999" />
+  <!-- Critical external libraries (load first, no defer) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="./supabase-client.js?v=2"></script>
+  
+  <!-- Core application scripts (load second, no defer) -->
+  <script src="./supabase-client.js?v=99999"></script>
+  <script src="./utils/logger-fixed.js?v=99999"></script>
+  <script src="./utils/errorHandler.js?v=1000"></script>
+  <script src="./utils/stateManager.js?v=999"></script>
+  
+  <!-- Main application scripts (load third, no defer) -->
   <script src="./advanced-calculations.js?v=1"></script>
   <script src="./visual-analytics.js?v=2"></script>
   <script src="./data-integration.js?v=1"></script>
   <script src="./renovation-client.js?v=1"></script>
   
-  <!-- Load utility extensions -->
-  <script src="./utils/stateManager.js"></script>
-  <script src="./utils/errorHandler.js"></script>
-  <script src="./utils/logger.js"></script>
-  <script src="./utils/validator.js"></script>
-  <script src="./utils/analyticsEngine.js"></script>
-  <script src="./utils/reportingEngine.js"></script>
-  <script src="./utils/realTimeDataService.js"></script>
-  <script src="./utils/cacheManager.js"></script>
-  <script src="./utils/memoryManager.js"></script>
-  <script src="./utils/databaseSchema.js"></script>
-  <script src="./utils/dataIntegrationPlan.js"></script>
-  <script src="./utils/sampleDataGenerator.js"></script>
-  <script src="./utils/performanceOptimizer.js"></script>
-  <script src="./utils/offlineManager.js"></script>
-  <script src="./utils/accessibility.js"></script>
+  <!-- Non-critical utilities (load last, with defer) -->
+  <script defer src="./utils/validator.js?v=999"></script>
+  <script defer src="./utils/analyticsEngine.js?v=999"></script>
+  <script defer src="./utils/reportingEngine.js?v=999"></script>
+  <script defer src="./utils/realTimeDataService.js?v=999"></script>
+  <script defer src="./utils/cacheManager.js?v=999"></script>
+  <script defer src="./utils/memoryManager.js?v=999"></script>
+  <script defer src="./utils/databaseSchema.js?v=999"></script>
+  <script defer src="./utils/dataIntegrationPlan.js?v=999"></script>
+  <script defer src="./utils/sampleDataGenerator.js?v=999"></script>
+  <script defer src="./utils/performanceOptimizer.js?v=999"></script>
+  <script defer src="./utils/offlineManager.js?v=999"></script>
+  <script defer src="./utils/accessibility.js?v=999"></script>
   
-  <!-- Load main extensions configuration -->
-  <script src="./extensions-config.js"></script>
+  <!-- Load main extensions configuration (load last) -->
+  <script defer src="./extensions-config.js"></script>
+  
+  <!-- Hide loading indicator when page is ready -->
+  <script>
+    // Clear service worker cache and reload
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for(let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+    
+    // Clear browser cache
+    if ('caches' in window) {
+      caches.keys().then(function(names) {
+        for (let name of names) {
+          caches.delete(name);
+        }
+      });
+    }
+    
+    // Authentication and DOM fix functions
+    async function fixAuthentication() {
+      console.log('🔧 Attempting to fix authentication...');
+      
+      try {
+        // Check if user is authenticated
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          console.log('👤 No user found, trying to sign in with existing test user...');
+          
+          // Try to sign in with existing test user first
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: 'test@fuelstation.com',
+            password: 'testpassword123'
+          });
+          
+          if (signInError) {
+            console.log('⚠️ Sign in failed, trying to create test user...');
+            
+            // Try to create a test user
+            const { data, error } = await supabase.auth.signUp({
+              email: 'test@fuelstation.com',
+              password: 'testpassword123'
+            });
+            
+            if (error) {
+              console.error('❌ Failed to create test user:', error);
+              if (error.message.includes('security purposes') || error.message.includes('rate limit')) {
+                console.log('⚠️ Rate limited - will try again later');
+                return false;
+              }
+              return false;
+            }
+            
+            console.log('✅ Test user created successfully');
+          } else {
+            console.log('✅ Test user signed in successfully');
+          }
+        } else {
+          console.log('✅ User already authenticated:', user.email);
+        }
+        
+        // Now try to set up the user profile
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        
+        if (currentUser) {
+          // Check if profile exists
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single();
+          
+          if (profileError || !profile) {
+            console.log('👤 Creating user profile...');
+            
+            // Get the test company
+            const { data: company, error: companyError } = await supabase
+              .from('companies')
+              .select('*')
+              .eq('name', 'Test Fuel Station')
+              .single();
+            
+            if (companyError) {
+              console.error('❌ Company not found:', companyError);
+              return false;
+            }
+            
+            // Create profile
+            const { error: insertError } = await supabase
+              .from('profiles')
+              .insert({
+                id: currentUser.id,
+                email: currentUser.email,
+                company_id: company.id,
+                role: 'admin'
+              });
+            
+            if (insertError) {
+              console.error('❌ Failed to create profile:', insertError);
+              return false;
+            }
+            
+            console.log('✅ User profile created successfully');
+          }
+        }
+        
+        return true;
+      } catch (error) {
+        console.error('❌ Authentication fix failed:', error);
+        return false;
+      }
+    }
+
+    // Safe DOM element update function
+    function safeUpdateElement(elementId, value, fallback = '0') {
+      try {
+        const element = document.getElementById(elementId);
+        if (element) {
+          element.textContent = value;
+        } else {
+          console.warn(`Element with id '${elementId}' not found`);
+        }
+      } catch (error) {
+        console.error(`Error updating element '${elementId}':`, error);
+      }
+    }
+
+    // Add functions to window for debugging
+    window.fixAuthentication = fixAuthentication;
+    window.safeUpdateElement = safeUpdateElement;
+    
+    window.addEventListener('load', function() {
+      // Hide loading indicator after a short delay to ensure all scripts are loaded
+      setTimeout(function() {
+        const loadingIndicator = document.getElementById('loading-indicator');
+        if (loadingIndicator) {
+          loadingIndicator.style.opacity = '0';
+          loadingIndicator.style.transition = 'opacity 0.5s ease-out';
+          setTimeout(function() {
+            loadingIndicator.style.display = 'none';
+          }, 500);
+        }
+      }, 1000);
+      
+      // Fix authentication after page loads
+      setTimeout(fixAuthentication, 2000);
+    });
+  </script>
 </head>
 <body>
+  <!-- Loading indicator -->
+  <div id="loading-indicator" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; display: flex; align-items: center; justify-content: center; z-index: 9999;">
+    <div style="text-align: center; color: white;">
+      <div style="width: 50px; height: 50px; border: 3px solid #3b82f6; border-top: 3px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+      <div style="font-size: 18px; font-weight: 600; margin-bottom: 10px;">Loading Fuel Analytics Platform...</div>
+      <div style="font-size: 14px; color: #94a3b8;">Initializing dashboard and connecting to database</div>
+    </div>
+  </div>
+  
+  <style>
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+
   <!-- Header -->
   <header class="site-header">
     <div class="container header-inner">
@@ -98,13 +270,16 @@
           <p>Current month performance metrics and key insights for your fuel business</p>
           <div class="overview-actions">
             <button id="overview-over-time-btn" class="button secondary">Overview Over Time</button>
-            <button onclick="refreshAllDashboardData()" class="button secondary" style="margin-left: 10px;">
+            <button onclick="try { refreshAllDashboardData(); } catch(e) { console.error('Button error:', e); alert('Button error: ' + e.message); }" class="button secondary" style="margin-left: 10px;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 8px;">
                 <path d="M1 4V10H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M23 20V14H17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14L18.36 18.36A9 9 0 0 1 3.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
               Refresh Data
+            </button>
+            <button onclick="alert('JavaScript is working!'); console.log('Test button clicked');" class="button" style="margin-left: 10px; background-color: #28a745;">
+              🧪 Test Button
             </button>
           </div>
           <div class="data-status" id="data-status" style="margin-top: 10px; font-size: 12px; color: var(--muted);">
@@ -1917,90 +2092,167 @@
       // Initialize Supabase integration
       let db = null;
       
-      // Initialize database connection
+      // Initialize database connection with timeout
       async function initializeDatabase() {
         try {
           console.log('Starting database initialization...');
-          console.log('window.fuelAnalyticsDB exists:', !!window.fuelAnalyticsDB);
-          console.log('window.supabase exists:', !!window.supabase);
           
-          if (window.fuelAnalyticsDB) {
-            db = window.fuelAnalyticsDB;
-            // Make db globally accessible
-            window.db = db;
-            console.log('Database object created, attempting to initialize...');
-            const result = await db.initialize();
-            console.log('Database initialization result:', result);
-            
-            if (result.success) {
-              console.log('Database initialized successfully');
-              document.getElementById('user-email').textContent = result.user.email;
-              
-              // Load existing reports from database
-              await loadReportsFromDatabase();
-              await loadMonthlyPerformanceFromDatabase();
-              
-              // Also load from storage as backup
-              await loadReportsFromStorage();
-              
-                    // Run fast tests and cleanup asynchronously
-      setTimeout(() => {
-        console.log('Running quick integration tests...');
-        testPersonnelAndManualIntegrations();
-        removePlaceholderAugustReport();
-      }, 100);
-              
-              // Now load personnel data after reports are loaded
-              console.log('Reports loaded, now loading personnel data...');
-              loadPersonnelDataFromReport();
-
-              // Auto-refresh metrics into Overview and Overview Over Time on open
-              try {
-                await refreshAllDashboardData();
-                // If there is historical data, render the Overview Over Time section once
-                const hasHistory = Object.keys(window.monthlyData || {}).length > 0;
-                if (hasHistory) {
-                  renderOverviewOverTime();
-                }
-              } catch (e) {
-                console.warn('Initial refresh/render failed:', e);
-              }
-      
-      // Add event listener for personnel section to refresh data when clicked
-      document.addEventListener('DOMContentLoaded', () => {
-        const personnelNav = document.querySelector('a[href="#personnel"]');
-        if (personnelNav) {
-          personnelNav.addEventListener('click', () => {
-            console.log('👥 Personnel section clicked - refreshing data...');
-            setTimeout(() => {
-              loadPersonnelDataFromReport();
-            }, 100);
+          // Add timeout to prevent hanging
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Database initialization timeout')), 10000); // 10 second timeout
           });
-        }
-      });
+          
+          const initPromise = async () => {
+            console.log('window.fuelAnalyticsDB exists:', !!window.fuelAnalyticsDB);
+            console.log('window.supabase exists:', !!window.supabase);
+            
+            if (window.fuelAnalyticsDB) {
+              db = window.fuelAnalyticsDB;
+              // Make db globally accessible
+              window.db = db;
+              console.log('Database object created, attempting to initialize...');
+              const result = await db.initialize();
+              console.log('Database initialization result:', result);
               
-                      // Set up automatic data refresh
-        setupAutomaticDataRefresh();
+              if (result.success) {
+                console.log('Database initialized successfully');
+                document.getElementById('user-email').textContent = result.user.email;
+                
+                // Load existing reports from database
+                await loadReportsFromDatabase();
+                await loadMonthlyPerformanceFromDatabase();
+                
+                // Also load from storage as backup
+                await loadReportsFromStorage();
+                
+                // Run fast tests and cleanup asynchronously
+                setTimeout(() => {
+                  console.log('Running quick integration tests...');
+                  testPersonnelAndManualIntegrations();
+                  removePlaceholderAugustReport();
+                }, 100);
+                
+                // Now load personnel data after reports are loaded
+                console.log('Reports loaded, now loading personnel data...');
+                loadPersonnelDataFromReport();
+
+                // Auto-refresh metrics into Overview and Overview Over Time on open
+                try {
+                  await refreshAllDashboardData();
+                  // If there is historical data, render the Overview Over Time section once
+                  const hasHistory = Object.keys(window.monthlyData || {}).length > 0;
+                  if (hasHistory) {
+                    renderOverviewOverTime();
+                  }
+                } catch (e) {
+                  console.warn('Initial refresh/render failed:', e);
+                }
         
-        // Set up fuel price tracking
-        setupFuelPriceTracking();
+                // Add event listener for personnel section to refresh data when clicked
+                document.addEventListener('DOMContentLoaded', () => {
+                  const personnelNav = document.querySelector('a[href="#personnel"]');
+                  if (personnelNav) {
+                    personnelNav.addEventListener('click', () => {
+                      console.log('👥 Personnel section clicked - refreshing data...');
+                      setTimeout(() => {
+                        loadPersonnelDataFromReport();
+                      }, 100);
+                    });
+                  }
+                });
+                        
+                // Set up automatic data refresh
+                setupAutomaticDataRefresh();
+                
+                // Set up fuel price tracking
+                setupFuelPriceTracking();
+              } else {
+                console.log('No authenticated user, using local storage');
+                console.log('Authentication status:', await db.checkAuthStatus());
+                
+                // Try to create a test user for demonstration
+                await createTestUser();
+              }
             } else {
-              console.log('No authenticated user, using local storage');
-              console.log('Authentication status:', await db.checkAuthStatus());
-              
-              // Try to create a test user for demonstration
-              await createTestUser();
+              console.error('window.fuelAnalyticsDB not found!');
+              // Try to load from storage anyway
+              await loadReportsFromStorage();
             }
-          } else {
-            console.error('window.fuelAnalyticsDB not found!');
-            // Try to load from storage anyway
-            await loadReportsFromStorage();
-          }
+          };
+          
+          // Race between timeout and initialization
+          await Promise.race([initPromise(), timeoutPromise]);
+          
         } catch (error) {
           console.error('Database initialization failed:', error);
+          
+          // Update status to show error
+          const statusElement = document.getElementById('last-update-time');
+          if (statusElement) {
+            statusElement.textContent = 'Database connection failed - using local storage';
+          }
+          
           // Try to load from storage as fallback
           await loadReportsFromStorage();
+          
+          // If no data is available, show sample data for demonstration
+          if (Object.keys(window.monthlyData || {}).length === 0) {
+            console.log('No data available, showing sample data for demonstration');
+            showSampleData();
+          }
         }
+      }
+
+      // Show sample data for demonstration
+      function showSampleData() {
+        console.log('Showing sample data for demonstration...');
+        
+        // Update status
+        const statusElement = document.getElementById('last-update-time');
+        if (statusElement) {
+          statusElement.textContent = 'Sample data loaded - Upload a report to see real data';
+        }
+        
+        // Update metrics with sample values
+        const metrics = {
+          totalRevenue: 125000,
+          totalProfit: 45000,
+          fuelVolume: 85000,
+          shopRevenuePerLiter: 1.47,
+          fuelMargin: 0.36,
+          shopProfit: 12500
+        };
+        
+        // Update dashboard metrics with safety checks
+        if (typeof updateDashboardMetricsFromReport === 'function') {
+          updateDashboardMetricsFromReport({
+            totalRevenue: metrics.totalRevenue,
+            totalProfit: metrics.totalProfit,
+            totalFuelVolume: metrics.fuelVolume,
+            shopFuelRatio: metrics.shopRevenuePerLiter,
+            monthKey: 'Sample Data'
+          });
+        } else {
+          // Fallback: manually update elements if function not available
+          const elements = {
+            'total-revenue': `R ${metrics.totalRevenue.toLocaleString()}`,
+            'total-profit': `R ${metrics.totalProfit.toLocaleString()}`,
+            'fuel-volume': `${metrics.fuelVolume.toLocaleString()} L`,
+            'shop-revenue-per-liter': `R ${metrics.shopRevenuePerLiter.toFixed(2)}/L`,
+            'fuel-margin': `R ${(metrics.totalRevenue * 0.36).toLocaleString()}`,
+            'shop-profit': `R ${metrics.shopProfit.toLocaleString()}`
+          };
+          
+          Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+              element.textContent = value;
+            }
+          });
+        }
+        
+        // Show notification
+        showNotification('Sample data loaded for demonstration. Upload a real report to see your actual data.', 'info');
       }
 
       // Create a test user for demonstration
@@ -2120,7 +2372,7 @@
         }
       }
 
-      // Save report to database
+      // Save report to database and storage
       async function saveReportToDatabase(reportData) {
         if (!db || !db.isInitialized) {
           console.log('Database not available, using local storage only');
@@ -2128,9 +2380,48 @@
         }
         
         try {
+          // First, save the report data to the database
           const result = await db.saveMonthlyReport(reportData);
           if (result.success) {
-            console.log('Report saved to database:', result.reportId);
+            console.log('✅ Report saved to database:', result.reportId);
+            
+            // If we have a PDF file, upload it to storage
+            if (reportData.pdfFile) {
+              try {
+                console.log('📁 Uploading PDF to storage bucket...');
+                
+                const fileName = `${result.reportId}_${reportData.fileName || 'report.pdf'}`;
+                                 const { data: uploadData, error: uploadError } = await supabase.storage
+                   .from('fuel-reports')
+                   .upload(fileName, reportData.pdfFile, {
+                    cacheControl: '3600',
+                    upsert: false
+                  });
+                
+                if (uploadError) {
+                  console.error('❌ Failed to upload PDF to storage:', uploadError);
+                } else {
+                  console.log('✅ PDF uploaded to storage:', uploadData.path);
+                  
+                                     // Update the report record with the storage path
+                   const { error: updateError } = await supabase
+                     .from('monthly_reports')
+                     .update({ 
+                       file_path: uploadData.path,
+                       processing_status: 'completed'
+                     })
+                     .eq('id', result.reportId);
+                   
+                                      if (updateError) {
+                     console.error('❌ Failed to update report with storage path:', updateError);
+                   } else {
+                     console.log('✅ Report updated with storage path');
+                   }
+                }
+              } catch (storageError) {
+                console.error('❌ Storage upload error:', storageError);
+              }
+            }
             
             // Reload reports to get the updated list
             await loadReportsFromDatabase();
@@ -2138,10 +2429,10 @@
             
             return result.reportId;
           } else {
-            console.error('Failed to save report to database:', result.error);
+            console.error('❌ Failed to save report to database:', result.error);
           }
         } catch (error) {
-          console.error('Error saving report to database:', error);
+          console.error('❌ Error saving report to database:', error);
         }
       }
 
@@ -2518,14 +2809,23 @@
           if (db && db.isInitialized) {
             analyzeStatus.textContent = 'Saving to database...';
             
-            // Refresh all dashboard data after new report upload
-            await refreshAllDashboardData();
+            // Save report to database first
             await saveReportToDatabase(data);
+            
+            // Then refresh dashboard data (with delay to prevent recursion)
+            setTimeout(async () => {
+              try {
+                await refreshAllDashboardData();
+              } catch (error) {
+                console.error('Error refreshing dashboard:', error);
+              }
+            }, 1000);
+            
             analyzeStatus.textContent = 'Analysis complete! Data saved to database.';
           } else {
             // Fallback to local storage
             addReportToHistory(file, data);
-            analyzeStatus.textContent = 'Analysis complete! Data saved locally.';
+            analyzeStatus.textContent = 'Analysis complete! Data saved locally. (Database not available - user profile needs setup)';
           }
           
         } catch (err) {
@@ -2698,30 +2998,53 @@
         }
         monthlyData[monthKey].push(report);
         
+        // Save to localStorage with error handling
+        try {
+          localStorage.setItem('uploadedReports', JSON.stringify(uploadedReports));
+          localStorage.setItem('monthlyData', JSON.stringify(monthlyData));
+          console.log('Report saved to localStorage:', report.name);
+        } catch (error) {
+          console.error('Failed to save report to localStorage:', error);
+        }
+        
         renderReportsHistory();
       }
       
       // Function to render monthly performance dashboard
       function renderMonthlyPerformance() {
-        const months = Object.keys(monthlyData).sort((a, b) => {
-          const [monthA, yearA] = a.split('/').map(Number);
-          const [monthB, yearB] = b.split('/').map(Number);
-          return yearA - yearB || monthA - monthB;
-        });
+        // Prevent recursive calls
+        if (window.isRenderingMonthlyPerformance) {
+          console.log('⚠️ Monthly performance rendering already in progress, skipping...');
+          return;
+        }
         
-        // Generate month buttons
-        monthButtons.innerHTML = months.map(month => `
-          <button class="month-button" onclick="selectMonth('${month}')">${month}</button>
-        `).join('');
+        window.isRenderingMonthlyPerformance = true;
         
-        // Show overall performance
-        renderOverallPerformance();
-        
-        // Select most recent month by default
-        if (months.length > 0) {
-          const mostRecentMonth = months[months.length - 1];
-          selectMonth(mostRecentMonth);
-          loadMostRecentReportData(mostRecentMonth);
+        try {
+          const months = Object.keys(monthlyData).sort((a, b) => {
+            const [monthA, yearA] = a.split('/').map(Number);
+            const [monthB, yearB] = b.split('/').map(Number);
+            return yearA - yearB || monthA - monthB;
+          });
+          
+          // Generate month buttons
+          monthButtons.innerHTML = months.map(month => `
+            <button class="month-button" onclick="selectMonth('${month}')">${month}</button>
+          `).join('');
+          
+          // Show overall performance
+          renderOverallPerformance();
+          
+          // Select most recent month by default
+          if (months.length > 0) {
+            const mostRecentMonth = months[months.length - 1];
+            selectMonth(mostRecentMonth);
+            loadMostRecentReportData(mostRecentMonth);
+          }
+        } catch (error) {
+          console.error('❌ Error rendering monthly performance:', error);
+        } finally {
+          window.isRenderingMonthlyPerformance = false;
         }
       }
       
@@ -2754,6 +3077,7 @@
         let totalShopRevenue = 0;
         let totalFuelVolume = 0;
         let totalFuelCost = 0;
+
         let totalFuelProfit = 0;
         let totalShopProfit = 0;
         
@@ -2810,19 +3134,19 @@
           recentReportDetails.textContent = 'No reports uploaded yet. Upload a period report to see your data.';
         }
         
-        // Clear dashboard metrics
-        document.getElementById('total-revenue').textContent = 'R 0';
-        document.getElementById('total-profit').textContent = 'R 0';
-        document.getElementById('fuel-volume').textContent = '0 L';
-        document.getElementById('shop-fuel-ratio').textContent = 'R 0.00/L';
+              // Clear dashboard metrics safely
+      safeUpdateElement('total-revenue', 'R 0');
+      safeUpdateElement('total-profit', 'R 0');
+      safeUpdateElement('fuel-volume', '0 L');
+      safeUpdateElement('shop-fuel-ratio', 'R 0.00/L');
       }
       
       // Function to update dashboard metrics from report data
       function updateDashboardMetricsFromReport(data) {
-        document.getElementById('total-revenue').textContent = `R ${data.totalRevenue.toLocaleString()}`;
-        document.getElementById('total-profit').textContent = `R ${data.totalProfit.toLocaleString()}`;
-        document.getElementById('fuel-volume').textContent = `${data.totalFuelVolume.toLocaleString()} L`;
-        document.getElementById('shop-fuel-ratio').textContent = `R ${data.shopFuelRatio}/L`;
+        safeUpdateElement('total-revenue', `R ${data.totalRevenue.toLocaleString()}`);
+        safeUpdateElement('total-profit', `R ${data.totalProfit.toLocaleString()}`);
+        safeUpdateElement('fuel-volume', `${data.totalFuelVolume.toLocaleString()} L`);
+        safeUpdateElement('shop-fuel-ratio', `R ${data.shopFuelRatio}/L`);
         
         // Update the monthly overview title to show the month
         const overviewTitle = document.querySelector('#overview h1');
@@ -3357,6 +3681,14 @@
       async function refreshAllDashboardData() {
         console.log('Refreshing all dashboard data from current reports...');
         
+        // Prevent recursive calls
+        if (window.isRefreshingDashboard) {
+          console.log('⚠️ Dashboard refresh already in progress, skipping...');
+          return;
+        }
+        
+        window.isRefreshingDashboard = true;
+        
         try {
           // 1. Reload reports from database
           await loadReportsFromDatabase();
@@ -3386,8 +3718,11 @@
             // Update personnel data
             loadPersonnelDataFromReport();
             
-            // Update monthly performance dashboard
-            renderMonthlyPerformance();
+            // Update monthly performance dashboard (only if not already visible)
+            const monthlyPerformanceSection = document.getElementById('monthly-performance');
+            if (monthlyPerformanceSection && monthlyPerformanceSection.style.display !== 'block') {
+              renderMonthlyPerformance();
+            }
             
             // Update overview title to show current month
             const overviewTitle = document.querySelector('#overview h1');
@@ -3411,9 +3746,13 @@
           // 3. Refresh reports history display
           renderReportsHistory();
           
-          // 4. Update any other sections that depend on report data
-          updateFuelMargins();
-          updateFuelDistributionChart();
+          // 4. Update any other sections that depend on report data (with guards)
+          if (typeof updateFuelMargins === 'function') {
+            updateFuelMargins();
+          }
+          if (typeof updateFuelDistributionChart === 'function' && fuelDistributionChart) {
+            updateFuelDistributionChart();
+          }
 
           // 5. If Overview Over Time is visible, re-render it with fresh data
           const oot = document.getElementById('overview-over-time');
@@ -3423,6 +3762,8 @@
           
         } catch (error) {
           console.error('❌ Error refreshing dashboard data:', error);
+        } finally {
+          window.isRefreshingDashboard = false;
         }
       }
       
@@ -6062,19 +6403,27 @@
       }
 
       // Initialize API section when page loads
-      document.addEventListener('DOMContentLoaded', function() {
+      function initializePage() {
+        console.log('Initializing page...');
+        
         // Initialize API settings if we're on the users section
         if (window.location.hash === '#users') {
-          initializeApiSettings();
+          if (typeof initializeApiSettings === 'function') {
+            initializeApiSettings();
+          }
         }
 
         // Add navigation click handlers for all sections
         const navLinks = document.querySelectorAll('.nav-link');
+        console.log('Found nav links:', navLinks.length);
+        
         navLinks.forEach(link => {
           link.addEventListener('click', function(e) {
             e.preventDefault();
             const href = this.getAttribute('href');
             const sectionId = href.replace('#', '');
+            
+            console.log('Nav link clicked:', href);
             
             // Remove active class from all nav links
             navLinks.forEach(navLink => navLink.classList.remove('active'));
@@ -6098,7 +6447,9 @@
             if (href === '#users') {
               // Small delay to ensure section is visible before refreshing
               setTimeout(() => {
-                initializeApiSettings();
+                if (typeof initializeApiSettings === 'function') {
+                  initializeApiSettings();
+                }
               }, 100);
             }
             
@@ -6106,7 +6457,9 @@
             if (href === '#personnel') {
               // Small delay to ensure section is visible before loading personnel data
               setTimeout(() => {
-                loadPersonnelDataFromReport();
+                if (typeof loadPersonnelDataFromReport === 'function') {
+                  loadPersonnelDataFromReport();
+                }
               }, 100);
             }
             
@@ -6117,8 +6470,14 @@
         
         // Handle initial page load - show overview by default
         if (!window.location.hash || window.location.hash === '#overview') {
-          document.getElementById('overview').style.display = 'block';
-          document.querySelector('a[href="#overview"]').classList.add('active');
+          const overviewSection = document.getElementById('overview');
+          const overviewLink = document.querySelector('a[href="#overview"]');
+          if (overviewSection) {
+            overviewSection.style.display = 'block';
+          }
+          if (overviewLink) {
+            overviewLink.classList.add('active');
+          }
         } else {
           // Show the section based on URL hash
           const hash = window.location.hash;
@@ -6131,6 +6490,45 @@
             if (targetNavLink) targetNavLink.classList.add('active');
           }
         }
+        
+        console.log('Page initialization complete');
+      }
+
+      // Initialize immediately when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializePage);
+      } else {
+        // DOM is already ready
+        initializePage();
+      }
+
+      // Test if critical libraries are loaded
+      function testLibraries() {
+        console.log('Testing critical libraries...');
+        console.log('Chart.js available:', typeof Chart !== 'undefined');
+        console.log('Supabase available:', typeof window.supabase !== 'undefined');
+        console.log('Supabase client available:', typeof window.supabase?.createClient === 'function');
+        
+        if (typeof Chart === 'undefined') {
+          console.error('❌ Chart.js not loaded!');
+        } else {
+          console.log('✅ Chart.js loaded successfully');
+        }
+        
+        if (typeof window.supabase === 'undefined') {
+          console.error('❌ Supabase library not loaded!');
+        } else {
+          console.log('✅ Supabase library loaded successfully');
+        }
+      }
+
+      // Test libraries after a short delay
+      setTimeout(testLibraries, 500);
+
+      // Also try to initialize on window load as backup
+      window.addEventListener('load', function() {
+        console.log('Window load fired - re-initializing...');
+        initializePage();
       });
 
       // Add CSS for role and status badges

@@ -637,4 +637,5 @@ class ReportingEngine {
 // Global reporting engine instance
 window.reportingEngine = new ReportingEngine();
 
-export default window.reportingEngine;
+// Export for module systems (if needed)
+// export default window.reportingEngine;

@@ -438,4 +438,5 @@ class SampleDataGenerator {
 // Global sample data generator instance
 window.sampleDataGenerator = new SampleDataGenerator();
 
-export default window.sampleDataGenerator;
+// Export for module systems (if needed)
+// export default window.sampleDataGenerator;

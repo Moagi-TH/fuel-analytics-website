@@ -530,4 +530,5 @@ class CacheManager {
 // Global cache manager instance
 window.cacheManager = new CacheManager();
 
-export default window.cacheManager;
+// Export for module systems (if needed)
+// export default window.cacheManager;

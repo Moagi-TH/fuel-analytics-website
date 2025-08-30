@@ -613,4 +613,4 @@ class FuelTorqueAPI {
 // Global Fuel Torque API instance
 window.fuelTorqueAPI = new FuelTorqueAPI();
 
-export default window.fuelTorqueAPI;
+// export default window.fuelTorqueAPI;

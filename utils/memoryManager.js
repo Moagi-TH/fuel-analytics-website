@@ -248,4 +248,5 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
   window.memoryManager.startMonitoring();
 }
 
-export default window.memoryManager;
+// Export for module systems (if needed)
+// export default window.memoryManager;

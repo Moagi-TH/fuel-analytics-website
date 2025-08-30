@@ -2,18 +2,26 @@
 // Replace these with your actual Supabase project credentials
 
 const SUPABASE_URL = 'https://fynfomhoikzpsrbghnzr.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.LAo0ngckbfAwplBvvQv9zhIzgvTT88H4ZKluHrV8Opo';
-
+// Updated anon key - you may need to get the current one from your Supabase dashboard
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.cEOR4UiBh1tWXFL6nC7ftRpi2un8DfCAG5cD7xdd_Cw'
 // Initialize Supabase client
 let supabase = null;
 
 // Function to initialize Supabase client
 function initializeSupabase() {
-    if (window.supabase && !supabase) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('Supabase client initialized');
+    try {
+        if (window.supabase && typeof window.supabase.createClient === 'function') {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('Supabase client initialized successfully');
+            return supabase;
+        } else {
+            console.error('Supabase library not available');
+            return null;
+        }
+    } catch (error) {
+        console.error('Failed to initialize Supabase client:', error);
+        return null;
     }
-    return supabase;
 }
 
 // Try to initialize immediately
@@ -36,27 +44,50 @@ class FuelAnalyticsDB {
     // Initialize the database connection
     async initialize() {
         try {
+            // Ensure Supabase client is initialized
+            if (!supabase) {
+                supabase = initializeSupabase();
+                if (!supabase) {
+                    throw new Error('Supabase client not available');
+                }
+            }
+
             // Get current user session
             const { data: { user }, error: userError } = await supabase.auth.getUser();
-            if (userError) throw userError;
+            if (userError) {
+                console.warn('User session check failed:', userError.message);
+                // Don't throw error for auth issues, just return not authenticated
+                return { success: false, user: null, company: null, error: userError.message };
+            }
 
             if (user) {
                 this.currentUser = user;
                 
-                // Get user profile and company
-                const { data: profile, error: profileError } = await supabase
-                    .from('profiles')
-                    .select('*, companies(*)')
-                    .eq('id', user.id)
-                    .single();
+                try {
+                    // Get user profile and company
+                    const { data: profile, error: profileError } = await supabase
+                        .from('profiles')
+                        .select('*, companies(*)')
+                        .eq('id', user.id)
+                        .single();
 
-                if (profileError) throw profileError;
-                
-                this.currentCompany = profile.companies;
-                this.isInitialized = true;
-                
-                console.log('Database initialized for user:', user.email);
-                return { success: true, user, company: this.currentCompany };
+                    if (profileError) {
+                        console.warn('Profile fetch failed:', profileError.message);
+                        // User exists but no profile - this is normal for new users
+                        this.isInitialized = true;
+                        return { success: true, user, company: null, needsProfile: true };
+                    }
+                    
+                    this.currentCompany = profile.companies;
+                    this.isInitialized = true;
+                    
+                    console.log('Database initialized for user:', user.email);
+                    return { success: true, user, company: this.currentCompany };
+                } catch (profileError) {
+                    console.warn('Profile setup needed:', profileError.message);
+                    this.isInitialized = true;
+                    return { success: true, user, company: null, needsProfile: true };
+                }
             } else {
                 console.log('No authenticated user found');
                 return { success: false, user: null, company: null };
@@ -70,6 +101,14 @@ class FuelAnalyticsDB {
     // Authentication methods
     async signIn(email, password) {
         try {
+            // Ensure Supabase client is initialized
+            if (!supabase) {
+                supabase = initializeSupabase();
+                if (!supabase) {
+                    throw new Error('Supabase client not available');
+                }
+            }
+
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password
@@ -105,32 +144,51 @@ class FuelAnalyticsDB {
     // Monthly Reports Management
     async saveMonthlyReport(reportData) {
         if (!this.isInitialized) {
+            console.error('❌ Database not initialized');
             throw new Error('Database not initialized');
         }
+
+        console.log('🔄 Starting to save monthly report...');
+        console.log('📊 Report data:', reportData);
+        console.log('🏢 Current company:', this.currentCompany);
+        console.log('👤 Current user:', this.currentUser);
 
         try {
             // Extract data from AI analysis
             const { period, fuels, shop_lines, forecast } = reportData;
             
+            console.log('📅 Period:', period);
+            console.log('⛽ Fuels:', fuels);
+            console.log('🛍️ Shop lines:', shop_lines);
+            
             // Create monthly report record
+            const reportInsertData = {
+                company_id: this.currentCompany.id,
+                uploaded_by: this.currentUser.id,
+                file_name: `Report_${period.year}_${period.month.toString().padStart(2, '0')}`,
+                report_month: period.month,
+                report_year: period.year,
+                processing_status: 'completed',
+                total_revenue: Object.values(fuels).reduce((sum, fuel) => sum + fuel.total_revenue_zar, 0) +
+                               shop_lines.reduce((sum, item) => sum + item.total_revenue_zar, 0),
+                total_profit: Object.values(fuels).reduce((sum, fuel) => sum + (fuel.profit_zar || 0), 0),
+                total_volume: Object.values(fuels).reduce((sum, fuel) => sum + fuel.quantity_liters, 0)
+            };
+            
+            console.log('💾 Inserting report data:', reportInsertData);
+            
             const { data: report, error: reportError } = await supabase
                 .from('monthly_reports')
-                .insert({
-                    company_id: this.currentCompany.id,
-                    uploaded_by: this.currentUser.id,
-                    file_name: `Report_${period.year}_${period.month.toString().padStart(2, '0')}`,
-                    report_month: period.month,
-                    report_year: period.year,
-                    processing_status: 'completed',
-                    total_revenue: Object.values(fuels).reduce((sum, fuel) => sum + fuel.total_revenue_zar, 0) +
-                                   shop_lines.reduce((sum, item) => sum + item.total_revenue_zar, 0),
-                    total_profit: Object.values(fuels).reduce((sum, fuel) => sum + (fuel.profit_zar || 0), 0),
-                    total_volume: Object.values(fuels).reduce((sum, fuel) => sum + fuel.quantity_liters, 0)
-                })
+                .insert(reportInsertData)
                 .select()
                 .single();
 
-            if (reportError) throw reportError;
+            if (reportError) {
+                console.error('❌ Error inserting report:', reportError);
+                throw reportError;
+            }
+            
+            console.log('✅ Report inserted successfully:', report);
 
             // Save fuel data
             const fuelData = Object.entries(fuels).map(([fuelType, fuel]) => ({
@@ -193,6 +251,34 @@ class FuelAnalyticsDB {
     async getMonthlyReports() {
         if (!this.isInitialized) {
             throw new Error('Database not initialized');
+        }
+
+        // Check if currentCompany exists
+        if (!this.currentCompany || !this.currentCompany.id) {
+            console.warn('No company context available, trying to get user profile...');
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('*, companies(*)')
+                        .eq('id', user.id)
+                        .single();
+                    
+                    if (profile && profile.companies) {
+                        this.currentCompany = profile.companies;
+                    } else {
+                        console.error('No company found for user');
+                        return { success: false, error: 'No company found for user' };
+                    }
+                } else {
+                    console.error('No authenticated user found');
+                    return { success: false, error: 'No authenticated user found' };
+                }
+            } catch (error) {
+                console.error('Error getting user profile:', error);
+                return { success: false, error: error.message };
+            }
         }
 
         try {
@@ -302,35 +388,82 @@ class FuelAnalyticsDB {
         }
 
         try {
+            // First try to get data from local storage as fallback
+            const localData = localStorage.getItem('monthlyData');
+            if (localData) {
+                const parsedData = JSON.parse(localData);
+                console.log('Using local storage data for overall performance');
+                return { 
+                    success: true, 
+                    overall: {
+                        totalRevenue: 0,
+                        totalProfit: 0,
+                        totalVolume: 0,
+                        avgRevenue: 0,
+                        avgProfit: 0,
+                        reportCount: Object.keys(parsedData).length
+                    },
+                    monthlyData: parsedData
+                };
+            }
+
+            // Try database query with error handling
             const { data, error } = await supabase
                 .from('monthly_reports')
-                .select('total_revenue, total_profit, total_volume, report_month, report_year')
-                .eq('company_id', this.currentCompany.id)
-                .order('report_year', { ascending: false })
-                .order('report_month', { ascending: false })
+                .select('*')
                 .limit(12);
 
-            if (error) throw error;
+            if (error) {
+                console.warn('Database query failed, using local storage:', error);
+                // Return empty data structure
+                return { 
+                    success: true, 
+                    overall: {
+                        totalRevenue: 0,
+                        totalProfit: 0,
+                        totalVolume: 0,
+                        avgRevenue: 0,
+                        avgProfit: 0,
+                        reportCount: 0
+                    },
+                    monthlyData: []
+                };
+            }
             
-            // Calculate overall metrics
-            const totalRevenue = data.reduce((sum, report) => sum + parseFloat(report.total_revenue), 0);
-            const totalProfit = data.reduce((sum, report) => sum + parseFloat(report.total_profit), 0);
-            const totalVolume = data.reduce((sum, report) => sum + parseFloat(report.total_volume), 0);
-            const avgRevenue = totalRevenue / data.length;
-            const avgProfit = totalProfit / data.length;
-            
-            return { 
-                success: true, 
-                overall: {
-                    totalRevenue,
-                    totalProfit,
-                    totalVolume,
-                    avgRevenue,
-                    avgProfit,
-                    reportCount: data.length
-                },
-                monthlyData: data
-            };
+            // Calculate overall metrics if data exists
+            if (data && data.length > 0) {
+                const totalRevenue = data.reduce((sum, report) => sum + parseFloat(report.total_revenue || 0), 0);
+                const totalProfit = data.reduce((sum, report) => sum + parseFloat(report.total_profit || 0), 0);
+                const totalVolume = data.reduce((sum, report) => sum + parseFloat(report.total_volume || 0), 0);
+                const avgRevenue = totalRevenue / data.length;
+                const avgProfit = totalProfit / data.length;
+                
+                return { 
+                    success: true, 
+                    overall: {
+                        totalRevenue,
+                        totalProfit,
+                        totalVolume,
+                        avgRevenue,
+                        avgProfit,
+                        reportCount: data.length
+                    },
+                    monthlyData: data
+                };
+            } else {
+                return { 
+                    success: true, 
+                    overall: {
+                        totalRevenue: 0,
+                        totalProfit: 0,
+                        totalVolume: 0,
+                        avgRevenue: 0,
+                        avgProfit: 0,
+                        reportCount: 0
+                    },
+                    monthlyData: []
+                };
+            }
         } catch (error) {
             console.error('Error fetching overall performance:', error);
             return { success: false, error: error.message };
@@ -374,6 +507,117 @@ class FuelAnalyticsDB {
 
     onAuthStateChange(callback) {
         return supabase.auth.onAuthStateChange(callback);
+    }
+
+    // Profile and Company Setup
+    async setupUserProfile(user, companyName = 'Test Fuel Station') {
+        try {
+            if (!supabase) {
+                throw new Error('Supabase client not available');
+            }
+
+            console.log('Setting up profile for user:', user.email);
+
+            // Step 1: Create or get company
+            let company = null;
+
+            // Try to find existing company
+            const { data: existingCompanies, error: companySearchError } = await supabase
+                .from('companies')
+                .select('*')
+                .eq('name', companyName)
+                .limit(1);
+
+            if (companySearchError) {
+                console.warn('Company search failed:', companySearchError);
+            }
+
+            if (existingCompanies && existingCompanies.length > 0) {
+                company = existingCompanies[0];
+                console.log('Using existing company:', company.id);
+            } else {
+                // Create new company
+                const { data: newCompany, error: createCompanyError } = await supabase
+                    .from('companies')
+                    .insert([{
+                        name: companyName,
+                        address: '123 Test Street, Test City',
+                        phone: '+27 123 456 789',
+                        email: 'test@fuelstation.com',
+                        created_at: new Date().toISOString()
+                    }])
+                    .select()
+                    .single();
+
+                if (createCompanyError) {
+                    throw new Error('Failed to create company: ' + createCompanyError.message);
+                }
+
+                company = newCompany;
+                console.log('Created new company:', company.id);
+            }
+
+            // Step 2: Create or update user profile
+            const { data: existingProfile, error: profileSearchError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
+            if (profileSearchError && !profileSearchError.message.includes('No rows found')) {
+                console.warn('Profile search failed:', profileSearchError);
+            }
+
+            if (existingProfile) {
+                // Update existing profile with company
+                const { error: updateError } = await supabase
+                    .from('profiles')
+                    .update({
+                        company_id: company.id,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', user.id);
+
+                if (updateError) {
+                    throw new Error('Failed to update profile: ' + updateError.message);
+                }
+
+                console.log('Updated existing profile with company');
+            } else {
+                // Create new profile
+                const { error: createProfileError } = await supabase
+                    .from('profiles')
+                    .insert([{
+                        id: user.id,
+                        email: user.email,
+                        company_id: company.id,
+                        role: 'admin',
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    }]);
+
+                if (createProfileError) {
+                    throw new Error('Failed to create profile: ' + createProfileError.message);
+                }
+
+                console.log('Created new profile with company');
+            }
+
+            // Step 3: Set current company and mark as initialized
+            this.currentCompany = company;
+            this.isInitialized = true;
+
+            return {
+                success: true,
+                user: user,
+                company: company,
+                message: 'Profile setup completed successfully'
+            };
+
+        } catch (error) {
+            console.error('Error setting up user profile:', error);
+            return { success: false, error: error.message };
+        }
     }
 
     // Subscribe to real-time changes on reports and dependent tables
@@ -426,6 +670,48 @@ class FuelAnalyticsDB {
 
 // Create global instance
 window.fuelAnalyticsDB = new FuelAnalyticsDB();
+
+// Global function to fix current user profile (for console use)
+window.fixCurrentUserProfile = async function() {
+    try {
+        console.log('Fixing current user profile...');
+        
+        // Ensure Supabase client is initialized
+        if (!supabase) {
+            supabase = initializeSupabase();
+            if (!supabase) {
+                throw new Error('Supabase client not available');
+            }
+        }
+        
+        // Get current user
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+            throw new Error('No authenticated user found');
+        }
+        
+        // Setup profile
+        const result = await window.fuelAnalyticsDB.setupUserProfile(user);
+        
+        if (result.success) {
+            console.log('✅ Profile fixed successfully!');
+            console.log('User:', result.user.email);
+            console.log('Company:', result.company.name);
+            console.log('Company ID:', result.company.id);
+            
+            // Re-initialize the database
+            await window.fuelAnalyticsDB.initialize();
+            
+            return result;
+        } else {
+            throw new Error(result.error);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error fixing profile:', error.message);
+        return { success: false, error: error.message };
+    }
+};
 
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {

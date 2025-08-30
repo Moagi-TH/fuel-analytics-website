@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Database Reports</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        button:hover { background-color: #0056b3; }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            max-height: 500px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Check Database Reports</h1>
+        
+        <div id="status" class="status info">🔄 Ready to check database...</div>
+        
+        <div>
+            <button onclick="checkAllReports()">Check All Reports in Database</button>
+            <button onclick="checkUserProfile()">Check User Profile</button>
+            <button onclick="checkCompany()">Check Company</button>
+        </div>
+        
+        <div class="log" id="log"></div>
+    </div>
+
+    <!-- Load Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        const SUPABASE_URL = 'https://fynfomhoikzpsrbghnzr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.cEOR4UiBh1tWXFL6nC7ftRpi2un8DfCAG5cD7xdd_Cw';
+        
+        let supabaseClient = null;
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #666;">[${timestamp}]</span> ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+        }
+        
+        async function initializeSupabase() {
+            try {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                log('✅ Supabase client created');
+                return true;
+            } catch (error) {
+                log('❌ Failed to create Supabase client: ' + error.message);
+                return false;
+            }
+        }
+        
+        async function checkAllReports() {
+            log('🔍 Checking all reports in database...');
+            
+            try {
+                if (!supabaseClient) {
+                    await initializeSupabase();
+                }
+                
+                // Check current user
+                const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+                if (userError) throw userError;
+                
+                log('👤 Current user: ' + (user ? user.email : 'None'));
+                
+                // Get all reports without company filter
+                const { data: reports, error: reportsError } = await supabaseClient
+                    .from('monthly_reports')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (reportsError) throw reportsError;
+                
+                log('📊 Found ' + reports.length + ' reports in database:');
+                
+                if (reports.length === 0) {
+                    log('⚠️ No reports found in database');
+                    updateStatus('⚠️ No reports found', 'error');
+                } else {
+                    reports.forEach((report, index) => {
+                        log(`📄 Report ${index + 1}:`);
+                        log(`   - ID: ${report.id}`);
+                        log(`   - File: ${report.file_name}`);
+                        log(`   - Month: ${report.report_month}/${report.report_year}`);
+                        log(`   - Company ID: ${report.company_id}`);
+                        log(`   - Created: ${report.created_at}`);
+                        log(`   - Status: ${report.processing_status}`);
+                        log('');
+                    });
+                    
+                    updateStatus(`✅ Found ${reports.length} reports`, 'success');
+                }
+                
+            } catch (error) {
+                log('❌ Error checking reports: ' + error.message);
+                updateStatus('❌ Error checking reports', 'error');
+            }
+        }
+        
+        async function checkUserProfile() {
+            log('🔍 Checking user profile...');
+            
+            try {
+                if (!supabaseClient) {
+                    await initializeSupabase();
+                }
+                
+                const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+                if (userError) throw userError;
+                
+                if (!user) {
+                    log('❌ No authenticated user');
+                    return;
+                }
+                
+                const { data: profile, error: profileError } = await supabaseClient
+                    .from('profiles')
+                    .select('*, companies(*)')
+                    .eq('id', user.id)
+                    .single();
+                
+                if (profileError) throw profileError;
+                
+                if (profile) {
+                    log('✅ User profile found:');
+                    log(`   - ID: ${profile.id}`);
+                    log(`   - Email: ${profile.email}`);
+                    log(`   - Company ID: ${profile.company_id}`);
+                    if (profile.companies) {
+                        log(`   - Company: ${profile.companies.name}`);
+                    }
+                } else {
+                    log('❌ No profile found for user');
+                }
+                
+            } catch (error) {
+                log('❌ Error checking profile: ' + error.message);
+            }
+        }
+        
+        async function checkCompany() {
+            log('🔍 Checking company...');
+            
+            try {
+                if (!supabaseClient) {
+                    await initializeSupabase();
+                }
+                
+                const { data: companies, error: companiesError } = await supabaseClient
+                    .from('companies')
+                    .select('*');
+                
+                if (companiesError) throw companiesError;
+                
+                log('🏢 Found ' + companies.length + ' companies:');
+                companies.forEach((company, index) => {
+                    log(`   ${index + 1}. ${company.name} (ID: ${company.id})`);
+                });
+                
+            } catch (error) {
+                log('❌ Error checking companies: ' + error.message);
+            }
+        }
+        
+        // Initialize
+        window.addEventListener('load', async function() {
+            log('🚀 Database check page loaded');
+            await initializeSupabase();
+            updateStatus('✅ Ready to check database', 'success');
+        });
+    </script>
+</body>
+</html>

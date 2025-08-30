@@ -1,5 +1,30 @@
--- Fuel Analytics Platform Database Schema
+-- Fuel Analytics Platform Database Schema (Clean Version)
 -- Run this in your Supabase SQL Editor
+
+-- Drop existing policies first (if they exist)
+DROP POLICY IF EXISTS "Users can view their own company" ON companies;
+DROP POLICY IF EXISTS "Users can update their own company" ON companies;
+DROP POLICY IF EXISTS "Users can view their own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can update their own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can view reports from their company" ON monthly_reports;
+DROP POLICY IF EXISTS "Users can insert reports for their company" ON monthly_reports;
+DROP POLICY IF EXISTS "Users can update reports from their company" ON monthly_reports;
+DROP POLICY IF EXISTS "Users can view fuel data from their company" ON fuel_data;
+DROP POLICY IF EXISTS "Users can insert fuel data for their company" ON fuel_data;
+DROP POLICY IF EXISTS "Users can view shop data from their company" ON shop_data;
+DROP POLICY IF EXISTS "Users can insert shop data for their company" ON shop_data;
+DROP POLICY IF EXISTS "Users can view insights from their company" ON ai_insights;
+DROP POLICY IF EXISTS "Users can insert insights for their company" ON ai_insights;
+DROP POLICY IF EXISTS "Users can view forecasts from their company" ON forecast_data;
+DROP POLICY IF EXISTS "Users can insert forecasts for their company" ON forecast_data;
+
+-- Drop existing triggers (if they exist)
+DROP TRIGGER IF EXISTS update_companies_updated_at ON companies;
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON profiles;
+DROP TRIGGER IF EXISTS update_monthly_reports_updated_at ON monthly_reports;
+
+-- Drop existing function (if it exists)
+DROP FUNCTION IF EXISTS update_updated_at_column();
 
 -- Drop existing tables if they exist (for clean setup)
 DROP TABLE IF EXISTS forecast_data CASCADE;
@@ -94,11 +119,11 @@ CREATE TABLE forecast_data (
 );
 
 -- Create indexes for better performance
-CREATE INDEX idx_monthly_reports_company ON monthly_reports(company_id);
-CREATE INDEX idx_monthly_reports_date ON monthly_reports(report_year, report_month);
-CREATE INDEX idx_fuel_data_report ON fuel_data(monthly_report_id);
-CREATE INDEX idx_shop_data_report ON shop_data(monthly_report_id);
-CREATE INDEX idx_profiles_company ON profiles(company_id);
+CREATE INDEX IF NOT EXISTS idx_monthly_reports_company ON monthly_reports(company_id);
+CREATE INDEX IF NOT EXISTS idx_monthly_reports_date ON monthly_reports(report_year, report_month);
+CREATE INDEX IF NOT EXISTS idx_fuel_data_report ON fuel_data(monthly_report_id);
+CREATE INDEX IF NOT EXISTS idx_shop_data_report ON shop_data(monthly_report_id);
+CREATE INDEX IF NOT EXISTS idx_profiles_company ON profiles(company_id);
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE companies ENABLE ROW LEVEL SECURITY;
@@ -231,3 +256,7 @@ ON CONFLICT DO NOTHING;
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
+
+-- Verify tables were created
+SELECT 'Tables created successfully' as status;
+SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name IN ('companies', 'profiles', 'monthly_reports', 'fuel_data', 'shop_data', 'ai_insights', 'forecast_data');

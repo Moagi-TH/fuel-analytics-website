@@ -86,14 +86,22 @@ class ExtensionManager {
         
         // Analytics engine
         if (typeof AnalyticsEngine !== 'undefined') {
-            this.extensions.set('analyticsEngine', new AnalyticsEngine());
-            console.log('✅ Analytics Engine loaded');
+            try {
+                this.extensions.set('analyticsEngine', new AnalyticsEngine());
+                console.log('✅ Analytics Engine loaded');
+            } catch (error) {
+                console.warn('⚠️ Analytics Engine failed to initialize:', error);
+            }
         }
         
         // Reporting engine
         if (typeof ReportingEngine !== 'undefined') {
-            this.extensions.set('reportingEngine', new ReportingEngine());
-            console.log('✅ Reporting Engine loaded');
+            try {
+                this.extensions.set('reportingEngine', new ReportingEngine());
+                console.log('✅ Reporting Engine loaded');
+            } catch (error) {
+                console.warn('⚠️ Reporting Engine failed to initialize:', error);
+            }
         }
         
         // Real-time data service
@@ -383,7 +391,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Set up performance monitoring
         if (window.extensionManager.getExtension('performanceOptimizer')) {
-            window.extensionManager.getExtension('performanceOptimizer').startMonitoring();
+            const optimizer = window.extensionManager.getExtension('performanceOptimizer');
+            if (optimizer && typeof optimizer.initialize === 'function') {
+                optimizer.initialize();
+            } else {
+                console.warn('Performance optimizer extension not properly initialized');
+            }
         }
         
         // Initialize accessibility features

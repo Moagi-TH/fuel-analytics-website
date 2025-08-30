@@ -663,4 +663,5 @@ class PerformanceOptimizer {
 // Global performance optimizer instance
 window.performanceOptimizer = new PerformanceOptimizer();
 
-export default window.performanceOptimizer;
+// Export for module systems (if needed)
+// export default window.performanceOptimizer;

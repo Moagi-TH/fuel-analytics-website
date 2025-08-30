@@ -49,8 +49,12 @@ class ErrorHandler {
     const errorMessage = error instanceof Error ? error.message : error;
     const timestamp = new Date().toISOString();
     
-    // Log error for debugging
-    console.error(`[${timestamp}] Error in ${context}:`, error);
+    // Log error for debugging (use original console to avoid recursion)
+    if (window.originalConsole) {
+      window.originalConsole.error(`[${timestamp}] Error in ${context}:`, error);
+    } else {
+      console.error(`[${timestamp}] Error in ${context}:`, error);
+    }
     
     if (showUser) {
       this.showNotification(errorMessage, 'error', context);
@@ -227,4 +231,5 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-export default window.errorHandler;
+// Export for module systems (if needed)
+// export default window.errorHandler;

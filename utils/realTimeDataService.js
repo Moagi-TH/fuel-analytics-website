@@ -734,6 +734,6 @@ class RealTimeDataService {
     }
 }
 
-// Export for use in other modules
+// Export for use in other modules (if needed)
 window.RealTimeDataService = RealTimeDataService;
-export default RealTimeDataService;
+// export default RealTimeDataService;

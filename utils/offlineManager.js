@@ -614,4 +614,5 @@ class OfflineManager {
 // Global offline manager instance
 window.offlineManager = new OfflineManager();
 
-export default window.offlineManager;
+// Export for module systems (if needed)
+// export default window.offlineManager;

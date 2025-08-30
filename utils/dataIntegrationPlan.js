@@ -501,4 +501,5 @@ class DataIntegrationPlan {
 // Global data integration plan instance
 window.dataIntegrationPlan = new DataIntegrationPlan();
 
-export default window.dataIntegrationPlan;
+// Export for module systems (if needed)
+// export default window.dataIntegrationPlan;
