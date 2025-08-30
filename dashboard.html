@@ -64,97 +64,72 @@
   <!-- Load main extensions configuration (load last) -->
   <script defer src="./extensions-config.js"></script>
   
-  <!-- SUPER NUCLEAR OPTION - Complete Dashboard Override -->
+  <!-- GENTLE OVERVIEW FORCE - Safe Dashboard Override -->
   <script>
-    // SUPER NUCLEAR OPTION - This runs BEFORE everything else
+    // GENTLE OVERVIEW FORCE - This runs safely without breaking the browser
     (function() {
-      console.log('🚀🚀🚀 SUPER NUCLEAR OPTION ACTIVATED 🚀🚀🚀');
+      console.log('🔄 GENTLE OVERVIEW FORCE ACTIVATED');
       
-      // 1. Override window.location.hash immediately
+      // 1. Set initial hash safely
       if (window.location.hash === '#users' || window.location.hash === '') {
         window.location.hash = '#overview';
-        history.replaceState(null, null, window.location.pathname + '#overview');
       }
       
-      // 2. Create a function to force overview section
-      window.FORCE_OVERVIEW_NOW = function() {
-        console.log('🚀🚀🚀 FORCING OVERVIEW SECTION NOW 🚀🚀🚀');
+      // 2. Create a gentle function to ensure overview section
+      window.ensureOverviewSection = function() {
+        console.log('🔄 Ensuring Overview section is visible...');
         
-        // Clear any existing hash
-        window.location.hash = '#overview';
-        history.replaceState(null, null, window.location.pathname + '#overview');
+        // Only hide users section if it's visible
+        const usersSection = document.getElementById('users');
+        if (usersSection && usersSection.style.display !== 'none') {
+          usersSection.style.display = 'none';
+          console.log('✅ Users section hidden');
+        }
         
-        // Hide ALL sections with multiple methods
-        const allSections = ['overview', 'reports', 'analytics', 'insights', 'personnel', 'users', 'renovation', 'expansion'];
-        allSections.forEach(id => {
-          const section = document.getElementById(id);
-          if (section) {
-            section.style.display = 'none';
-            section.style.visibility = 'hidden';
-            section.style.opacity = '0';
-            section.style.position = 'absolute';
-            section.style.left = '-9999px';
-          }
-        });
-        
-        // Show ONLY overview section with multiple methods
+        // Ensure overview section is visible
         const overviewSection = document.getElementById('overview');
-        if (overviewSection) {
+        if (overviewSection && overviewSection.style.display === 'none') {
           overviewSection.style.display = 'block';
-          overviewSection.style.visibility = 'visible';
-          overviewSection.style.opacity = '1';
-          overviewSection.style.position = 'relative';
-          overviewSection.style.left = 'auto';
+          console.log('✅ Overview section shown');
         }
         
-        // Reset ALL navigation links
-        const allNavLinks = document.querySelectorAll('.nav-link, a[href^="#"]');
-        allNavLinks.forEach(link => {
-          link.classList.remove('active');
-          link.classList.remove('selected');
-        });
-        
-        // Activate ONLY overview link
+        // Update navigation if needed
         const overviewLink = document.querySelector('a[href="#overview"]');
-        if (overviewLink) {
+        const usersLink = document.querySelector('a[href="#users"]');
+        if (overviewLink && !overviewLink.classList.contains('active')) {
           overviewLink.classList.add('active');
-          overviewLink.classList.add('selected');
+          if (usersLink) usersLink.classList.remove('active');
+          console.log('✅ Navigation updated');
         }
-        
-        console.log('✅✅✅ OVERVIEW SECTION FORCED SUCCESSFULLY ✅✅✅');
       };
       
-      // 3. Run immediately
-      window.FORCE_OVERVIEW_NOW();
+      // 3. Run once after DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', window.ensureOverviewSection);
+      } else {
+        window.ensureOverviewSection();
+      }
       
-      // 4. Run every 100ms for the first 30 seconds
-      let superNuclearCounter = 0;
-      const superNuclearInterval = setInterval(() => {
-        window.FORCE_OVERVIEW_NOW();
-        superNuclearCounter++;
-        if (superNuclearCounter >= 300) { // 30 seconds
-          clearInterval(superNuclearInterval);
-          console.log('🚀🚀🚀 SUPER NUCLEAR OPTION COMPLETED 🚀🚀🚀');
+      // 4. Run gently every 2 seconds for the first 10 seconds only
+      let gentleCounter = 0;
+      const gentleInterval = setInterval(() => {
+        window.ensureOverviewSection();
+        gentleCounter++;
+        if (gentleCounter >= 5) { // 10 seconds
+          clearInterval(gentleInterval);
+          console.log('🔄 GENTLE OVERVIEW FORCE COMPLETED');
         }
-      }, 100);
+      }, 2000);
       
-      // 5. Override hashchange event
+      // 5. Gentle hashchange protection
       window.addEventListener('hashchange', function(e) {
-        console.log('🚫🚫🚫 BLOCKING HASH CHANGE:', window.location.hash);
-        if (window.location.hash !== '#overview') {
+        if (window.location.hash === '#users') {
+          console.log('🚫 Redirecting from users section to overview');
           window.location.hash = '#overview';
-          window.FORCE_OVERVIEW_NOW();
         }
       });
       
-      // 6. Override popstate event
-      window.addEventListener('popstate', function(e) {
-        console.log('🚫🚫🚫 BLOCKING POPSTATE');
-        window.location.hash = '#overview';
-        window.FORCE_OVERVIEW_NOW();
-      });
-      
-      console.log('🚀🚀🚀 SUPER NUCLEAR OPTION SETUP COMPLETE 🚀🚀🚀');
+      console.log('🔄 GENTLE OVERVIEW FORCE SETUP COMPLETE');
     })();
   </script>
   
@@ -6698,100 +6673,21 @@
         console.log('Page initialization complete');
       }
 
-      // NUCLEAR OPTION - Force Overview Section and Block API Section
-      function forceOverviewSection() {
-        console.log('🚀 NUCLEAR OPTION: Forcing Overview section...');
-        
-        // 1. Clear URL hash completely
-        window.location.hash = '';
-        history.replaceState(null, null, window.location.pathname);
-        
-        // 2. Hide ALL sections first
-        const allSections = ['overview', 'reports', 'analytics', 'insights', 'personnel', 'users', 'renovation', 'expansion'];
-        allSections.forEach(id => {
-          const section = document.getElementById(id);
-          if (section) {
-            section.style.display = 'none';
-            section.style.visibility = 'hidden';
-          }
-        });
-        
-        // 3. Show ONLY overview section
-        const overviewSection = document.getElementById('overview');
-        if (overviewSection) {
-          overviewSection.style.display = 'block';
-          overviewSection.style.visibility = 'visible';
-        }
-        
-        // 4. Reset all navigation links
-        const allNavLinks = document.querySelectorAll('.nav-link');
-        allNavLinks.forEach(link => link.classList.remove('active'));
-        
-        // 5. Activate only overview link
-        const overviewLink = document.querySelector('a[href="#overview"]');
-        if (overviewLink) {
-          overviewLink.classList.add('active');
-        }
-        
-        console.log('✅ NUCLEAR OPTION: Overview section forced successfully');
-      }
-      
       // Initialize immediately when DOM is ready
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-          initializePage();
-          forceOverviewSection();
-        });
+        document.addEventListener('DOMContentLoaded', initializePage);
       } else {
         // DOM is already ready
         initializePage();
-        forceOverviewSection();
       }
       
-      // Run nuclear option every 500ms for the first 10 seconds
-      let nuclearCounter = 0;
-      const nuclearInterval = setInterval(() => {
-        forceOverviewSection();
-        nuclearCounter++;
-        if (nuclearCounter >= 20) { // 10 seconds
-          clearInterval(nuclearInterval);
-        }
-      }, 500);
-      
-      // GLOBAL HASH CHANGE PROTECTION - Prevent automatic redirection to users section
+      // Simple hash change protection
       window.addEventListener('hashchange', function() {
         if (window.location.hash === '#users') {
-          console.log('🚫 Blocking automatic hash change to users section');
+          console.log('🚫 Redirecting from users section to overview');
           window.location.hash = '#overview';
         }
       });
-      
-      // Additional protection - check every second for unwanted hash changes
-      setInterval(function() {
-        if (window.location.hash === '#users') {
-          console.log('🚫 Periodic check: Blocking unwanted hash change to users section');
-          window.location.hash = '#overview';
-        }
-        
-        // Force hide users section if it's visible
-        const usersSection = document.getElementById('users');
-        if (usersSection && usersSection.style.display !== 'none') {
-          console.log('🚫 Force hiding users section');
-          usersSection.style.display = 'none';
-          
-          // Show overview section
-          const overviewSection = document.getElementById('overview');
-          if (overviewSection) {
-            overviewSection.style.display = 'block';
-          }
-          
-          // Update navigation
-          const overviewLink = document.querySelector('a[href="#overview"]');
-          const usersLink = document.querySelector('a[href="#users"]');
-          if (overviewLink) overviewLink.classList.add('active');
-          if (usersLink) usersLink.classList.remove('active');
-        }
-      }, 1000);
 
       // Test if critical libraries are loaded
       function testLibraries() {
