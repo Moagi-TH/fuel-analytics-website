@@ -75,12 +75,22 @@ function initializeSupabase() {
     }
 }
 
-// Try to initialize immediately
-initializeSupabase();
+// Wait for Supabase library to load before initializing
+function waitForSupabase() {
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+        initializeSupabase();
+    } else {
+        // Check again in 100ms
+        setTimeout(waitForSupabase, 100);
+    }
+}
+
+// Start waiting for Supabase library
+waitForSupabase();
 
 // Also try on window load
 window.addEventListener('load', () => {
-    initializeSupabase();
+    waitForSupabase();
 });
 
 // Enhanced Data Management Class

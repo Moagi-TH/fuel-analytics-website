@@ -172,7 +172,7 @@
         </div>
     </div>
 
-    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./supabase-client.js"></script>
 
     <script>
@@ -190,6 +190,13 @@
 
         // Update connection status
         function updateConnectionStatus() {
+            // Check if global functions are available
+            if (!window.getConnectionStatus) {
+                const statusDiv = document.getElementById('connection-status');
+                statusDiv.innerHTML = `<span class="status-indicator status-warning"></span>Loading Supabase client...`;
+                return;
+            }
+            
             const status = window.getConnectionStatus();
             const statusDiv = document.getElementById('connection-status');
             
@@ -613,13 +620,24 @@
             }
         }
 
+        // Wait for Supabase client to be ready
+        function waitForSupabaseClient() {
+            if (window.fuelAnalyticsDB && window.getConnectionStatus) {
+                logTest('Page Load', 'Enhanced Supabase test page loaded and ready', 'success');
+                updateConnectionStatus();
+                
+                // Auto-refresh connection status every 5 seconds
+                setInterval(updateConnectionStatus, 5000);
+            } else {
+                // Check again in 500ms
+                setTimeout(waitForSupabaseClient, 500);
+            }
+        }
+
         // Initialize page
         window.addEventListener('load', function() {
-            logTest('Page Load', 'Enhanced Supabase test page loaded', 'info');
-            updateConnectionStatus();
-            
-            // Auto-refresh connection status every 5 seconds
-            setInterval(updateConnectionStatus, 5000);
+            logTest('Page Load', 'Enhanced Supabase test page loaded, waiting for client...', 'info');
+            waitForSupabaseClient();
         });
     </script>
 </body>
