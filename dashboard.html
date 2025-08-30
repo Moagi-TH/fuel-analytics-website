@@ -141,6 +141,41 @@
     // Gentle cache management - don't break service workers
     console.log('🔄 Initializing dashboard with gentle cache management');
     
+    // Define setupAutomaticDataRefresh early to prevent errors
+    function setupAutomaticDataRefresh() {
+      // Check for updates every 3 minutes (180000ms) instead of 30 seconds
+      setInterval(checkForDataUpdates, 180000);
+      
+      console.log('🔄 Data refresh set to every 3 minutes');
+      
+      // Only check when user navigates to reports section (not all sections)
+      const reportsLink = document.querySelector('a[href="#reports"]');
+      if (reportsLink) {
+        reportsLink.addEventListener('click', () => {
+          // Small delay to ensure navigation is complete
+          setTimeout(checkForDataUpdates, 1000);
+        });
+      }
+      
+      console.log('Automatic data refresh enabled');
+
+      // Also subscribe to realtime DB changes (if available)
+      try {
+        if (window.db && typeof window.db.subscribeToMonthlyReportChanges === 'function') {
+          window.db.subscribeToMonthlyReportChanges(() => {
+            // Debounce rapid changes
+            if (window.__refreshTimer) clearTimeout(window.__refreshTimer);
+            window.__refreshTimer = setTimeout(() => {
+              refreshAllDashboardData();
+            }, 300);
+          });
+          console.log('Realtime subscriptions enabled');
+        }
+      } catch (e) {
+        console.warn('Realtime subscription setup failed:', e.message || e);
+      }
+    }
+    
     // Simple cache busting for critical files only
     function addCacheBusting() {
       const links = document.querySelectorAll('link[href*="dashboard.css"]');
@@ -283,6 +318,15 @@
           }, 500);
         }
       }, 1000);
+      
+      // Force hide loading indicator after 10 seconds maximum
+      setTimeout(function() {
+        const loadingIndicator = document.getElementById('loading-indicator');
+        if (loadingIndicator && loadingIndicator.style.display !== 'none') {
+          console.log('⚠️ Force hiding loading indicator after timeout');
+          loadingIndicator.style.display = 'none';
+        }
+      }, 10000);
       
       // Fix authentication after page loads
       setTimeout(fixAuthentication, 2000);
@@ -2235,8 +2279,16 @@
                   }
                 });
                         
-                // Set up automatic data refresh
-                setupAutomaticDataRefresh();
+                // Set up automatic data refresh (with error handling)
+                try {
+                  if (typeof setupAutomaticDataRefresh === 'function') {
+                    setupAutomaticDataRefresh();
+                  } else {
+                    console.log('⚠️ setupAutomaticDataRefresh not available yet, will set up later');
+                  }
+                } catch (error) {
+                  console.log('⚠️ Error setting up automatic data refresh:', error);
+                }
                 
                 // Set up fuel price tracking
                 setupFuelPriceTracking();
@@ -4438,40 +4490,8 @@
         };
       }
       
-      // Function to set up automatic data refresh
-      function setupAutomaticDataRefresh() {
-        // Check for updates every 3 minutes (180000ms) instead of 30 seconds
-        setInterval(checkForDataUpdates, 180000);
-        
-        console.log('🔄 Data refresh set to every 3 minutes');
-        
-        // Only check when user navigates to reports section (not all sections)
-        const reportsLink = document.querySelector('a[href="#reports"]');
-        if (reportsLink) {
-          reportsLink.addEventListener('click', () => {
-            // Small delay to ensure navigation is complete
-            setTimeout(checkForDataUpdates, 1000);
-          });
-        }
-        
-        console.log('Automatic data refresh enabled');
-
-        // Also subscribe to realtime DB changes (if available)
-        try {
-          if (window.db && typeof window.db.subscribeToMonthlyReportChanges === 'function') {
-            window.db.subscribeToMonthlyReportChanges(() => {
-              // Debounce rapid changes
-              if (window.__refreshTimer) clearTimeout(window.__refreshTimer);
-              window.__refreshTimer = setTimeout(() => {
-                refreshAllDashboardData();
-              }, 300);
-            });
-            console.log('Realtime subscriptions enabled');
-          }
-        } catch (e) {
-          console.warn('Realtime subscription setup failed:', e.message || e);
-        }
-      }
+      // Function to set up automatic data refresh (moved to early definition)
+      // setupAutomaticDataRefresh is now defined earlier in the file to prevent errors
       
       // Function to set up fuel price tracking
       function setupFuelPriceTracking() {
@@ -7203,7 +7223,15 @@
           
           // Re-setup data refresh with longer intervals
           setTimeout(() => {
-            setupAutomaticDataRefresh();
+            try {
+              if (typeof setupAutomaticDataRefresh === 'function') {
+                setupAutomaticDataRefresh();
+              } else {
+                console.log('⚠️ setupAutomaticDataRefresh still not available');
+              }
+            } catch (error) {
+              console.log('⚠️ Error in delayed setupAutomaticDataRefresh:', error);
+            }
           }, 5000); // Wait 5 seconds before setting up data refresh
           
           console.log('✅ Button functionality prioritized');
