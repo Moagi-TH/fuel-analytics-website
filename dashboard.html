@@ -3237,8 +3237,10 @@
         }
         
         // Update fuel margins table
-        if (reportData.fuels) {
+        if (reportData.fuels && typeof reportData.fuels === 'object') {
           updateFuelMarginsFromReport(reportData.fuels);
+        } else {
+          console.log('📊 No fuel data available in report');
         }
         
         // Function to update fuel margins from report data
@@ -3298,6 +3300,197 @@
             console.log('✅ Fuel margins updated successfully');
           } catch (error) {
             console.error('❌ Error updating fuel margins:', error);
+          }
+        }
+        
+        // Add missing notification function
+        function showNotification(message, type = 'info') {
+          try {
+            console.log(`📢 ${type.toUpperCase()}: ${message}`);
+            
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+              <div class="notification-content">
+                <span class="notification-message">${message}</span>
+                <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+              </div>
+            `;
+            
+            // Add styles if not already present
+            if (!document.getElementById('notification-styles')) {
+              const style = document.createElement('style');
+              style.id = 'notification-styles';
+              style.textContent = `
+                .notification {
+                  position: fixed;
+                  top: 20px;
+                  right: 20px;
+                  z-index: 10000;
+                  padding: 12px 16px;
+                  border-radius: 6px;
+                  color: white;
+                  font-weight: 500;
+                  max-width: 400px;
+                  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                  animation: slideIn 0.3s ease-out;
+                }
+                .notification-success { background-color: #10b981; }
+                .notification-error { background-color: #ef4444; }
+                .notification-warning { background-color: #f59e0b; }
+                .notification-info { background-color: #3b82f6; }
+                .notification-content {
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                }
+                .notification-close {
+                  background: none;
+                  border: none;
+                  color: white;
+                  font-size: 18px;
+                  cursor: pointer;
+                  margin-left: 12px;
+                }
+                @keyframes slideIn {
+                  from { transform: translateX(100%); opacity: 0; }
+                  to { transform: translateX(0); opacity: 1; }
+                }
+              `;
+              document.head.appendChild(style);
+            }
+            
+            // Add to page
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+              if (notification.parentElement) {
+                notification.remove();
+              }
+            }, 5000);
+            
+          } catch (error) {
+            console.error('❌ Error showing notification:', error);
+          }
+        }
+        
+        // Add missing delete report function
+        async function deleteReport(reportId) {
+          try {
+            console.log('🗑️ Deleting report:', reportId);
+            
+            if (!window.supabaseClient) {
+              showNotification('Database not initialized', 'error');
+              return;
+            }
+            
+            const result = await window.supabaseClient.deleteMonthlyReport(reportId);
+            
+            if (result.success) {
+              showNotification('Report deleted successfully', 'success');
+              // Refresh the reports list
+              await loadReports();
+            } else {
+              showNotification(`Failed to delete report: ${result.error}`, 'error');
+            }
+          } catch (error) {
+            console.error('❌ Error deleting report:', error);
+            showNotification('Error deleting report', 'error');
+          }
+        }
+        
+        // Add function to load reports from Supabase
+        async function loadReports() {
+          try {
+            console.log('📊 Loading reports from Supabase...');
+            
+            if (!window.supabaseClient) {
+              console.error('❌ Supabase client not initialized');
+              return;
+            }
+            
+            const result = await window.supabaseClient.getMonthlyReports();
+            
+            if (result.success && result.reports) {
+              console.log('✅ Reports loaded:', result.reports.length);
+              
+              // Update the reports list in the UI
+              const reportsContainer = document.getElementById('reports-list');
+              if (reportsContainer) {
+                if (result.reports.length === 0) {
+                  reportsContainer.innerHTML = '<p class="no-reports">No reports found. Upload a report to get started.</p>';
+                } else {
+                  reportsContainer.innerHTML = result.reports.map(report => `
+                    <div class="report-item">
+                      <div class="report-info">
+                        <h4>${report.filename || 'Unnamed Report'}</h4>
+                        <p>Uploaded: ${new Date(report.created_at).toLocaleDateString()}</p>
+                        <p>Period: ${report.report_month}/${report.report_year}</p>
+                      </div>
+                      <div class="report-actions">
+                        <button onclick="viewReport('${report.id}')" class="btn btn-primary">View</button>
+                        <button onclick="deleteReport('${report.id}')" class="btn btn-danger">Delete</button>
+                      </div>
+                    </div>
+                  `).join('');
+                }
+              }
+              
+              // Update most recent report
+              if (result.reports.length > 0) {
+                const mostRecent = result.reports[0];
+                const recentReportContainer = document.getElementById('recent-report');
+                if (recentReportContainer) {
+                  recentReportContainer.innerHTML = `
+                    <h3>${mostRecent.filename || 'Unnamed Report'}</h3>
+                    <p>Uploaded: ${new Date(mostRecent.created_at).toLocaleDateString()}</p>
+                    <p>Period: ${mostRecent.report_month}/${mostRecent.report_year}</p>
+                    <button onclick="viewReport('${mostRecent.id}')" class="btn btn-primary">View Report</button>
+                  `;
+                }
+              }
+              
+            } else {
+              console.error('❌ Failed to load reports:', result.error);
+              showNotification('Failed to load reports', 'error');
+            }
+          } catch (error) {
+            console.error('❌ Error loading reports:', error);
+            showNotification('Error loading reports', 'error');
+          }
+        }
+        
+        // Add function to view a specific report
+        async function viewReport(reportId) {
+          try {
+            console.log('👁️ Viewing report:', reportId);
+            
+            if (!window.supabaseClient) {
+              showNotification('Database not initialized', 'error');
+              return;
+            }
+            
+            const result = await window.supabaseClient.getMonthlyReportById(reportId);
+            
+            if (result.success && result.report) {
+              console.log('✅ Report loaded:', result.report);
+              
+              // Load the report data into the dashboard
+              await loadReportData(result.report);
+              
+              // Switch to overview section
+              window.location.hash = '#overview';
+              
+              showNotification('Report loaded successfully', 'success');
+            } else {
+              console.error('❌ Failed to load report:', result.error);
+              showNotification('Failed to load report', 'error');
+            }
+          } catch (error) {
+            console.error('❌ Error viewing report:', error);
+            showNotification('Error viewing report', 'error');
           }
         }
         
@@ -6673,13 +6866,23 @@
         console.log('Page initialization complete');
       }
 
-      // Initialize immediately when DOM is ready
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializePage);
-      } else {
-        // DOM is already ready
-        initializePage();
-      }
+              // Initialize immediately when DOM is ready
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', async () => {
+            await initializePage();
+            // Load reports after initialization
+            setTimeout(() => {
+              loadReports();
+            }, 1000);
+          });
+        } else {
+          // DOM is already ready
+          initializePage();
+          // Load reports after initialization
+          setTimeout(() => {
+            loadReports();
+          }, 1000);
+        }
       
       // Simple hash change protection
       window.addEventListener('hashchange', function() {

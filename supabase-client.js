@@ -383,12 +383,24 @@ class FuelAnalyticsDB {
                 if (user) {
                     const { data: profile } = await supabase
                         .from('profiles')
-                        .select('*, companies(*)')
+                        .select('id, email, company_id, role, created_at, updated_at')
                         .eq('id', user.id)
                         .single();
                     
-                    if (profile && profile.companies) {
-                        this.currentCompany = profile.companies;
+                    if (profile && profile.company_id) {
+                        // Get company details separately
+                        const { data: company } = await supabase
+                            .from('companies')
+                            .select('*')
+                            .eq('id', profile.company_id)
+                            .single();
+                        
+                        if (company) {
+                            this.currentCompany = company;
+                        } else {
+                            console.error('❌ Company not found for company_id:', profile.company_id);
+                            return { success: false, error: 'Company not found' };
+                        }
                     } else {
                         console.error('❌ No company found for user');
                         return { success: false, error: 'No company found for user' };
