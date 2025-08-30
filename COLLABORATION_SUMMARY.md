@@ -9,7 +9,7 @@ Your fuel analytics website now has **bulletproof real-time collaboration** that
 ### **For New Collaborators:**
 ```bash
 # 1. Clone the repository
-git clone https://github.com/Moagi-TH/Fuel-Flux-Analytics.git
+git clone https://github.com/Moagi-TH/fuel-analytics-website.git
 cd fuel-analytics-website
 
 # 2. Set up collaboration environment
