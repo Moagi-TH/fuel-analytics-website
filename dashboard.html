@@ -3453,7 +3453,7 @@
             if (!document.getElementById('notification-styles')) {
               const notificationStyle = document.createElement('style');
               notificationStyle.id = 'notification-styles';
-              style.textContent = `
+              notificationStyle.textContent = `
                 .notification {
                   position: fixed;
                   top: 20px;
@@ -3817,39 +3817,68 @@
         // Populate fuel data from report
         const fuelData = reportData.fuels;
         
-        // Update Diesel Ex field
+        console.log('📊 Loading fuel data:', fuelData);
+        
+        // Update Diesel Ex field (Diesel)
         if (fuelData.diesel_ex) {
-          const dieselField = document.getElementById('diesel-ex-revenue');
-          if (dieselField) {
-            dieselField.value = fuelData.diesel_ex.total_revenue_zar?.toFixed(2) || '';
+          const dieselRevenueField = document.getElementById('fuel-diesel-revenue');
+          const dieselVolumeField = document.getElementById('fuel-diesel-qty');
+          const dieselSellField = document.getElementById('fuel-diesel-sell');
+          const dieselCostField = document.getElementById('fuel-diesel-cost');
+          
+          if (dieselRevenueField) {
+            dieselRevenueField.value = fuelData.diesel_ex.total_revenue_zar?.toFixed(2) || '0';
           }
-          const dieselVolumeField = document.getElementById('diesel-ex-volume');
           if (dieselVolumeField) {
-            dieselVolumeField.value = fuelData.diesel_ex.quantity_liters?.toFixed(2) || '';
+            dieselVolumeField.value = fuelData.diesel_ex.quantity_liters?.toFixed(2) || '0';
+          }
+          if (dieselSellField) {
+            dieselSellField.value = fuelData.diesel_ex.sell_price_per_liter?.toFixed(2) || '0';
+          }
+          if (dieselCostField) {
+            dieselCostField.value = fuelData.diesel_ex.cost_price_per_liter?.toFixed(2) || '0';
           }
         }
         
-        // Update Diesel IC field
-        if (fuelData.diesel_ic) {
-          const dieselIcField = document.getElementById('diesel-ic-revenue');
-          if (dieselIcField) {
-            dieselIcField.value = fuelData.diesel_ic.total_revenue_zar?.toFixed(2) || '';
+        // Update V-Power 95 field
+        if (fuelData.vpower_95) {
+          const v95RevenueField = document.getElementById('fuel-v95-revenue');
+          const v95VolumeField = document.getElementById('fuel-v95-qty');
+          const v95SellField = document.getElementById('fuel-v95-sell');
+          const v95CostField = document.getElementById('fuel-v95-cost');
+          
+          if (v95RevenueField) {
+            v95RevenueField.value = fuelData.vpower_95.total_revenue_zar?.toFixed(2) || '0';
           }
-          const dieselIcVolumeField = document.getElementById('diesel-ic-volume');
-          if (dieselIcVolumeField) {
-            dieselIcVolumeField.value = fuelData.diesel_ic.quantity_liters?.toFixed(2) || '';
+          if (v95VolumeField) {
+            v95VolumeField.value = fuelData.vpower_95.quantity_liters?.toFixed(2) || '0';
+          }
+          if (v95SellField) {
+            v95SellField.value = fuelData.vpower_95.sell_price_per_liter?.toFixed(2) || '0';
+          }
+          if (v95CostField) {
+            v95CostField.value = fuelData.vpower_95.cost_price_per_liter?.toFixed(2) || '0';
           }
         }
         
-        // Update 95 ULP field
-        if (fuelData.ulp_95) {
-          const ulp95Field = document.getElementById('95-ulp-revenue');
-          if (ulp95Field) {
-            ulp95Field.value = fuelData.ulp_95.total_revenue_zar?.toFixed(2) || '';
+        // Update V-Power Diesel field
+        if (fuelData.vpower_diesel) {
+          const vdRevenueField = document.getElementById('fuel-vd-revenue');
+          const vdVolumeField = document.getElementById('fuel-vd-qty');
+          const vdSellField = document.getElementById('fuel-vd-sell');
+          const vdCostField = document.getElementById('fuel-vd-cost');
+          
+          if (vdRevenueField) {
+            vdRevenueField.value = fuelData.vpower_diesel.total_revenue_zar?.toFixed(2) || '0';
           }
-          const ulp95VolumeField = document.getElementById('95-ulp-volume');
-          if (ulp95VolumeField) {
-            ulp95VolumeField.value = fuelData.ulp_95.quantity_liters?.toFixed(2) || '';
+          if (vdVolumeField) {
+            vdVolumeField.value = fuelData.vpower_diesel.quantity_liters?.toFixed(2) || '0';
+          }
+          if (vdSellField) {
+            vdSellField.value = fuelData.vpower_diesel.sell_price_per_liter?.toFixed(2) || '0';
+          }
+          if (vdCostField) {
+            vdCostField.value = fuelData.vpower_diesel.cost_price_per_liter?.toFixed(2) || '0';
           }
         }
         
@@ -3883,6 +3912,54 @@
         }
         
         console.log('Fuel data loaded successfully from report:', mostRecentReport.filename);
+      }
+      
+      // Function to load latest report data into dashboard overview
+      async function loadLatestReportData() {
+        try {
+          console.log('📊 Loading latest report data into dashboard...');
+          
+          if (!window.supabaseClient) {
+            console.log('⚠️ Supabase client not available');
+            return;
+          }
+          
+          const result = await window.supabaseClient.getMonthlyReports();
+          
+          if (result.success && result.reports && result.reports.length > 0) {
+            const latestReport = result.reports[0]; // Most recent report
+            console.log('📊 Latest report found:', latestReport.filename);
+            
+            // Load the report data into the dashboard
+            if (latestReport.data && latestReport.data.fuels) {
+              updateFuelMarginsFromReport(latestReport.data.fuels);
+              
+              // Update dashboard metrics
+              const totalRevenue = Object.values(latestReport.data.fuels).reduce((sum, fuel) => 
+                sum + (fuel.total_revenue_zar || 0), 0);
+              
+              const totalVolume = Object.values(latestReport.data.fuels).reduce((sum, fuel) => 
+                sum + (fuel.quantity_liters || 0), 0);
+              
+              // Update dashboard elements
+              const totalRevenueElement = document.getElementById('total-revenue');
+              const fuelVolumeElement = document.getElementById('fuel-volume');
+              
+              if (totalRevenueElement) {
+                totalRevenueElement.textContent = `R ${totalRevenue.toLocaleString()}`;
+              }
+              if (fuelVolumeElement) {
+                fuelVolumeElement.textContent = `${totalVolume.toLocaleString()} L`;
+              }
+              
+              console.log('✅ Dashboard updated with latest report data');
+            }
+          } else {
+            console.log('📊 No reports found in database');
+          }
+        } catch (error) {
+          console.error('❌ Error loading latest report data:', error);
+        }
       }
       
       // Function to remove placeholder August report (FAST VERSION)
@@ -7311,17 +7388,21 @@
           document.addEventListener('DOMContentLoaded', async () => {
             await initializePage();
             // Load reports after initialization with delay
-            setTimeout(() => {
-              loadReports();
+            setTimeout(async () => {
+              await loadReports();
+              // Also load the latest report data into the dashboard
+              await loadLatestReportData();
             }, 2000); // Increased delay for better performance
           });
         } else {
           // DOM is already ready
           initializePage();
-          // Load reports after initialization with delay
-          setTimeout(() => {
-            loadReports();
-          }, 2000); // Increased delay for better performance
+                      // Load reports after initialization with delay
+            setTimeout(async () => {
+              await loadReports();
+              // Also load the latest report data into the dashboard
+              await loadLatestReportData();
+            }, 2000); // Increased delay for better performance
         }
       
       // Simple hash change protection
