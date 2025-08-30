@@ -42,8 +42,8 @@ npm install chokidar
 git remote -v
 
 # Should show something like:
-# origin  https://github.com/Moagi-TH/fuel-analytics-website.git (fetch)
-# origin  https://github.com/Moagi-TH/fuel-analytics-website.git (push)
+# origin  https://github.com/Moagi-TH/Fuel-Flux-Analytics.git (fetch)
+# origin  https://github.com/Moagi-TH/Fuel-Flux-Analytics.git (push)
 ```
 
 ### 3. Test Auto-Sync
@@ -162,13 +162,13 @@ git remote -v
 ```bash
 # Initialize git if not already done
 git init
-git remote add origin https://github.com/Moagi-TH/fuel-analytics-website.git
+git remote add origin https://github.com/Moagi-TH/Fuel-Flux-Analytics.git
 ```
 
 #### 2. "No remote origin found" Error
 ```bash
 # Add remote origin
-git remote add origin https://github.com/Moagi-TH/fuel-analytics-website.git
+git remote add origin https://github.com/Moagi-TH/Fuel-Flux-Analytics.git
 ```
 
 #### 3. Push Permission Denied

@@ -20,7 +20,7 @@ fi
 # Check if remote origin is set
 if ! git remote get-url origin > /dev/null 2>&1; then
     echo "❌ No remote origin found. Please add your GitHub repository:"
-    echo "   git remote add origin https://github.com/YOUR_USERNAME/fuel-analytics-website.git"
+    echo "   git remote add origin https://github.com/Moagi-TH/Fuel-Flux-Analytics.git"
     exit 1
 fi
 
