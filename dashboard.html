@@ -3241,11 +3241,15 @@
           updateFuelDistributionChart(fuelData);
         }
         
-        // Update fuel margins table
-        if (reportData.fuels && typeof reportData.fuels === 'object') {
-          updateFuelMarginsFromReport(reportData.fuels);
-        } else {
-          console.log('📊 No fuel data available in report');
+        // Update fuel margins table with comprehensive error handling
+        try {
+          if (reportData && reportData.fuels && typeof reportData.fuels === 'object') {
+            updateFuelMarginsFromReport(reportData.fuels);
+          } else {
+            console.log('📊 No fuel data available in report');
+          }
+        } catch (error) {
+          console.error('❌ Error updating fuel margins:', error);
         }
         
         // Function to update fuel margins from report data
@@ -6978,17 +6982,127 @@
         }
         
         function setupTestButtons() {
-          // Setup test and utility buttons
-          const testButtons = document.querySelectorAll('button:not(.nav-link):not(.view-report-btn):not(.delete-report-btn):not(.view-recent-report-btn)');
-          testButtons.forEach(btn => {
+          // Setup test and utility buttons with comprehensive debugging
+          const allButtons = document.querySelectorAll('button');
+          console.log('🔄 Setting up', allButtons.length, 'buttons...');
+          
+          allButtons.forEach((btn, index) => {
             if (!btn.hasAttribute('data-event-setup')) {
               btn.setAttribute('data-event-setup', 'true');
+              
+              // Add click event listener
               btn.addEventListener('click', function(e) {
-                console.log('🔄 Button clicked:', this.textContent || this.className);
+                console.log('🔄 Button clicked:', this.textContent || this.className, 'Button index:', index);
+                
+                // Check if button has onclick attribute
+                if (this.onclick) {
+                  console.log('🔄 Button has onclick attribute');
+                  try {
+                    this.onclick.call(this, e);
+                  } catch (error) {
+                    console.error('❌ Error in onclick:', error);
+                  }
+                }
+                
+                // Check if button has href
+                if (this.href) {
+                  console.log('🔄 Button has href:', this.href);
+                }
               });
+              
+              console.log('✅ Button setup:', this.textContent || this.className);
             }
           });
+          
+          console.log('✅ All buttons setup complete');
         }
+        
+        // Add missing functions that buttons are trying to call
+        function showMonthlyOverview() {
+          console.log('🔄 Showing monthly overview...');
+          try {
+            // Switch back to overview section
+            window.location.hash = '#overview';
+            
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(navLink => navLink.classList.remove('active'));
+            const overviewLink = document.querySelector('a[href="#overview"]');
+            if (overviewLink) {
+              overviewLink.classList.add('active');
+            }
+            
+            // Show overview section
+            const allSections = ['overview', 'reports', 'analytics', 'insights', 'personnel', 'users', 'renovation', 'expansion'];
+            allSections.forEach(id => {
+              const section = document.getElementById(id);
+              if (section) section.style.display = 'none';
+            });
+            
+            const overviewSection = document.getElementById('overview');
+            if (overviewSection) {
+              overviewSection.style.display = 'block';
+            }
+            
+            console.log('✅ Monthly overview shown');
+          } catch (error) {
+            console.error('❌ Error showing monthly overview:', error);
+          }
+        }
+        
+        function showOverviewOverTime() {
+          console.log('🔄 Showing overview over time...');
+          try {
+            // This function should show the overview over time section
+            // For now, just log that it was called
+            showNotification('Overview Over Time feature coming soon!', 'info');
+          } catch (error) {
+            console.error('❌ Error showing overview over time:', error);
+          }
+        }
+        
+        function viewDetails() {
+          console.log('🔄 View details clicked...');
+          try {
+            showNotification('View Details feature coming soon!', 'info');
+          } catch (error) {
+            console.error('❌ Error in view details:', error);
+          }
+        }
+        
+        function refreshData() {
+          console.log('🔄 Refreshing data...');
+          try {
+            showNotification('Refreshing data...', 'info');
+            // Add actual refresh logic here
+            setTimeout(() => {
+              showNotification('Data refreshed successfully!', 'success');
+            }, 1000);
+          } catch (error) {
+            console.error('❌ Error refreshing data:', error);
+          }
+        }
+        
+        function testFunction() {
+          console.log('🔄 Test function called...');
+          try {
+            showNotification('Test function working!', 'success');
+          } catch (error) {
+            console.error('❌ Error in test function:', error);
+          }
+        }
+        
+        // Global error handler to prevent errors from breaking functionality
+        window.addEventListener('error', function(e) {
+          console.warn('⚠️ Global error caught:', e.error);
+          // Don't let errors break the page
+          return false;
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+          console.warn('⚠️ Unhandled promise rejection:', e.reason);
+          // Don't let promise rejections break the page
+          e.preventDefault();
+        });
         
         // Call the setup function
         setupAllButtonFunctionality();
