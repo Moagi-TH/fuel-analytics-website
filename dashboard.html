@@ -141,6 +141,30 @@
     // Gentle cache management - don't break service workers
     console.log('🔄 Initializing dashboard with gentle cache management');
     
+    // Define checkForDataUpdates early to prevent errors
+    function checkForDataUpdates() {
+      // Only log occasionally to reduce console spam
+      const now = Date.now();
+      if (!window.lastUpdateCheck || now - window.lastUpdateCheck > 60000) { // Log once per minute
+        console.log('🔄 Checking for data updates...');
+        window.lastUpdateCheck = now;
+      }
+      
+      // Check if we have new reports that haven't been processed
+      const currentReportCount = Object.keys(window.monthlyData || {}).length;
+      const lastKnownCount = window.lastKnownReportCount || 0;
+      
+      if (currentReportCount > lastKnownCount) {
+        console.log(`📊 New reports detected: ${lastKnownCount} → ${currentReportCount}`);
+        window.lastKnownReportCount = currentReportCount;
+        if (typeof refreshAllDashboardData === 'function') {
+          refreshAllDashboardData();
+        }
+      } else {
+        // Don't log "No new reports detected" to reduce console spam
+      }
+    }
+    
     // Define setupAutomaticDataRefresh early to prevent errors
     function setupAutomaticDataRefresh() {
       // Check for updates every 3 minutes (180000ms) instead of 30 seconds
@@ -166,7 +190,9 @@
             // Debounce rapid changes
             if (window.__refreshTimer) clearTimeout(window.__refreshTimer);
             window.__refreshTimer = setTimeout(() => {
-              refreshAllDashboardData();
+              if (typeof refreshAllDashboardData === 'function') {
+                refreshAllDashboardData();
+              }
             }, 300);
           });
           console.log('Realtime subscriptions enabled');
@@ -2997,7 +3023,7 @@
         const fuelNames = ['diesel', 'vpower95', 'vpower-diesel'];
         
         fuels.forEach((fuelKey, index) => {
-          const fuel = fuelData[fuelKey];
+          const fuel = fuelData && fuelData[fuelKey] ? fuelData[fuelKey] : {};
           const name = fuelNames[index];
           
           if (fuel) {
@@ -3023,7 +3049,7 @@
 
       // Update fuel distribution chart to show percentages
       function updateFuelDistributionChart(fuelData) {
-        if (fuelDistributionChart) {
+        if (fuelDistributionChart && fuelData && typeof fuelData === 'object') {
           const totalFuelRevenue = Object.values(fuelData).reduce((sum, fuel) => sum + (fuel.revenue || 0), 0);
           if (totalFuelRevenue > 0) {
             const data = [
@@ -4340,27 +4366,8 @@
         historyLog.innerHTML = historyHTML;
       }
       
-      // Function to check for data updates and refresh if needed (optimized)
-      function checkForDataUpdates() {
-        // Only log occasionally to reduce console spam
-        const now = Date.now();
-        if (!window.lastUpdateCheck || now - window.lastUpdateCheck > 60000) { // Log once per minute
-          console.log('🔄 Checking for data updates...');
-          window.lastUpdateCheck = now;
-        }
-        
-        // Check if we have new reports that haven't been processed
-        const currentReportCount = Object.keys(monthlyData).length;
-        const lastKnownCount = window.lastKnownReportCount || 0;
-        
-        if (currentReportCount > lastKnownCount) {
-          console.log(`📊 New reports detected: ${lastKnownCount} → ${currentReportCount}`);
-          window.lastKnownReportCount = currentReportCount;
-          refreshAllDashboardData();
-        } else {
-          // Don't log "No new reports detected" to reduce console spam
-        }
-      }
+      // Function to check for data updates and refresh if needed (moved to early definition)
+      // checkForDataUpdates is now defined earlier in the file to prevent errors
       
       // Function to load overview over time data
       function loadOverviewOverTimeData() {
@@ -7239,6 +7246,15 @@
         
         // Call priority setup
         prioritizeButtonFunctionality();
+        
+        // Force hide loading indicator after initialization
+        setTimeout(() => {
+          const loadingIndicator = document.getElementById('loading-indicator');
+          if (loadingIndicator) {
+            console.log('✅ Force hiding loading indicator after initialization');
+            loadingIndicator.style.display = 'none';
+          }
+        }, 3000);
         
         // Handle initial page load - show overview by default
         if (!window.location.hash || window.location.hash === '#overview') {
