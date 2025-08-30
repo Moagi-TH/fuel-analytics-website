@@ -699,20 +699,24 @@ class FuelAnalyticsDB {
                 company = existingCompanies[0];
                 console.log('Using existing company:', company.id);
             } else {
-                // Create new company
+                // Create new company with better error handling
+                console.log('Creating new company:', companyName);
                 const { data: newCompany, error: createCompanyError } = await supabase
                     .from('companies')
                     .insert([{
                         name: companyName,
                         address: '123 Test Street, Test City',
                         phone: '+27 123 456 789',
-                        email: 'test@fuelstation.com',
-                        created_at: new Date().toISOString()
+                        email: 'test@fuelstation.com'
                     }])
                     .select()
                     .single();
 
                 if (createCompanyError) {
+                    console.error('Company creation error details:', createCompanyError);
+                    if (createCompanyError.message.includes('row-level security policy')) {
+                        throw new Error('Database security policy prevents company creation. Please run the RLS fix script in Supabase.');
+                    }
                     throw new Error('Failed to create company: ' + createCompanyError.message);
                 }
 
