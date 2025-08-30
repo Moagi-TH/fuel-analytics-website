@@ -160,6 +160,7 @@
 
         <div class="test-section">
             <h2>🔍 Debug Functions</h2>
+            <button class="btn-primary" onclick="testAuthCheck()">Check Authentication</button>
             <button class="btn-secondary" onclick="testFixProfile()">Fix User Profile</button>
             <button class="btn-warning" onclick="testRetryLogic()">Test Retry Logic</button>
             <button class="btn-danger" onclick="testErrorHandling()">Test Error Handling</button>
@@ -503,6 +504,34 @@
                 resultsDiv.innerHTML = `
                     <div class="test-section error">
                         <h3>Queue Operation Test Failed</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        // Test authentication check
+        async function testAuthCheck() {
+            logTest('Auth Check', 'Checking authentication status...');
+            const resultsDiv = document.getElementById('debug-results');
+            
+            try {
+                const result = await window.checkAndFixAuth();
+                logTest('Auth Check', `Auth result: ${JSON.stringify(result, null, 2)}`, result.success ? 'success' : 'error');
+                
+                resultsDiv.innerHTML = `
+                    <div class="test-section ${result.success ? 'success' : 'error'}">
+                        <h3>Authentication Check</h3>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    </div>
+                `;
+                
+                updateConnectionStatus();
+            } catch (error) {
+                logTest('Auth Check', `Error: ${error.message}`, 'error');
+                resultsDiv.innerHTML = `
+                    <div class="test-section error">
+                        <h3>Authentication Check Failed</h3>
                         <pre>${error.message}</pre>
                     </div>
                 `;

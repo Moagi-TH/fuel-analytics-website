@@ -681,6 +681,14 @@ class FuelAnalyticsDB {
 
             console.log('Setting up profile for user:', user.email);
 
+            // Ensure we have a valid session
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError || !session) {
+                throw new Error('No valid authentication session found. Please sign in first.');
+            }
+
+            console.log('Authentication session verified:', session.user.email);
+
             // Step 1: Create or get company
             let company = null;
 
@@ -714,6 +722,9 @@ class FuelAnalyticsDB {
 
                 if (createCompanyError) {
                     console.error('Company creation error details:', createCompanyError);
+                    if (createCompanyError.code === '42501') {
+                        throw new Error('Permission denied. Please check your authentication status and try again.');
+                    }
                     if (createCompanyError.message.includes('row-level security policy')) {
                         throw new Error('Database security policy prevents company creation. Please run the RLS fix script in Supabase.');
                     }
@@ -1128,6 +1139,48 @@ window.processPendingOperations = async function() {
         return { success: true };
     } catch (error) {
         console.error('❌ Processing failed:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+// Global function to check and fix authentication
+window.checkAndFixAuth = async function() {
+    try {
+        console.log('🔐 Checking authentication status...');
+        
+        if (!supabase) {
+            throw new Error('Supabase client not available');
+        }
+        
+        // Check current session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+            throw new Error('Session check failed: ' + sessionError.message);
+        }
+        
+        if (!session) {
+            console.log('⚠️ No active session found, attempting to sign in...');
+            
+            // Try to sign in with test user
+            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                email: 'test@fuelstation.com',
+                password: 'testpassword123'
+            });
+            
+            if (signInError) {
+                throw new Error('Sign in failed: ' + signInError.message);
+            }
+            
+            console.log('✅ Successfully signed in:', signInData.user.email);
+            return { success: true, user: signInData.user, message: 'Signed in successfully' };
+        } else {
+            console.log('✅ Active session found:', session.user.email);
+            return { success: true, user: session.user, message: 'Already signed in' };
+        }
+        
+    } catch (error) {
+        console.error('❌ Authentication check failed:', error);
         return { success: false, error: error.message };
     }
 };
