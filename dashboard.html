@@ -3614,36 +3614,67 @@
         updatePersonnelMetrics(personnelData);
           console.log('✅ Personnel metrics updated');
         
-        // Update personnel charts with proper chart destruction
+        // Update personnel charts with comprehensive chart destruction
         try {
-          // Destroy existing charts before creating new ones
-          if (window.cashierChart && typeof window.cashierChart.destroy === 'function') {
-            window.cashierChart.destroy();
+          console.log('🔄 Updating personnel charts...');
+          
+          // Destroy ALL existing charts globally
+          if (window.cashierChart) {
+            try {
+              if (typeof window.cashierChart.destroy === 'function') {
+                window.cashierChart.destroy();
+              }
+            } catch (e) {
+              console.log('Cashier chart already destroyed');
+            }
             window.cashierChart = null;
           }
-          if (window.attendantChart && typeof window.attendantChart.destroy === 'function') {
-            window.attendantChart.destroy();
+          
+          if (window.attendantChart) {
+            try {
+              if (typeof window.attendantChart.destroy === 'function') {
+                window.attendantChart.destroy();
+              }
+            } catch (e) {
+              console.log('Attendant chart already destroyed');
+            }
             window.attendantChart = null;
           }
-          if (window.performanceChart && typeof window.performanceChart.destroy === 'function') {
-            window.performanceChart.destroy();
+          
+          if (window.performanceChart) {
+            try {
+              if (typeof window.performanceChart.destroy === 'function') {
+                window.performanceChart.destroy();
+              }
+            } catch (e) {
+              console.log('Performance chart already destroyed');
+            }
             window.performanceChart = null;
           }
           
-          // Clear any existing chart canvases
-          const chartCanvases = document.querySelectorAll('canvas[id*="Chart"]');
-          chartCanvases.forEach(canvas => {
-            if (canvas.chart) {
-              try {
+          // Clear ALL chart canvases
+          const allCanvases = document.querySelectorAll('canvas');
+          allCanvases.forEach(canvas => {
+            try {
+              if (canvas.chart) {
                 canvas.chart.destroy();
-              } catch (e) {
-                console.log('Canvas chart already destroyed');
+                canvas.chart = null;
               }
+            } catch (e) {
+              console.log('Canvas chart already destroyed');
             }
           });
           
-          updatePersonnelCharts(personnelData);
-          console.log('📊 Personnel charts updated');
+          // Wait a moment before creating new charts
+          setTimeout(() => {
+            try {
+              updatePersonnelCharts(personnelData);
+              console.log('📊 Personnel charts updated successfully');
+            } catch (e) {
+              console.error('❌ Error in updatePersonnelCharts:', e);
+            }
+          }, 100);
+          
         } catch (chartError) {
           console.error('❌ Chart update error:', chartError);
         }
@@ -6835,60 +6866,132 @@
           }
         }
 
-        // Add navigation click handlers for all sections
-        const navLinks = document.querySelectorAll('.nav-link');
-        console.log('Found nav links:', navLinks.length);
-        
-        navLinks.forEach(link => {
-          link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const href = this.getAttribute('href');
-            const sectionId = href.replace('#', '');
-            
-            console.log('Nav link clicked:', href);
-            
-            // Remove active class from all nav links
-            navLinks.forEach(navLink => navLink.classList.remove('active'));
-            // Add active class to clicked link
-            this.classList.add('active');
-            
-            // Hide all sections first
-            const allSections = ['overview', 'reports', 'analytics', 'insights', 'personnel', 'users', 'renovation', 'expansion'];
-            allSections.forEach(id => {
-              const section = document.getElementById(id);
-              if (section) section.style.display = 'none';
-            });
-            
-            // Show the selected section
-            const targetSection = document.getElementById(sectionId);
-            if (targetSection) {
-              targetSection.style.display = 'block';
-            }
-            
-            // Special handling for users section
-            if (href === '#users') {
-              // Small delay to ensure section is visible before refreshing
-              setTimeout(() => {
-                if (typeof initializeApiSettings === 'function') {
-                  initializeApiSettings();
-                }
-              }, 100);
-            }
-            
-            // Special handling for personnel section
-            if (href === '#personnel') {
-              // Small delay to ensure section is visible before loading personnel data
-              setTimeout(() => {
-                if (typeof loadPersonnelDataFromReport === 'function') {
-                  loadPersonnelDataFromReport();
-                }
-              }, 100);
-            }
-            
-            // Update URL hash
-            window.location.hash = href;
+        // Comprehensive navigation and button functionality setup
+        function setupAllButtonFunctionality() {
+          console.log('🔄 Setting up all button functionality...');
+          
+          // 1. Setup navigation links
+          const navLinks = document.querySelectorAll('.nav-link');
+          console.log('Found nav links:', navLinks.length);
+          
+          navLinks.forEach(link => {
+            // Remove any existing listeners
+            link.removeEventListener('click', handleNavClick);
+            // Add new listener
+            link.addEventListener('click', handleNavClick);
           });
-        });
+          
+          // 2. Setup all other buttons
+          setupActionButtons();
+          setupReportButtons();
+          setupTestButtons();
+          
+          console.log('✅ All button functionality setup complete');
+        }
+        
+        function handleNavClick(e) {
+          e.preventDefault();
+          const href = this.getAttribute('href');
+          const sectionId = href.replace('#', '');
+          
+          console.log('🔄 Nav link clicked:', href);
+          
+          // Remove active class from all nav links
+          document.querySelectorAll('.nav-link').forEach(navLink => navLink.classList.remove('active'));
+          // Add active class to clicked link
+          this.classList.add('active');
+          
+          // Hide all sections first
+          const allSections = ['overview', 'reports', 'analytics', 'insights', 'personnel', 'users', 'renovation', 'expansion'];
+          allSections.forEach(id => {
+            const section = document.getElementById(id);
+            if (section) section.style.display = 'none';
+          });
+          
+          // Show the selected section
+          const targetSection = document.getElementById(sectionId);
+          if (targetSection) {
+            targetSection.style.display = 'block';
+            console.log('✅ Section shown:', sectionId);
+          }
+          
+          // Special handling for users section
+          if (href === '#users') {
+            setTimeout(() => {
+              if (typeof initializeApiSettings === 'function') {
+                initializeApiSettings();
+              }
+            }, 100);
+          }
+          
+          // Special handling for personnel section
+          if (href === '#personnel') {
+            setTimeout(() => {
+              if (typeof loadPersonnelDataFromReport === 'function') {
+                loadPersonnelDataFromReport();
+              }
+            }, 100);
+          }
+          
+          // Update URL hash
+          window.location.hash = href;
+        }
+        
+        function setupActionButtons() {
+          // Setup action buttons like "Refresh Data", "Test Button", etc.
+          const actionButtons = document.querySelectorAll('.btn, button[onclick]');
+          actionButtons.forEach(btn => {
+            if (btn.onclick) {
+              const onclickValue = btn.onclick.toString();
+              btn.removeAttribute('onclick');
+              btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                try {
+                  // Execute the original onclick function
+                  eval(onclickValue);
+                } catch (error) {
+                  console.error('Error executing button action:', error);
+                }
+              });
+            }
+          });
+        }
+        
+        function setupReportButtons() {
+          // Setup report-specific buttons
+          const reportButtons = document.querySelectorAll('.view-report-btn, .delete-report-btn, .view-recent-report-btn');
+          reportButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+              e.preventDefault();
+              const reportId = this.getAttribute('data-report-id');
+              const action = this.classList.contains('delete-report-btn') ? 'delete' : 'view';
+              
+              console.log(`🔄 Report button clicked: ${action} report ${reportId}`);
+              
+              if (action === 'delete') {
+                deleteReport(reportId);
+              } else {
+                viewReport(reportId);
+              }
+            });
+          });
+        }
+        
+        function setupTestButtons() {
+          // Setup test and utility buttons
+          const testButtons = document.querySelectorAll('button:not(.nav-link):not(.view-report-btn):not(.delete-report-btn):not(.view-recent-report-btn)');
+          testButtons.forEach(btn => {
+            if (!btn.hasAttribute('data-event-setup')) {
+              btn.setAttribute('data-event-setup', 'true');
+              btn.addEventListener('click', function(e) {
+                console.log('🔄 Button clicked:', this.textContent || this.className);
+              });
+            }
+          });
+        }
+        
+        // Call the setup function
+        setupAllButtonFunctionality();
         
         // Handle initial page load - show overview by default
         if (!window.location.hash || window.location.hash === '#overview') {
