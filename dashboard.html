@@ -6470,6 +6470,14 @@
         
         // Handle initial page load - show overview by default
         if (!window.location.hash || window.location.hash === '#overview') {
+          // Hide all sections first
+          const allSections = ['overview', 'reports', 'analytics', 'insights', 'personnel', 'users', 'renovation', 'expansion'];
+          allSections.forEach(id => {
+            const section = document.getElementById(id);
+            if (section) section.style.display = 'none';
+          });
+          
+          // Show overview section
           const overviewSection = document.getElementById('overview');
           const overviewLink = document.querySelector('a[href="#overview"]');
           if (overviewSection) {
@@ -6478,6 +6486,9 @@
           if (overviewLink) {
             overviewLink.classList.add('active');
           }
+          
+          // Clear URL hash to ensure clean state
+          window.location.hash = '';
         } else {
           // Show the section based on URL hash
           const hash = window.location.hash;
