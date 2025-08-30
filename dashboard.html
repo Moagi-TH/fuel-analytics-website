@@ -3252,6 +3252,23 @@
           console.error('❌ Error updating fuel margins:', error);
         }
         
+        // Global fuelData protection
+        window.fuelData = window.fuelData || {};
+        
+        // Override any function that tries to access fuelData[fuelKey]
+        function safeFuelDataAccess(fuelData, fuelKey) {
+          try {
+            if (!fuelData || typeof fuelData !== 'object') {
+              console.log('📊 fuelData is not available, using empty object');
+              return {};
+            }
+            return fuelData[fuelKey] || {};
+          } catch (error) {
+            console.log('📊 Error accessing fuelData, using empty object');
+            return {};
+          }
+        }
+        
         // Function to update fuel margins from report data
         function updateFuelMarginsFromReport(fuels) {
           try {
@@ -3329,8 +3346,8 @@
             
             // Add styles if not already present
             if (!document.getElementById('notification-styles')) {
-              const style = document.createElement('style');
-              style.id = 'notification-styles';
+              const notificationStyle = document.createElement('style');
+              notificationStyle.id = 'notification-styles';
               style.textContent = `
                 .notification {
                   position: fixed;
@@ -3367,7 +3384,7 @@
                   to { transform: translateX(0); opacity: 1; }
                 }
               `;
-              document.head.appendChild(style);
+              document.head.appendChild(notificationStyle);
             }
             
             // Add to page
@@ -7071,6 +7088,32 @@
         // Call data preservation
         preserveLoadedData();
         
+        // Final button test function
+        function testAllButtons() {
+          console.log('🧪 Testing all buttons...');
+          
+          const allButtons = document.querySelectorAll('button, .nav-link');
+          console.log('Found', allButtons.length, 'buttons to test');
+          
+          allButtons.forEach((btn, index) => {
+            console.log(`Button ${index + 1}:`, btn.textContent || btn.className, 'Clickable:', !btn.disabled);
+            
+            // Test if button has event listeners
+            if (btn.onclick) {
+              console.log(`  - Has onclick: ${btn.onclick.toString().substring(0, 50)}...`);
+            }
+            
+            // Test if button is visible
+            const rect = btn.getBoundingClientRect();
+            console.log(`  - Visible: ${rect.width > 0 && rect.height > 0}`);
+          });
+          
+          console.log('✅ Button test complete');
+        }
+        
+        // Run button test after 5 seconds
+        setTimeout(testAllButtons, 5000);
+        
         // Global error handler to prevent errors from breaking functionality
         window.addEventListener('error', function(e) {
           console.warn('⚠️ Global error caught:', e.error);
@@ -7234,8 +7277,8 @@
       });
 
       // Add CSS for role and status badges
-      const style = document.createElement('style');
-      style.textContent = `
+      const badgeStyle = document.createElement('style');
+      badgeStyle.textContent = `
         .role-badge {
           padding: 4px 8px;
           border-radius: 12px;
@@ -7267,7 +7310,7 @@
           to { transform: translateX(0); opacity: 1; }
         }
       `;
-      document.head.appendChild(style);
+      document.head.appendChild(badgeStyle);
   </script>
 </body>
 </html>
