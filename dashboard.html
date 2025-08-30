@@ -6406,7 +6406,14 @@
       function initializePage() {
         console.log('Initializing page...');
         
-        // Initialize API settings if we're on the users section
+        // FORCE OVERVIEW SECTION - Prevent any automatic redirection to users section
+        if (window.location.hash === '#users') {
+          console.log('🚫 Preventing automatic redirection to users section');
+          window.location.hash = '#overview';
+          return;
+        }
+        
+        // Initialize API settings if we're on the users section (should not happen now)
         if (window.location.hash === '#users') {
           if (typeof initializeApiSettings === 'function') {
             initializeApiSettings();
@@ -6512,6 +6519,22 @@
         // DOM is already ready
         initializePage();
       }
+      
+      // GLOBAL HASH CHANGE PROTECTION - Prevent automatic redirection to users section
+      window.addEventListener('hashchange', function() {
+        if (window.location.hash === '#users') {
+          console.log('🚫 Blocking automatic hash change to users section');
+          window.location.hash = '#overview';
+        }
+      });
+      
+      // Additional protection - check every second for unwanted hash changes
+      setInterval(function() {
+        if (window.location.hash === '#users') {
+          console.log('🚫 Periodic check: Blocking unwanted hash change to users section');
+          window.location.hash = '#overview';
+        }
+      }, 1000);
 
       // Test if critical libraries are loaded
       function testLibraries() {
