@@ -736,13 +736,14 @@ class FuelAnalyticsDB {
             }
 
             // Step 2: Create or update user profile
+            console.log('Checking for existing profile for user:', user.id);
             const { data: existingProfile, error: profileSearchError } = await supabase
                 .from('profiles')
-                .select('*')
+                .select('id, email, company_id, role, created_at, updated_at')
                 .eq('id', user.id)
-                .single();
+                .maybeSingle();
 
-            if (profileSearchError && !profileSearchError.message.includes('No rows found')) {
+            if (profileSearchError) {
                 console.warn('Profile search failed:', profileSearchError);
             }
 
@@ -763,22 +764,28 @@ class FuelAnalyticsDB {
                 console.log('Updated existing profile with company');
             } else {
                 // Create new profile
-                const { error: createProfileError } = await supabase
+                console.log('Creating new profile for user:', user.id);
+                const profileData = {
+                    id: user.id,
+                    email: user.email,
+                    company_id: company.id,
+                    role: 'admin',
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                };
+                
+                const { data: newProfile, error: createProfileError } = await supabase
                     .from('profiles')
-                    .insert([{
-                        id: user.id,
-                        email: user.email,
-                        company_id: company.id,
-                        role: 'admin',
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString()
-                    }]);
+                    .insert([profileData])
+                    .select()
+                    .single();
 
                 if (createProfileError) {
+                    console.error('Profile creation error details:', createProfileError);
                     throw new Error('Failed to create profile: ' + createProfileError.message);
                 }
 
-                console.log('Created new profile with company');
+                console.log('Created new profile with company:', newProfile.id);
             }
 
             // Step 3: Set current company and mark as initialized
