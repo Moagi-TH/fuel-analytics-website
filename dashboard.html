@@ -36,7 +36,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
   <!-- Core application scripts (load second, no defer) -->
-  <script src="./supabase-client.js?v=99999"></script>
+  <script src="./supabase-client.js?v=999999"></script>
   <script src="./utils/logger-fixed.js?v=999999"></script>
   <script src="./utils/errorHandler.js?v=999999"></script>
   <script src="./utils/stateManager.js?v=999999"></script>
@@ -3177,6 +3177,12 @@
           try {
             console.log('🔄 Updating fuel margins from report data:', fuels);
             
+            // Ensure fuels is an object
+            if (!fuels || typeof fuels !== 'object') {
+              console.warn('⚠️ Invalid fuels data:', fuels);
+              return;
+            }
+            
             // Extract fuel margin data
             const fuelMargins = [];
             
@@ -3225,6 +3231,8 @@
             console.error('❌ Error updating fuel margins:', error);
           }
         }
+        
+
       }
       
       // Function to load personnel data from most recent report
@@ -3283,9 +3291,27 @@
         updatePersonnelMetrics(personnelData);
           console.log('✅ Personnel metrics updated');
         
-        // Update personnel charts
-        updatePersonnelCharts(personnelData);
+        // Update personnel charts with proper chart destruction
+        try {
+          // Destroy existing charts before creating new ones
+          if (window.cashierChart) {
+            window.cashierChart.destroy();
+            window.cashierChart = null;
+          }
+          if (window.attendantChart) {
+            window.attendantChart.destroy();
+            window.attendantChart = null;
+          }
+          if (window.performanceChart) {
+            window.performanceChart.destroy();
+            window.performanceChart = null;
+          }
+          
+          updatePersonnelCharts(personnelData);
           console.log('📊 Personnel charts updated');
+        } catch (chartError) {
+          console.error('❌ Chart update error:', chartError);
+        }
           
           console.log('✅ Personnel data successfully loaded from Supabase report');
         } catch (error) {
@@ -6566,13 +6592,65 @@
         console.log('Page initialization complete');
       }
 
+      // NUCLEAR OPTION - Force Overview Section and Block API Section
+      function forceOverviewSection() {
+        console.log('🚀 NUCLEAR OPTION: Forcing Overview section...');
+        
+        // 1. Clear URL hash completely
+        window.location.hash = '';
+        history.replaceState(null, null, window.location.pathname);
+        
+        // 2. Hide ALL sections first
+        const allSections = ['overview', 'reports', 'analytics', 'insights', 'personnel', 'users', 'renovation', 'expansion'];
+        allSections.forEach(id => {
+          const section = document.getElementById(id);
+          if (section) {
+            section.style.display = 'none';
+            section.style.visibility = 'hidden';
+          }
+        });
+        
+        // 3. Show ONLY overview section
+        const overviewSection = document.getElementById('overview');
+        if (overviewSection) {
+          overviewSection.style.display = 'block';
+          overviewSection.style.visibility = 'visible';
+        }
+        
+        // 4. Reset all navigation links
+        const allNavLinks = document.querySelectorAll('.nav-link');
+        allNavLinks.forEach(link => link.classList.remove('active'));
+        
+        // 5. Activate only overview link
+        const overviewLink = document.querySelector('a[href="#overview"]');
+        if (overviewLink) {
+          overviewLink.classList.add('active');
+        }
+        
+        console.log('✅ NUCLEAR OPTION: Overview section forced successfully');
+      }
+      
       // Initialize immediately when DOM is ready
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializePage);
+        document.addEventListener('DOMContentLoaded', () => {
+          initializePage();
+          forceOverviewSection();
+        });
       } else {
         // DOM is already ready
         initializePage();
+        forceOverviewSection();
       }
+      
+      // Run nuclear option every 500ms for the first 10 seconds
+      let nuclearCounter = 0;
+      const nuclearInterval = setInterval(() => {
+        forceOverviewSection();
+        nuclearCounter++;
+        if (nuclearCounter >= 20) { // 10 seconds
+          clearInterval(nuclearInterval);
+        }
+      }, 500);
       
       // GLOBAL HASH CHANGE PROTECTION - Prevent automatic redirection to users section
       window.addEventListener('hashchange', function() {
