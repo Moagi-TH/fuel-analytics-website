@@ -2855,18 +2855,27 @@
       });
 
       manualEntryBtn?.addEventListener('click', () => {
+        console.log('🔄 Manual Entry button clicked - preserving current data...');
+        
+        // Preserve current data before opening manual entry
+        preserveCurrentData();
+        
         uploadArea.style.display = 'none';
         manualForm.style.display = 'block';
         reportsHistory.style.display = 'none';
         monthlyPerformance.style.display = 'none';
         reportInputMain.value = ''; // Clear uploaded file
-        renderSummary(); // Clear summary and regenerate insights
+        
+        // Don't call renderSummary() here as it clears data
+        // Instead, just update the display without clearing data
         
         // Load fuel price history when manual entry is opened
         updateFuelPriceHistoryDisplay();
         
         // Update smart loading availability
         updateManualDataSourceInfo();
+        
+        console.log('✅ Manual entry opened - current data preserved');
       });
 
       // Load from reports button event listener
@@ -2925,10 +2934,17 @@
       });
 
       cancelManualBtn?.addEventListener('click', () => {
+        console.log('🔄 Cancel Manual Entry - restoring preserved data...');
+        
         manualForm.style.display = 'none';
         uploadArea.style.display = 'none';
         reportsHistory.style.display = 'none';
         monthlyPerformance.style.display = 'none';
+        
+        // Restore preserved data
+        restorePreservedData();
+        
+        console.log('✅ Manual entry cancelled - data restored');
       });
 
       analyzeBtn?.addEventListener('click', async () => {
@@ -7192,25 +7208,98 @@
           showNotification('Data clearing disabled to preserve loaded reports', 'warning');
         }
         
-        // Preserve loaded data
-        function preserveLoadedData() {
-          console.log('🔄 Preserving loaded data...');
-          
-          // Store current data in sessionStorage
-          if (window.currentReportData) {
-            sessionStorage.setItem('preservedReportData', JSON.stringify(window.currentReportData));
-            console.log('✅ Report data preserved');
+              // Preserve current data before manual entry
+      function preserveCurrentData() {
+        console.log('🔄 Preserving current data before manual entry...');
+        
+        // Store current state in sessionStorage
+        if (window.monthlyData && Object.keys(window.monthlyData).length > 0) {
+          sessionStorage.setItem('preservedMonthlyData', JSON.stringify(window.monthlyData));
+          console.log('✅ Monthly data preserved');
+        }
+        
+        // Store current report data
+        if (window.currentReportData) {
+          sessionStorage.setItem('preservedReportData', JSON.stringify(window.currentReportData));
+          console.log('✅ Report data preserved');
+        }
+        
+        // Store current dashboard metrics
+        const dashboardMetrics = {
+          totalRevenue: document.getElementById('total-revenue')?.textContent,
+          fuelVolume: document.getElementById('fuel-volume')?.textContent,
+          totalProfit: document.getElementById('total-profit')?.textContent,
+          shopRevenue: document.getElementById('shop-revenue-per-liter')?.textContent,
+          fuelMargin: document.getElementById('fuel-margin')?.textContent,
+          shopProfit: document.getElementById('shop-profit')?.textContent
+        };
+        sessionStorage.setItem('preservedDashboardMetrics', JSON.stringify(dashboardMetrics));
+        console.log('✅ Dashboard metrics preserved');
+      }
+      
+      // Restore preserved data
+      function restorePreservedData() {
+        console.log('🔄 Restoring preserved data...');
+        
+        try {
+          // Restore monthly data
+          const preservedMonthlyData = sessionStorage.getItem('preservedMonthlyData');
+          if (preservedMonthlyData) {
+            window.monthlyData = JSON.parse(preservedMonthlyData);
+            console.log('✅ Monthly data restored');
           }
           
-          // Prevent data clearing
-          window.clearReportData = function() {
-            console.log('🔄 Data clear blocked - preserving loaded data');
-            showNotification('Data clearing blocked to preserve loaded reports', 'warning');
-          };
+          // Restore report data
+          const preservedReportData = sessionStorage.getItem('preservedReportData');
+          if (preservedReportData) {
+            window.currentReportData = JSON.parse(preservedReportData);
+            console.log('✅ Report data restored');
+          }
+          
+          // Restore dashboard metrics
+          const preservedDashboardMetrics = sessionStorage.getItem('preservedDashboardMetrics');
+          if (preservedDashboardMetrics) {
+            const metrics = JSON.parse(preservedDashboardMetrics);
+            Object.entries(metrics).forEach(([id, value]) => {
+              const element = document.getElementById(id);
+              if (element && value) {
+                element.textContent = value;
+              }
+            });
+            console.log('✅ Dashboard metrics restored');
+          }
+        } catch (error) {
+          console.error('❌ Error restoring preserved data:', error);
         }
+      }
+      
+      // Preserve loaded data
+      function preserveLoadedData() {
+        console.log('🔄 Preserving loaded data...');
+        
+        // Store current data in sessionStorage
+        if (window.currentReportData) {
+          sessionStorage.setItem('preservedReportData', JSON.stringify(window.currentReportData));
+          console.log('✅ Report data preserved');
+        }
+        
+        // Prevent data clearing
+        window.clearReportData = function() {
+          console.log('🔄 Data clear blocked - preserving loaded data');
+          showNotification('Data clearing blocked to preserve loaded reports', 'warning');
+        };
+      }
         
         // Call data preservation
         preserveLoadedData();
+        
+        // Restore data when returning to overview
+        window.addEventListener('hashchange', function() {
+          if (window.location.hash === '#overview' || window.location.hash === '') {
+            console.log('🔄 Returning to overview - checking for preserved data...');
+            restorePreservedData();
+          }
+        });
         
         // Final button test function
         function testAllButtons() {
