@@ -863,8 +863,39 @@
         <!-- Reports History -->
         <div class="reports-history" id="reports-history" style="display: none;">
           <div class="form-card">
-            <h3>Monthly Reports History</h3>
+            <h3>Most Recent Report</h3>
             <p>View and manage your uploaded reports</p>
+            
+            <!-- Most Recent Report Display -->
+            <div class="recent-report-card" style="background: var(--primary-color); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M14 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M14 2V8H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h4 style="margin: 0;">Current Report</h4>
+              </div>
+              <div id="recent-report-details" style="font-size: 16px; margin-bottom: 15px;">
+                Loading most recent report...
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button class="button primary" onclick="loadLatestReportData()" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 6px;">
+                    <path d="M21 2V6H17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3 12A9 9 0 0 0 15 4.49L21 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3 22V18H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M21 12A9 9 0 0 0 9 19.51L3 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Refresh Data
+                </button>
+                <button class="button secondary" onclick="navigateToOverview()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3);">
+                  View Dashboard
+                </button>
+              </div>
+            </div>
+            
+            <!-- All Reports List -->
+            <h4 style="margin-top: 30px; margin-bottom: 15px;">All Reports</h4>
             <div class="reports-list" id="reports-list">
               <!-- Reports will be populated here -->
             </div>
@@ -2668,6 +2699,92 @@
         
         console.log('✅ Most recent report display updated:', mostRecent.name);
       }
+      
+      // Update overview metrics with report data
+      function updateOverviewMetrics(reportData) {
+        console.log('🔄 Updating overview metrics with report data...');
+        
+        if (!reportData) {
+          console.log('⚠️ No report data provided');
+          return;
+        }
+        
+        // Update fuel margins if available
+        if (reportData.fuels) {
+          updateFuelMarginsFromReport(reportData.fuels);
+        }
+        
+        // Update fuel data inputs if available
+        if (reportData.fuels) {
+          const fuels = reportData.fuels;
+          
+          // Update Diesel data
+          if (fuels.diesel_ex) {
+            setField('fuel-diesel-revenue', fuels.diesel_ex.total_revenue_zar || '');
+            setField('fuel-diesel-qty', fuels.diesel_ex.quantity_liters || '');
+            setField('fuel-diesel-sell', fuels.diesel_ex.selling_price_per_liter || '');
+            setField('fuel-diesel-cost', fuels.diesel_ex.cost_price_per_liter || '');
+          }
+          
+          // Update V-Power 95 data
+          if (fuels.vpower_95) {
+            setField('fuel-v95-revenue', fuels.vpower_95.total_revenue_zar || '');
+            setField('fuel-v95-qty', fuels.vpower_95.quantity_liters || '');
+            setField('fuel-v95-sell', fuels.vpower_95.selling_price_per_liter || '');
+            setField('fuel-v95-cost', fuels.vpower_95.cost_price_per_liter || '');
+          }
+          
+          // Update V-Power Diesel data
+          if (fuels.vpower_diesel) {
+            setField('fuel-vdiesel-revenue', fuels.vpower_diesel.total_revenue_zar || '');
+            setField('fuel-vdiesel-qty', fuels.vpower_diesel.quantity_liters || '');
+            setField('fuel-vdiesel-sell', fuels.vpower_diesel.selling_price_per_liter || '');
+            setField('fuel-vdiesel-cost', fuels.vpower_diesel.cost_price_per_liter || '');
+          }
+        }
+        
+        // Update shop data if available
+        if (reportData.shop_lines && reportData.shop_lines.length > 0) {
+          // Update shop revenue
+          const totalShopRevenue = reportData.shop_lines.reduce((sum, item) => sum + (item.revenue || 0), 0);
+          setField('shop-revenue', totalShopRevenue);
+        }
+        
+        console.log('✅ Overview metrics updated');
+      }
+      
+      // Navigate to overview section
+      function navigateToOverview() {
+        console.log('🔄 Navigating to overview section...');
+        
+        // Hide all sections
+        const sections = ['overview', 'reports', 'analytics', 'insights', 'personnel', 'renovation', 'expansion', 'users'];
+        sections.forEach(sectionId => {
+          const section = document.getElementById(sectionId);
+          if (section) {
+            section.style.display = 'none';
+          }
+        });
+        
+        // Show overview section
+        const overviewSection = document.getElementById('overview');
+        if (overviewSection) {
+          overviewSection.style.display = 'block';
+        }
+        
+        // Update navigation
+        const navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(navLink => navLink.classList.remove('active'));
+        const overviewNavLink = document.querySelector('a[href="#overview"]');
+        if (overviewNavLink) {
+          overviewNavLink.classList.add('active');
+        }
+        
+        // Update URL hash
+        window.location.hash = '#overview';
+        
+        console.log('✅ Navigated to overview section');
+      }
 
       // Load monthly performance from database
       async function loadMonthlyPerformanceFromDatabase() {
@@ -3330,8 +3447,8 @@
               <div class="report-date">${report.month}/${report.year} - Uploaded ${report.uploadDate}</div>
             </div>
             <div class="report-actions">
-              <button class="button secondary small" onclick="viewReport('${report.id || index}')">View</button>
-              <button class="button secondary small" onclick="deleteReport('${report.id || index}')">Delete</button>
+              <button class="button secondary small" onclick="viewReport(${index})">View</button>
+              <button class="button secondary small" onclick="deleteReport(${index})">Delete</button>
             </div>
           </div>
         `).join('');
@@ -5612,12 +5729,41 @@
         const report = uploadedReports[index];
         console.log('Selected report:', report);
         
-        if (report && report.storagePath) {
-          // Open PDF from Supabase Storage in new tab
+        if (!report) {
+          console.error('Report not found at index:', index);
+          alert('Error: Report not found');
+          return;
+        }
+        
+        // For database reports, show the report data in the dashboard
+        if (report.data) {
+          console.log('📊 Loading report data into dashboard:', report.name);
+          
+          // Store the current report data
+          window.currentReportData = report.data;
+          
+          // Update dashboard with report data
+          if (report.data.fuels) {
+            updateFuelMarginsFromReport(report.data.fuels);
+          }
+          
+          // Update overview metrics
+          updateOverviewMetrics(report.data);
+          
+          // Show success message
+          showNotification('Report loaded successfully', 'success');
+          
+          // Navigate to overview to show the data
+          const overviewLink = document.querySelector('a[href="#overview"]');
+          if (overviewLink) {
+            overviewLink.click();
+          }
+        } else if (report.storagePath) {
+          // For storage reports, open PDF
           openPdfFromStorage(report.storagePath, report.name);
         } else {
-          console.error('Report not found or no storage path:', report);
-          alert('Error: Report file not found in storage');
+          console.error('Report has no data or storage path:', report);
+          alert('Error: Report data not available');
         }
       };
       
