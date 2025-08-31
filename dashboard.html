@@ -4818,22 +4818,22 @@
                   <h3>${monthKey}</h3>
                   <span class="timeline-badge">${index === months.length - 1 ? 'Current' : 'Historical'}</span>
                 </div>
-                <div class="timeline-metrics">
-                  <div class="metric-row">
-                    <span class="metric-label">Total Revenue:</span>
-                    <span class="metric-value">R ${metrics.totalRevenue.toLocaleString()}</span>
+                <div class="timeline-metrics" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 15px 0;">
+                  <div class="metric-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 12px; opacity: 0.8; margin-bottom: 5px;">Total Revenue</div>
+                    <div style="font-size: 18px; font-weight: bold;">R ${metrics.totalRevenue.toLocaleString()}</div>
                   </div>
-                  <div class="metric-row">
-                    <span class="metric-label">Fuel Volume:</span>
-                    <span class="metric-value">${metrics.totalVolume.toLocaleString()} L</span>
+                  <div class="metric-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 15px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 12px; opacity: 0.8; margin-bottom: 5px;">Fuel Volume</div>
+                    <div style="font-size: 18px; font-weight: bold;">${metrics.totalVolume.toLocaleString()} L</div>
                   </div>
-                  <div class="metric-row">
-                    <span class="metric-label">Shop Revenue:</span>
-                    <span class="metric-value">R ${metrics.shopRevenue.toLocaleString()}</span>
+                  <div class="metric-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 15px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 12px; opacity: 0.8; margin-bottom: 5px;">Shop Revenue</div>
+                    <div style="font-size: 18px; font-weight: bold;">R ${metrics.shopRevenue.toLocaleString()}</div>
                   </div>
-                  <div class="metric-row">
-                    <span class="metric-label">Shop-Fuel Ratio:</span>
-                    <span class="metric-value">R ${metrics.shopFuelRatio}/L</span>
+                  <div class="metric-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 15px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 12px; opacity: 0.8; margin-bottom: 5px;">Shop-Fuel Ratio</div>
+                    <div style="font-size: 18px; font-weight: bold;">R ${metrics.shopFuelRatio}/L</div>
                   </div>
                 </div>
                 <div class="timeline-actions">
@@ -4847,24 +4847,49 @@
         timelineHTML += `
             </div>
             
-            <!-- Analytics Charts Section -->
+            <!-- Enhanced Analytics Charts Section -->
             <div class="analytics-charts-section">
               <h3>Analytics & Trends</h3>
-              <div class="charts-grid">
-                <div class="chart-container">
-                  <h4>Revenue Trends</h4>
+              
+              <!-- Summary Metrics Cards -->
+              <div class="summary-metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                <div class="metric-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                  <h4 style="margin: 0 0 10px 0; font-size: 16px;">Total Revenue Trend</h4>
+                  <div id="total-revenue-trend" style="font-size: 24px; font-weight: bold;">R 0</div>
+                  <div style="font-size: 12px; opacity: 0.8;">Across all months</div>
+                </div>
+                <div class="metric-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                  <h4 style="margin: 0 0 10px 0; font-size: 16px;">Shop Revenue Trend</h4>
+                  <div id="shop-revenue-trend" style="font-size: 24px; font-weight: bold;">R 0</div>
+                  <div style="font-size: 12px; opacity: 0.8;">Shop performance</div>
+                </div>
+                <div class="metric-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                  <h4 style="margin: 0 0 10px 0; font-size: 16px;">Avg Shop-Fuel Ratio</h4>
+                  <div id="avg-shop-fuel-ratio" style="font-size: 24px; font-weight: bold;">R 0.00/L</div>
+                  <div style="font-size: 12px; opacity: 0.8;">Per liter efficiency</div>
+                </div>
+                <div class="metric-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                  <h4 style="margin: 0 0 10px 0; font-size: 16px;">Total Volume Trend</h4>
+                  <div id="total-volume-trend" style="font-size: 24px; font-weight: bold;">0 L</div>
+                  <div style="font-size: 12px; opacity: 0.8;">Fuel volume sold</div>
+                </div>
+              </div>
+              
+              <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;">
+                <div class="chart-container" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                  <h4 style="margin: 0 0 15px 0; color: #333;">Revenue Trends</h4>
                   <canvas id="revenue-trend-chart" width="400" height="200"></canvas>
                 </div>
-                <div class="chart-container">
-                  <h4>Fuel Volume Trends</h4>
+                <div class="chart-container" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                  <h4 style="margin: 0 0 15px 0; color: #333;">Fuel Volume Trends</h4>
                   <canvas id="volume-trend-chart" width="400" height="200"></canvas>
                 </div>
-                <div class="chart-container">
-                  <h4>Profit Margins</h4>
-                  <canvas id="profit-margin-chart" width="400" height="200"></canvas>
+                <div class="chart-container" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                  <h4 style="margin: 0 0 15px 0; color: #333;">Shop-Fuel Ratio Trends</h4>
+                  <canvas id="shop-fuel-ratio-chart" width="400" height="200"></canvas>
                 </div>
-                <div class="chart-container">
-                  <h4>Shop Performance</h4>
+                <div class="chart-container" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                  <h4 style="margin: 0 0 15px 0; color: #333;">Shop Performance</h4>
                   <canvas id="shop-performance-chart" width="400" height="200"></canvas>
                 </div>
               </div>
@@ -4987,7 +5012,8 @@
                 revenue: metrics.totalRevenue,
                 volume: metrics.totalVolume,
                 profit: metrics.totalRevenue * 0.15, // Estimate profit as 15% of revenue
-                shopRevenue: metrics.shopRevenue
+                shopRevenue: metrics.shopRevenue,
+                shopFuelRatio: parseFloat(metrics.shopFuelRatio)
               };
             }
             return {
@@ -4995,9 +5021,29 @@
               revenue: 0,
               volume: 0,
               profit: 0,
-              shopRevenue: 0
+              shopRevenue: 0,
+              shopFuelRatio: 0
             };
           });
+          
+          // Update summary metrics
+          const totalRevenue = chartData.reduce((sum, d) => sum + d.revenue, 0);
+          const totalShopRevenue = chartData.reduce((sum, d) => sum + d.shopRevenue, 0);
+          const totalVolume = chartData.reduce((sum, d) => sum + d.volume, 0);
+          const avgShopFuelRatio = totalVolume > 0 ? (totalShopRevenue / totalVolume).toFixed(2) : '0.00';
+          
+          // Update summary metric cards
+          const totalRevenueElement = document.getElementById('total-revenue-trend');
+          const shopRevenueElement = document.getElementById('shop-revenue-trend');
+          const avgShopFuelRatioElement = document.getElementById('avg-shop-fuel-ratio');
+          const totalVolumeElement = document.getElementById('total-volume-trend');
+          
+          if (totalRevenueElement) totalRevenueElement.textContent = `R ${totalRevenue.toLocaleString()}`;
+          if (shopRevenueElement) shopRevenueElement.textContent = `R ${totalShopRevenue.toLocaleString()}`;
+          if (avgShopFuelRatioElement) avgShopFuelRatioElement.textContent = `R ${avgShopFuelRatio}/L`;
+          if (totalVolumeElement) totalVolumeElement.textContent = `${totalVolume.toLocaleString()} L`;
+          
+          console.log('📊 Summary metrics updated:', { totalRevenue, totalShopRevenue, totalVolume, avgShopFuelRatio });
           
           // Create Revenue Trends Chart
           const revenueCtx = document.getElementById('revenue-trend-chart');
@@ -5136,6 +5182,43 @@
             });
           }
           
+          // Create Shop-Fuel Ratio Chart
+          const shopFuelRatioCtx = document.getElementById('shop-fuel-ratio-chart');
+          if (shopFuelRatioCtx && typeof Chart !== 'undefined') {
+            new Chart(shopFuelRatioCtx, {
+              type: 'line',
+              data: {
+                labels: chartData.map(d => d.month),
+                datasets: [{
+                  label: 'Shop-Fuel Ratio (R/L)',
+                  data: chartData.map(d => d.shopFuelRatio),
+                  borderColor: '#06b6d4',
+                  backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                  tension: 0.4,
+                  fill: true
+                }]
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: {
+                    display: false
+                  }
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      callback: function(value) {
+                        return 'R ' + value.toFixed(2) + '/L';
+                      }
+                    }
+                  }
+                }
+              }
+            });
+          }
+          
           console.log('✅ Analytics charts created successfully');
         } catch (error) {
           console.error('❌ Error creating analytics charts:', error);
@@ -5144,24 +5227,39 @@
       
       // Function to calculate metrics for a specific month
       function calculateMonthlyMetrics(reportData) {
+        console.log('🔄 Calculating monthly metrics for:', reportData);
+        
         let totalRevenue = 0;
         let totalVolume = 0;
         let shopRevenue = 0;
         
+        // Calculate fuel metrics
         if (reportData.fuels) {
+          console.log('📊 Processing fuel data:', reportData.fuels);
           Object.values(reportData.fuels).forEach(fuel => {
-            totalRevenue += fuel.total_revenue_zar || 0;
-            totalVolume += fuel.quantity_liters || 0;
+            const fuelRevenue = fuel.total_revenue_zar || 0;
+            const fuelVolume = fuel.quantity_liters || 0;
+            totalRevenue += fuelRevenue;
+            totalVolume += fuelVolume;
+            console.log(`⛽ Fuel: Revenue R${fuelRevenue}, Volume ${fuelVolume}L`);
           });
         }
         
-        if (reportData.shop_lines) {
+        // Calculate shop metrics
+        if (reportData.shop_lines && reportData.shop_lines.length > 0) {
+          console.log('🛍️ Processing shop data:', reportData.shop_lines);
           reportData.shop_lines.forEach(shop => {
-            shopRevenue += shop.total_revenue_zar || 0;
+            const shopItemRevenue = shop.total_revenue_zar || shop.revenue || 0;
+            shopRevenue += shopItemRevenue;
+            console.log(`🛍️ Shop item: ${shop.category || 'Unknown'} - R${shopItemRevenue}`);
           });
+        } else {
+          console.log('⚠️ No shop data found in report');
         }
         
         const shopFuelRatio = totalVolume > 0 ? (shopRevenue / totalVolume).toFixed(2) : '0.00';
+        
+        console.log(`📈 Calculated metrics: Revenue R${totalRevenue}, Volume ${totalVolume}L, Shop R${shopRevenue}, Ratio ${shopFuelRatio}`);
         
         return {
           totalRevenue,
