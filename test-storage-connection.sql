@@ -75,17 +75,22 @@ ORDER BY created_at DESC;
 -- Test the function (optional)
 SELECT * FROM list_storage_files();
 
--- Also check the monthly_reports table to see what's stored there
-SELECT 
-    id,
-    file_name,
-    storage_path,
-    report_month,
-    report_year,
-    created_at,
-    updated_at
+-- First, let's see what columns actually exist in the monthly_reports table
+SELECT column_name, data_type, is_nullable
+FROM information_schema.columns 
+WHERE table_name = 'monthly_reports'
+ORDER BY ordinal_position;
+
+-- Now let's see what's actually in the monthly_reports table (using only columns we know exist)
+SELECT *
 FROM monthly_reports 
-ORDER BY created_at DESC;
+ORDER BY created_at DESC
+LIMIT 10;
+
+-- Check what storage buckets exist
+SELECT DISTINCT bucket_id
+FROM storage.objects
+ORDER BY bucket_id;
 
 -- Check if there are any storage policies that might be blocking access
 SELECT 
