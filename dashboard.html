@@ -852,7 +852,7 @@
         <!-- Reports History -->
         <div class="reports-history" id="reports-history" style="display: none;">
           <div class="form-card">
-            <h3>Most Recent Report</h3>
+            <h3>Report History</h3>
             <p>View and manage your uploaded reports</p>
             
             <!-- Most Recent Report Display -->
@@ -3157,16 +3157,23 @@
         
         // Load reports from Supabase database first
         if (window.supabaseClient) {
+          console.log('🔄 Loading reports from Supabase database...');
           await loadReportsFromDatabase();
+          console.log('📊 Reports loaded from database, count:', uploadedReports.length);
         } else {
           console.log('⚠️ Supabase client not available, loading from storage only');
         }
         
         // Also load from storage as fallback
         await loadReportsFromStorage();
+        console.log('📊 Reports loaded from storage, total count:', uploadedReports.length);
         
-        // Render the reports history
-        renderReportsHistory();
+        // Force render the reports history with a small delay to ensure data is loaded
+        setTimeout(() => {
+          console.log('🔄 Rendering reports history with', uploadedReports.length, 'reports');
+          renderReportsHistory();
+          updateMostRecentReportDisplay();
+        }, 200);
         
         console.log('✅ View History completed');
       });
@@ -8102,19 +8109,33 @@
               await loadReportsFromDatabase();
               // Also load the latest report data into the dashboard
               await loadLatestReportData();
+              
+              // Force update the reports display
+              setTimeout(() => {
+                renderReportsHistory();
+                updateMostRecentReportDisplay();
+                console.log('📊 Reports display updated after initialization');
+              }, 500);
             }, 2000); // Increased delay for better performance
           });
         } else {
           // DOM is already ready
           initializePage();
-                      // Load reports after initialization with delay
-            setTimeout(async () => {
-              await loadReports();
-              // Also load reports from database
-              await loadReportsFromDatabase();
-              // Also load the latest report data into the dashboard
-              await loadLatestReportData();
-            }, 2000); // Increased delay for better performance
+          // Load reports after initialization with delay
+          setTimeout(async () => {
+            await loadReports();
+            // Also load reports from database
+            await loadReportsFromDatabase();
+            // Also load the latest report data into the dashboard
+            await loadLatestReportData();
+            
+            // Force update the reports display
+            setTimeout(() => {
+              renderReportsHistory();
+              updateMostRecentReportDisplay();
+              console.log('📊 Reports display updated after initialization');
+            }, 500);
+          }, 2000); // Increased delay for better performance
         }
       
       // Simple hash change protection
