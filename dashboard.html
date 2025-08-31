@@ -2580,59 +2580,127 @@
         }
       }
 
-      // Load reports from Supabase database
+      // Load reports from Supabase storage bucket and database
       async function loadReportsFromDatabase() {
-        if (!window.supabaseClient) {
-          console.log('⚠️ Supabase client not available');
-          return;
-        }
+        console.log('🔄 Loading reports from Supabase storage bucket and database...');
         
         try {
-          console.log('📊 Loading reports from Supabase database...');
-          const result = await window.supabaseClient.getMonthlyReports();
-          
-          if (result.success && result.reports) {
-            console.log('✅ Reports loaded from database:', result.reports.length);
+          if (window.supabaseClient) {
+            // First, get all files from storage bucket
+            const { data: storageFiles, error: storageError } = await window.supabaseClient.supabase.storage
+              .from('reports')
+              .list();
+            
+            if (storageError) {
+              console.error('❌ Error loading from storage:', storageError);
+              return;
+            }
+            
+            console.log('📁 Files in storage bucket:', storageFiles);
+            
+            // Get all reports from database
+            const { data: dbReports, error: dbError } = await window.supabaseClient.supabase
+              .from('monthly_reports')
+              .select('*')
+              .order('created_at', { ascending: false });
+            
+            if (dbError) {
+              console.error('❌ Error loading from database:', dbError);
+              return;
+            }
+            
+            console.log('📊 Reports in database:', dbReports);
             
             // Clear existing reports
             uploadedReports.length = 0;
             
-            // Process each report from database
-            result.reports.forEach(report => {
-              console.log('📄 Processing report:', report.filename || report.id);
-              
-              const reportData = {
-                name: report.filename || `Report_${report.report_month}_${report.report_year}`,
-                month: report.report_month,
-                year: report.report_year,
-                uploadDate: new Date(report.created_at).toLocaleDateString(),
-                data: report.data || {
-                  period: { month: report.report_month, year: report.report_year },
-                  fuels: {
-                    diesel_ex: { total_revenue_zar: 0, quantity_liters: 0 },
-                    vpower_95: { total_revenue_zar: 0, quantity_liters: 0 },
-                    vpower_diesel: { total_revenue_zar: 0, quantity_liters: 0 }
+            // Create a map of database reports by storage path
+            const dbReportsMap = {};
+            if (dbReports) {
+              dbReports.forEach(report => {
+                if (report.storage_path) {
+                  dbReportsMap[report.storage_path] = report;
+                }
+              });
+            }
+            
+            // Process storage files and match with database records
+            if (storageFiles) {
+              for (const file of storageFiles) {
+                console.log('📄 Processing file:', file.name);
+                
+                // Extract month/year from filename
+                let month = 1, year = 2025;
+                let originalFilename = file.name;
+                
+                // Try to extract from filename patterns
+                let match = file.name.match(/Period Report (\d+) (\w+) (\d{4})/);
+                if (!match) {
+                  const altMatch = file.name.match(/(\w+)-Period Report (\d+) (\w+) (\d{4})/);
+                  if (altMatch) {
+                    match = [altMatch[0], altMatch[2], altMatch[3], altMatch[4]];
+                  }
+                }
+                
+                if (match) {
+                  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                                     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                  month = monthNames.indexOf(match[2]) + 1;
+                  year = parseInt(match[3]);
+                } else {
+                  // Use creation date for UUID filenames
+                  const createdDate = new Date(file.created_at);
+                  month = createdDate.getMonth() + 1;
+                  year = createdDate.getFullYear();
+                  
+                  if (file.metadata?.original_name) {
+                    originalFilename = file.metadata.original_name;
+                  } else {
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    originalFilename = `Period Report ${month} ${monthNames[month-1]} ${year}.pdf`;
+                  }
+                }
+                
+                // Check if we have database record for this file
+                const dbReport = dbReportsMap[file.name];
+                
+                const reportData = {
+                  id: dbReport?.id || null,
+                  name: originalFilename,
+                  month: month,
+                  year: year,
+                  uploadDate: new Date(file.created_at).toLocaleDateString(),
+                  data: dbReport?.data || {
+                    period: { month: month, year: year },
+                    fuels: {
+                      diesel_ex: { total_revenue_zar: 0, quantity_liters: 0 },
+                      vpower_95: { total_revenue_zar: 0, quantity_liters: 0 },
+                      vpower_diesel: { total_revenue_zar: 0, quantity_liters: 0 }
+                    },
+                    shop_lines: []
                   },
-                  shop_lines: []
-                },
-                id: report.id
-              };
-              
-              uploadedReports.push(reportData);
-            });
+                  storagePath: file.name,
+                  size: file.metadata?.size || 0,
+                  lastModified: file.updated_at
+                };
+                
+                uploadedReports.push(reportData);
+                console.log('✅ Added report:', reportData.name);
+              }
+            }
             
-            // Update the reports display
-            renderReportsHistory();
-            
-            // Also update monthly data for overview
+            // Update monthly data
             updateMonthlyDataFromReports();
             
-            console.log(`✅ Loaded ${uploadedReports.length} reports from database`);
+            console.log('✅ Reports loaded successfully from Supabase storage and database');
+            console.log('📊 Total reports loaded:', uploadedReports.length);
+            
           } else {
-            console.log('📊 No reports found in database');
+            console.log('⚠️ Supabase client not available');
           }
         } catch (error) {
-          console.error('❌ Error loading reports from database:', error);
+          console.error('❌ Error loading reports from Supabase:', error);
         }
       }
       
@@ -5975,7 +6043,7 @@
         }
       }
       
-      window.deleteReport = function(index) {
+      window.deleteReport = async function(index) {
         console.log('deleteReport called with index:', index);
         console.log('uploadedReports:', uploadedReports);
         
@@ -5983,55 +6051,107 @@
           const report = uploadedReports[index];
           console.log('Deleting report:', report);
           
-          // Delete from database if available
-          if (window.supabaseClient && report.id) {
-            try {
-              // Call the correct delete function from supabase client
-              window.supabaseClient.deleteMonthlyReport(report.id);
-              console.log('✅ Report deleted from database');
-            } catch (error) {
-              console.error('❌ Error deleting from database:', error);
+          try {
+            // Delete from database if available
+            if (window.supabaseClient && report.id) {
+              const result = await window.supabaseClient.deleteMonthlyReport(report.id);
+              console.log('✅ Report deleted from database:', result);
             }
-          }
-          
-          // Remove from local array
-          uploadedReports.splice(index, 1);
-          
-          // Remove from monthly data
-          const monthKey = `${report.month}/${report.year}`;
-          if (window.monthlyData && window.monthlyData[monthKey]) {
-            window.monthlyData[monthKey] = window.monthlyData[monthKey].filter(r => r !== report);
-            if (window.monthlyData[monthKey].length === 0) {
-              delete window.monthlyData[monthKey];
+            
+            // Delete from storage bucket if available
+            if (window.supabaseClient && report.storagePath) {
+              const { error } = await window.supabaseClient.supabase.storage
+                .from('reports')
+                .remove([report.storagePath]);
+              
+              if (error) {
+                console.error('❌ Error deleting from storage:', error);
+              } else {
+                console.log('✅ Report deleted from storage');
+              }
             }
+            
+            // Remove from local array
+            uploadedReports.splice(index, 1);
+            
+            // Remove from monthly data
+            const monthKey = `${report.month}/${report.year}`;
+            if (window.monthlyData && window.monthlyData[monthKey]) {
+              window.monthlyData[monthKey] = window.monthlyData[monthKey].filter(r => r !== report);
+              if (window.monthlyData[monthKey].length === 0) {
+                delete window.monthlyData[monthKey];
+              }
+            }
+            
+            // Update display
+            renderReportsHistory();
+            updateMostRecentReportDisplay();
+            
+            console.log('✅ Report deleted successfully');
+            
+          } catch (error) {
+            console.error('❌ Error deleting report:', error);
+            alert('Error deleting report: ' + error.message);
           }
-          
-          // Update display
-          renderReportsHistory();
-          updateMostRecentReportDisplay();
-          
-          console.log('✅ Report deleted successfully');
         }
       };
       
-      // Function to clear all reports
-      window.clearAllReports = function() {
+      // Function to clear all reports from Supabase storage
+      window.clearAllReports = async function() {
         if (confirm('Are you sure you want to delete ALL reports? This action cannot be undone.')) {
-          console.log('🗑️ Clearing all reports...');
+          console.log('🗑️ Clearing all reports from Supabase...');
           
-          // Clear local arrays
-          uploadedReports.length = 0;
-          
-          // Clear monthly data
-          if (window.monthlyData) {
-            Object.keys(window.monthlyData).forEach(key => delete window.monthlyData[key]);
+          try {
+            if (window.supabaseClient) {
+              // Get all reports from Supabase
+              const { data: reports, error } = await window.supabaseClient.supabase
+                .from('monthly_reports')
+                .select('*');
+              
+              if (error) {
+                console.error('❌ Error fetching reports:', error);
+                return;
+              }
+              
+              // Delete each report from database
+              for (const report of reports) {
+                await window.supabaseClient.deleteMonthlyReport(report.id);
+              }
+              
+              // Clear from storage bucket
+              const { data: files, error: storageError } = await window.supabaseClient.supabase.storage
+                .from('reports')
+                .list();
+              
+              if (!storageError && files) {
+                for (const file of files) {
+                  await window.supabaseClient.supabase.storage
+                    .from('reports')
+                    .remove([file.name]);
+                }
+              }
+              
+              console.log('✅ All reports deleted from Supabase');
+            }
+            
+            // Clear local arrays
+            uploadedReports.length = 0;
+            
+            // Clear monthly data
+            if (window.monthlyData) {
+              Object.keys(window.monthlyData).forEach(key => delete window.monthlyData[key]);
+            }
+            
+            // Update display
+            renderReportsHistory();
+            updateMostRecentReportDisplay();
+            
+            console.log('✅ All reports cleared successfully');
+            
+          } catch (error) {
+            console.error('❌ Error clearing all reports:', error);
+            alert('Error clearing reports: ' + error.message);
           }
-          
-          // Update display
-          renderReportsHistory();
-          updateMostRecentReportDisplay();
-          
-          console.log('✅ All reports cleared');
         }
       };
       
@@ -6040,29 +6160,256 @@
         console.log('🔄 Updating Analytics section with new data...');
         
         try {
-          // Update fuel margins table
+          // Calculate total revenue and volume
+          let totalRevenue = 0;
+          let totalVolume = 0;
+          let totalShopRevenue = 0;
+          
           if (data.fuels) {
-            updateFuelMargins(data.fuels);
+            Object.values(data.fuels).forEach(fuel => {
+              totalRevenue += fuel.total_revenue_zar || 0;
+              totalVolume += fuel.quantity_liters || 0;
+            });
+          }
+          
+          if (data.shop_lines) {
+            data.shop_lines.forEach(shop => {
+              totalShopRevenue += shop.total_revenue_zar || 0;
+            });
+          }
+          
+          // Update fuel margins table with actual data
+          if (data.fuels) {
+            updateFuelMarginsWithData(data.fuels);
           }
           
           // Update fuel distribution chart
           if (data.fuels) {
-            updateFuelDistributionChart(data.fuels);
+            updateFuelDistributionChartWithData(data.fuels);
           }
           
           // Update shop performance chart
           if (data.shop_lines && data.shop_lines.length > 0) {
-            updateShopPerformanceChart(data.shop_lines);
+            updateShopPerformanceChartWithData(data.shop_lines);
           }
           
-          // Update revenue trends
-          if (data.fuels || data.shop_lines) {
-            updateRevenueTrends(data);
-          }
+          // Update revenue performance chart
+          updateRevenuePerformanceChart(data);
           
-          console.log('✅ Analytics section updated');
+          // Update KPIs
+          updateAnalyticsKPIs(totalRevenue, totalVolume, totalShopRevenue);
+          
+          console.log('✅ Analytics section updated with real data');
         } catch (error) {
           console.error('❌ Error updating Analytics section:', error);
+        }
+      }
+      
+      // Function to update fuel margins table with actual data
+      function updateFuelMarginsWithData(fuels) {
+        const fuelTypes = {
+          'diesel_ex': 'Diesel Ex',
+          'vpower_95': 'V-Power 95', 
+          'vpower_diesel': 'V-Power Diesel'
+        };
+        
+        Object.entries(fuels).forEach(([fuelKey, fuelData]) => {
+          const fuelName = fuelTypes[fuelKey];
+          if (fuelName && fuelData) {
+            const revenue = fuelData.total_revenue_zar || 0;
+            const volume = fuelData.quantity_liters || 0;
+            const margin = fuelData.margin_zar || 0;
+            const marginPercent = volume > 0 ? (margin / revenue * 100) : 0;
+            const profit = fuelData.profit_zar || 0;
+            
+            // Update table cells if they exist
+            const row = document.querySelector(`tr[data-fuel="${fuelKey}"]`);
+            if (row) {
+              const cells = row.querySelectorAll('td');
+              if (cells.length >= 6) {
+                cells[1].textContent = `R ${revenue.toLocaleString()}`;
+                cells[2].textContent = `${volume.toLocaleString()} L`;
+                cells[3].textContent = `R ${margin.toLocaleString()}`;
+                cells[4].textContent = `${marginPercent.toFixed(1)}%`;
+                cells[5].textContent = `R ${profit.toLocaleString()}`;
+              }
+            }
+          }
+        });
+      }
+      
+      // Function to update fuel distribution chart with actual data
+      function updateFuelDistributionChartWithData(fuels) {
+        const ctx = document.getElementById('fuel-distribution-chart');
+        if (!ctx) return;
+        
+        const labels = [];
+        const data = [];
+        const colors = ['#3B82F6', '#10B981', '#F59E0B'];
+        
+        Object.entries(fuels).forEach(([fuelKey, fuelData], index) => {
+          const fuelNames = {
+            'diesel_ex': 'Diesel Ex',
+            'vpower_95': 'V-Power 95',
+            'vpower_diesel': 'V-Power Diesel'
+          };
+          
+          labels.push(fuelNames[fuelKey] || fuelKey);
+          data.push(fuelData.total_revenue_zar || 0);
+        });
+        
+        // Destroy existing chart if it exists
+        if (window.fuelDistributionChart) {
+          window.fuelDistributionChart.destroy();
+        }
+        
+        // Create new chart
+        window.fuelDistributionChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: labels,
+            datasets: [{
+              data: data,
+              backgroundColor: colors,
+              borderWidth: 2,
+              borderColor: '#1F2937'
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  color: '#F9FAFB',
+                  font: { size: 12 }
+                }
+              }
+            }
+          }
+        });
+      }
+      
+      // Function to update shop performance chart with actual data
+      function updateShopPerformanceChartWithData(shopLines) {
+        const ctx = document.getElementById('shop-performance-chart');
+        if (!ctx) return;
+        
+        const labels = shopLines.map(shop => shop.category || 'Unknown');
+        const data = shopLines.map(shop => shop.total_revenue_zar || 0);
+        
+        // Destroy existing chart if it exists
+        if (window.shopPerformanceChart) {
+          window.shopPerformanceChart.destroy();
+        }
+        
+        // Create new chart
+        window.shopPerformanceChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Shop Revenue (R)',
+              data: data,
+              backgroundColor: '#8B5CF6',
+              borderColor: '#7C3AED',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { color: '#F9FAFB' }
+              },
+              x: {
+                ticks: { color: '#F9FAFB' }
+              }
+            },
+            plugins: {
+              legend: {
+                labels: { color: '#F9FAFB' }
+              }
+            }
+          }
+        });
+      }
+      
+      // Function to update revenue performance chart
+      function updateRevenuePerformanceChart(data) {
+        const ctx = document.getElementById('revenue-performance-chart');
+        if (!ctx) return;
+        
+        // Calculate monthly revenue data
+        const monthlyData = [];
+        if (data.fuels) {
+          Object.values(data.fuels).forEach(fuel => {
+            monthlyData.push(fuel.total_revenue_zar || 0);
+          });
+        }
+        
+        const labels = ['Diesel Ex', 'V-Power 95', 'V-Power Diesel'];
+        
+        // Destroy existing chart if it exists
+        if (window.revenuePerformanceChart) {
+          window.revenuePerformanceChart.destroy();
+        }
+        
+        // Create new chart
+        window.revenuePerformanceChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Revenue (R)',
+              data: monthlyData,
+              borderColor: '#10B981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              tension: 0.4,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { color: '#F9FAFB' }
+              },
+              x: {
+                ticks: { color: '#F9FAFB' }
+              }
+            },
+            plugins: {
+              legend: {
+                labels: { color: '#F9FAFB' }
+              }
+            }
+          }
+        });
+      }
+      
+      // Function to update Analytics KPIs
+      function updateAnalyticsKPIs(totalRevenue, totalVolume, totalShopRevenue) {
+        // Update shop to fuel ratio
+        const shopFuelRatio = totalVolume > 0 ? (totalShopRevenue / totalVolume) : 0;
+        const shopFuelRatioElement = document.getElementById('shop-fuel-ratio');
+        if (shopFuelRatioElement) {
+          shopFuelRatioElement.textContent = `R ${shopFuelRatio.toFixed(2)}/L`;
+        }
+        
+        // Update fuel margins
+        const fuelMarginsElement = document.getElementById('fuel-margins');
+        if (fuelMarginsElement) {
+          fuelMarginsElement.textContent = `R ${totalRevenue.toLocaleString()}`;
+        }
+        
+        // Update shop profit margin
+        const shopProfitMargin = totalRevenue > 0 ? (totalShopRevenue / totalRevenue * 100) : 0;
+        const shopProfitMarginElement = document.getElementById('shop-profit-margin');
+        if (shopProfitMarginElement) {
+          shopProfitMarginElement.textContent = `${shopProfitMargin.toFixed(1)}%`;
         }
       }
       
@@ -6071,13 +6418,13 @@
         console.log('🔄 Updating Insights section with new data...');
         
         try {
-          // Calculate insights from the data
-          const insights = calculateInsights(data);
+          // Calculate comprehensive insights from the data
+          const insights = calculateComprehensiveInsights(data);
           
-          // Update insights display
-          updateInsightsDisplay(insights);
+          // Update insights display with recommendations and flags
+          updateInsightsDisplayWithFlags(insights);
           
-          console.log('✅ Insights section updated');
+          console.log('✅ Insights section updated with recommendations and flags');
         } catch (error) {
           console.error('❌ Error updating Insights section:', error);
         }
@@ -6088,70 +6435,585 @@
         console.log('🔄 Updating Personnel section with new data...');
         
         try {
-          // Update personnel data from report
-          if (data.personnel || data.shop_lines) {
-            updatePersonnelDataFromReport(data);
-          }
+          // Extract personnel data from report
+          const personnelData = extractPersonnelData(data);
+          
+          // Update personnel display with best/worst performers and red flags
+          updatePersonnelDisplayWithPerformance(personnelData);
           
           // Update personnel charts
-          updatePersonnelCharts();
+          updatePersonnelChartsWithData(personnelData);
           
-          console.log('✅ Personnel section updated');
+          console.log('✅ Personnel section updated with performance metrics');
         } catch (error) {
           console.error('❌ Error updating Personnel section:', error);
         }
       }
       
-      // Function to calculate insights from data
-      function calculateInsights(data) {
+      // Function to extract personnel data from report
+      function extractPersonnelData(data) {
+        const personnel = {
+          pumpAttendants: [],
+          cashiers: [],
+          redFlags: [],
+          greenFlags: [],
+          bestPumpAttendant: null,
+          worstPumpAttendant: null,
+          bestCashier: null,
+          worstCashier: null
+        };
+        
+        // Extract pump attendant data from fuel transactions
+        if (data.fuels) {
+          Object.entries(data.fuels).forEach(([fuelType, fuelData]) => {
+            if (fuelData.transactions) {
+              fuelData.transactions.forEach(transaction => {
+                if (transaction.attendant) {
+                  const attendant = personnel.pumpAttendants.find(a => a.name === transaction.attendant);
+                  if (attendant) {
+                    attendant.volume += transaction.quantity || 0;
+                    attendant.revenue += transaction.revenue || 0;
+                    attendant.transactions++;
+                  } else {
+                    personnel.pumpAttendants.push({
+                      name: transaction.attendant,
+                      volume: transaction.quantity || 0,
+                      revenue: transaction.revenue || 0,
+                      transactions: 1,
+                      efficiency: 0
+                    });
+                  }
+                }
+              });
+            }
+          });
+        }
+        
+        // Extract cashier data from shop transactions
+        if (data.shop_lines) {
+          data.shop_lines.forEach(shopLine => {
+            if (shopLine.transactions) {
+              shopLine.transactions.forEach(transaction => {
+                if (transaction.cashier) {
+                  const cashier = personnel.cashiers.find(c => c.name === transaction.cashier);
+                  if (cashier) {
+                    cashier.revenue += transaction.revenue || 0;
+                    cashier.transactions++;
+                    cashier.units += transaction.units || 0;
+                  } else {
+                    personnel.cashiers.push({
+                      name: transaction.cashier,
+                      revenue: transaction.revenue || 0,
+                      transactions: 1,
+                      units: transaction.units || 0,
+                      avgTransaction: 0
+                    });
+                  }
+                }
+              });
+            }
+          });
+        }
+        
+        // Calculate efficiency metrics
+        personnel.pumpAttendants.forEach(attendant => {
+          attendant.efficiency = attendant.volume > 0 ? (attendant.revenue / attendant.volume) : 0;
+        });
+        
+        personnel.cashiers.forEach(cashier => {
+          cashier.avgTransaction = cashier.transactions > 0 ? (cashier.revenue / cashier.transactions) : 0;
+        });
+        
+        // Find best and worst performers
+        if (personnel.pumpAttendants.length > 0) {
+          personnel.pumpAttendants.sort((a, b) => b.efficiency - a.efficiency);
+          personnel.bestPumpAttendant = personnel.pumpAttendants[0];
+          personnel.worstPumpAttendant = personnel.pumpAttendants[personnel.pumpAttendants.length - 1];
+        }
+        
+        if (personnel.cashiers.length > 0) {
+          personnel.cashiers.sort((a, b) => b.avgTransaction - a.avgTransaction);
+          personnel.bestCashier = personnel.cashiers[0];
+          personnel.worstCashier = personnel.cashiers[personnel.cashiers.length - 1];
+        }
+        
+        // Generate red and green flags
+        generatePersonnelFlags(personnel);
+        
+        return personnel;
+      }
+      
+      // Function to generate personnel flags
+      function generatePersonnelFlags(personnel) {
+        // Red flags
+        if (personnel.worstPumpAttendant && personnel.worstPumpAttendant.efficiency < 20) {
+          personnel.redFlags.push(`${personnel.worstPumpAttendant.name} has low fuel efficiency (R${personnel.worstPumpAttendant.efficiency.toFixed(2)}/L)`);
+        }
+        
+        if (personnel.worstCashier && personnel.worstCashier.avgTransaction < 50) {
+          personnel.redFlags.push(`${personnel.worstCashier.name} has low average transaction value (R${personnel.worstCashier.avgTransaction.toFixed(2)})`);
+        }
+        
+        if (personnel.pumpAttendants.some(a => a.transactions < 10)) {
+          personnel.redFlags.push('Some pump attendants have very few transactions');
+        }
+        
+        if (personnel.cashiers.some(c => c.transactions < 5)) {
+          personnel.redFlags.push('Some cashiers have very few transactions');
+        }
+        
+        // Green flags
+        if (personnel.bestPumpAttendant && personnel.bestPumpAttendant.efficiency > 30) {
+          personnel.greenFlags.push(`${personnel.bestPumpAttendant.name} has excellent fuel efficiency (R${personnel.bestPumpAttendant.efficiency.toFixed(2)}/L)`);
+        }
+        
+        if (personnel.bestCashier && personnel.bestCashier.avgTransaction > 100) {
+          personnel.greenFlags.push(`${personnel.bestCashier.name} has high average transaction value (R${personnel.bestCashier.avgTransaction.toFixed(2)})`);
+        }
+        
+        if (personnel.pumpAttendants.length >= 3) {
+          personnel.greenFlags.push('Good pump attendant coverage');
+        }
+        
+        if (personnel.cashiers.length >= 2) {
+          personnel.greenFlags.push('Good cashier coverage');
+        }
+      }
+      
+      // Function to update personnel display with performance
+      function updatePersonnelDisplayWithPerformance(personnel) {
+        const personnelSection = document.getElementById('personnel');
+        if (!personnelSection) return;
+        
+        const personnelContent = `
+          <div class="personnel-container">
+            <div class="performance-overview">
+              <h3>Personnel Performance Overview</h3>
+              
+              <div class="best-performers">
+                <h4>🏆 Best Performers</h4>
+                ${personnel.bestPumpAttendant ? `
+                  <div class="performer-card">
+                    <h5>Best Pump Attendant: ${personnel.bestPumpAttendant.name}</h5>
+                    <p>Efficiency: R${personnel.bestPumpAttendant.efficiency.toFixed(2)}/L</p>
+                    <p>Volume: ${personnel.bestPumpAttendant.volume.toLocaleString()} L</p>
+                    <p>Revenue: R${personnel.bestPumpAttendant.revenue.toLocaleString()}</p>
+                  </div>
+                ` : '<p>No pump attendant data available</p>'}
+                
+                ${personnel.bestCashier ? `
+                  <div class="performer-card">
+                    <h5>Best Cashier: ${personnel.bestCashier.name}</h5>
+                    <p>Avg Transaction: R${personnel.bestCashier.avgTransaction.toFixed(2)}</p>
+                    <p>Total Revenue: R${personnel.bestCashier.revenue.toLocaleString()}</p>
+                    <p>Transactions: ${personnel.bestCashier.transactions}</p>
+                  </div>
+                ` : '<p>No cashier data available</p>'}
+              </div>
+              
+              <div class="worst-performers">
+                <h4>⚠️ Areas for Improvement</h4>
+                ${personnel.worstPumpAttendant ? `
+                  <div class="performer-card warning">
+                    <h5>Lowest Pump Attendant: ${personnel.worstPumpAttendant.name}</h5>
+                    <p>Efficiency: R${personnel.worstPumpAttendant.efficiency.toFixed(2)}/L</p>
+                    <p>Volume: ${personnel.worstPumpAttendant.volume.toLocaleString()} L</p>
+                    <p>Revenue: R${personnel.worstPumpAttendant.revenue.toLocaleString()}</p>
+                  </div>
+                ` : ''}
+                
+                ${personnel.worstCashier ? `
+                  <div class="performer-card warning">
+                    <h5>Lowest Cashier: ${personnel.worstCashier.name}</h5>
+                    <p>Avg Transaction: R${personnel.worstCashier.avgTransaction.toFixed(2)}</p>
+                    <p>Total Revenue: R${personnel.worstCashier.revenue.toLocaleString()}</p>
+                    <p>Transactions: ${personnel.worstCashier.transactions}</p>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+            
+            <div class="personnel-flags">
+              <div class="red-flags">
+                <h4>🚨 Personnel Red Flags (${personnel.redFlags.length})</h4>
+                ${personnel.redFlags.length > 0 ? 
+                  `<ul>${personnel.redFlags.map(flag => `<li>${flag}</li>`).join('')}</ul>` : 
+                  '<p>No personnel red flags detected</p>'
+                }
+              </div>
+              
+              <div class="green-flags">
+                <h4>✅ Personnel Green Flags (${personnel.greenFlags.length})</h4>
+                ${personnel.greenFlags.length > 0 ? 
+                  `<ul>${personnel.greenFlags.map(flag => `<li>${flag}</li>`).join('')}</ul>` : 
+                  '<p>No personnel green flags detected</p>'
+                }
+              </div>
+            </div>
+          </div>
+        `;
+        
+        personnelSection.innerHTML = personnelContent;
+      }
+      
+      // Function to update personnel charts with data
+      function updatePersonnelChartsWithData(personnel) {
+        // Update pump attendant performance chart
+        const pumpCtx = document.getElementById('pump-attendant-chart');
+        if (pumpCtx && personnel.pumpAttendants.length > 0) {
+          const labels = personnel.pumpAttendants.map(a => a.name);
+          const data = personnel.pumpAttendants.map(a => a.efficiency);
+          
+          if (window.pumpAttendantChart) {
+            window.pumpAttendantChart.destroy();
+          }
+          
+          window.pumpAttendantChart = new Chart(pumpCtx, {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: 'Efficiency (R/L)',
+                data: data,
+                backgroundColor: '#3B82F6',
+                borderColor: '#2563EB',
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: { color: '#F9FAFB' }
+                },
+                x: {
+                  ticks: { color: '#F9FAFB' }
+                }
+              },
+              plugins: {
+                legend: {
+                  labels: { color: '#F9FAFB' }
+                }
+              }
+            }
+          });
+        }
+        
+        // Update cashier performance chart
+        const cashierCtx = document.getElementById('cashier-chart');
+        if (cashierCtx && personnel.cashiers.length > 0) {
+          const labels = personnel.cashiers.map(c => c.name);
+          const data = personnel.cashiers.map(c => c.avgTransaction);
+          
+          if (window.cashierChart) {
+            window.cashierChart.destroy();
+          }
+          
+          window.cashierChart = new Chart(cashierCtx, {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: 'Avg Transaction (R)',
+                data: data,
+                backgroundColor: '#10B981',
+                borderColor: '#059669',
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: { color: '#F9FAFB' }
+                },
+                x: {
+                  ticks: { color: '#F9FAFB' }
+                }
+              },
+              plugins: {
+                legend: {
+                  labels: { color: '#F9FAFB' }
+                }
+              }
+            }
+          });
+        }
+      }
+      
+      // Function to calculate comprehensive insights from data
+      function calculateComprehensiveInsights(data) {
         const insights = {
           totalRevenue: 0,
           totalFuelVolume: 0,
           totalShopRevenue: 0,
           fuelEfficiency: 0,
           shopPerformance: 0,
-          recommendations: []
+          fuelMargins: {},
+          shopCategories: {},
+          recommendations: [],
+          redFlags: [],
+          greenFlags: [],
+          performanceScore: 0
         };
         
         // Calculate fuel metrics
         if (data.fuels) {
-          Object.values(data.fuels).forEach(fuel => {
-            insights.totalRevenue += fuel.total_revenue_zar || 0;
-            insights.totalFuelVolume += fuel.quantity_liters || 0;
+          Object.entries(data.fuels).forEach(([fuelKey, fuel]) => {
+            const revenue = fuel.total_revenue_zar || 0;
+            const volume = fuel.quantity_liters || 0;
+            const cost = fuel.total_cost_zar || 0;
+            
+            insights.totalRevenue += revenue;
+            insights.totalFuelVolume += volume;
+            
+            // Calculate fuel-specific margins
+            insights.fuelMargins[fuelKey] = {
+              revenue: revenue,
+              volume: volume,
+              cost: cost,
+              margin: revenue - cost,
+              marginPercent: revenue > 0 ? ((revenue - cost) / revenue * 100) : 0,
+              efficiency: volume > 0 ? (revenue / volume) : 0
+            };
           });
         }
         
         // Calculate shop metrics
         if (data.shop_lines) {
           data.shop_lines.forEach(shop => {
-            insights.totalShopRevenue += shop.total_revenue_zar || 0;
+            const revenue = shop.total_revenue_zar || 0;
+            const units = shop.quantity_units || 0;
+            
+            insights.totalShopRevenue += revenue;
+            
+            // Track shop categories
+            const category = shop.category || 'Unknown';
+            if (!insights.shopCategories[category]) {
+              insights.shopCategories[category] = {
+                revenue: 0,
+                units: 0,
+                avgPrice: 0
+              };
+            }
+            insights.shopCategories[category].revenue += revenue;
+            insights.shopCategories[category].units += units;
+          });
+          
+          // Calculate average prices for shop categories
+          Object.values(insights.shopCategories).forEach(category => {
+            category.avgPrice = category.units > 0 ? (category.revenue / category.units) : 0;
           });
         }
         
-        // Calculate efficiency metrics
+        // Calculate overall efficiency metrics
         if (insights.totalFuelVolume > 0) {
           insights.fuelEfficiency = insights.totalRevenue / insights.totalFuelVolume;
           insights.shopPerformance = insights.totalShopRevenue / insights.totalFuelVolume;
         }
         
-        // Generate recommendations
-        if (insights.shopPerformance < 1.0) {
-          insights.recommendations.push('Consider increasing shop promotions to improve revenue per liter');
-        }
-        if (insights.fuelEfficiency < 20) {
-          insights.recommendations.push('Review fuel pricing strategy to improve margins');
-        }
+        // Generate recommendations based on data analysis
+        generateRecommendations(insights);
+        
+        // Generate red and green flags
+        generatePerformanceFlags(insights);
+        
+        // Calculate overall performance score (0-100)
+        insights.performanceScore = calculatePerformanceScore(insights);
         
         return insights;
       }
       
-      // Function to update insights display
-      function updateInsightsDisplay(insights) {
-        const insightsSection = document.getElementById('insights');
-        if (insightsSection) {
-          // Update insights content with calculated data
-          console.log('📊 Insights calculated:', insights);
+      // Function to generate recommendations
+      function generateRecommendations(insights) {
+        const recommendations = [];
+        
+        // Fuel-related recommendations
+        if (insights.shopPerformance < 1.5) {
+          recommendations.push({
+            type: 'shop',
+            priority: 'high',
+            text: 'Shop revenue per liter is below target. Consider increasing shop promotions and product variety.',
+            impact: 'Increase shop revenue by 20-30%'
+          });
         }
+        
+        if (insights.fuelEfficiency < 25) {
+          recommendations.push({
+            type: 'fuel',
+            priority: 'medium',
+            text: 'Fuel pricing efficiency is below industry average. Review pricing strategy and competitor analysis.',
+            impact: 'Improve fuel margins by 5-10%'
+          });
+        }
+        
+        // Category-specific recommendations
+        Object.entries(insights.shopCategories).forEach(([category, data]) => {
+          if (data.avgPrice < 15) {
+            recommendations.push({
+              type: 'category',
+              priority: 'medium',
+              text: `${category} average price is low. Consider premium products or bundle deals.`,
+              impact: `Increase ${category} revenue by 15-25%`
+            });
+          }
+        });
+        
+        // Fuel margin recommendations
+        Object.entries(insights.fuelMargins).forEach(([fuelType, margin]) => {
+          if (margin.marginPercent < 8) {
+            recommendations.push({
+              type: 'margin',
+              priority: 'high',
+              text: `${fuelType.replace('_', ' ')} margins are below target. Review supplier costs and pricing.`,
+              impact: `Improve ${fuelType} margins by 3-5%`
+            });
+          }
+        });
+        
+        insights.recommendations = recommendations;
+      }
+      
+      // Function to generate performance flags
+      function generatePerformanceFlags(insights) {
+        const redFlags = [];
+        const greenFlags = [];
+        
+        // Red flags
+        if (insights.shopPerformance < 1.0) {
+          redFlags.push('Shop performance below minimum threshold');
+        }
+        
+        if (insights.fuelEfficiency < 20) {
+          redFlags.push('Fuel efficiency below industry average');
+        }
+        
+        if (insights.totalShopRevenue < insights.totalRevenue * 0.1) {
+          redFlags.push('Shop revenue less than 10% of total revenue');
+        }
+        
+        Object.entries(insights.fuelMargins).forEach(([fuelType, margin]) => {
+          if (margin.marginPercent < 5) {
+            redFlags.push(`${fuelType.replace('_', ' ')} margins critically low`);
+          }
+        });
+        
+        // Green flags
+        if (insights.shopPerformance > 2.0) {
+          greenFlags.push('Excellent shop performance');
+        }
+        
+        if (insights.fuelEfficiency > 30) {
+          greenFlags.push('Above-average fuel efficiency');
+        }
+        
+        if (insights.totalShopRevenue > insights.totalRevenue * 0.2) {
+          greenFlags.push('Strong shop revenue contribution');
+        }
+        
+        Object.entries(insights.fuelMargins).forEach(([fuelType, margin]) => {
+          if (margin.marginPercent > 12) {
+            greenFlags.push(`${fuelType.replace('_', ' ')} margins above target`);
+          }
+        });
+        
+        insights.redFlags = redFlags;
+        insights.greenFlags = greenFlags;
+      }
+      
+      // Function to calculate performance score
+      function calculatePerformanceScore(insights) {
+        let score = 0;
+        
+        // Shop performance (30 points)
+        if (insights.shopPerformance >= 2.0) score += 30;
+        else if (insights.shopPerformance >= 1.5) score += 20;
+        else if (insights.shopPerformance >= 1.0) score += 10;
+        
+        // Fuel efficiency (25 points)
+        if (insights.fuelEfficiency >= 30) score += 25;
+        else if (insights.fuelEfficiency >= 25) score += 20;
+        else if (insights.fuelEfficiency >= 20) score += 15;
+        else if (insights.fuelEfficiency >= 15) score += 10;
+        
+        // Shop revenue contribution (20 points)
+        const shopContribution = insights.totalRevenue > 0 ? (insights.totalShopRevenue / insights.totalRevenue) : 0;
+        if (shopContribution >= 0.2) score += 20;
+        else if (shopContribution >= 0.15) score += 15;
+        else if (shopContribution >= 0.1) score += 10;
+        
+        // Fuel margins (25 points)
+        let avgMargin = 0;
+        let marginCount = 0;
+        Object.values(insights.fuelMargins).forEach(margin => {
+          avgMargin += margin.marginPercent;
+          marginCount++;
+        });
+        avgMargin = marginCount > 0 ? avgMargin / marginCount : 0;
+        
+        if (avgMargin >= 12) score += 25;
+        else if (avgMargin >= 10) score += 20;
+        else if (avgMargin >= 8) score += 15;
+        else if (avgMargin >= 5) score += 10;
+        
+        return Math.min(100, score);
+      }
+      
+      // Function to update insights display with flags
+      function updateInsightsDisplayWithFlags(insights) {
+        const insightsSection = document.getElementById('insights');
+        if (!insightsSection) return;
+        
+        // Create insights content
+        const insightsContent = `
+          <div class="insights-container">
+            <div class="performance-score">
+              <h3>Performance Score: ${insights.performanceScore}/100</h3>
+              <div class="score-bar">
+                <div class="score-fill" style="width: ${insights.performanceScore}%; background: ${insights.performanceScore >= 70 ? '#10B981' : insights.performanceScore >= 50 ? '#F59E0B' : '#EF4444'};"></div>
+              </div>
+            </div>
+            
+            <div class="flags-section">
+              <div class="red-flags">
+                <h4>🚨 Red Flags (${insights.redFlags.length})</h4>
+                ${insights.redFlags.length > 0 ? 
+                  `<ul>${insights.redFlags.map(flag => `<li>${flag}</li>`).join('')}</ul>` : 
+                  '<p>No red flags detected</p>'
+                }
+              </div>
+              
+              <div class="green-flags">
+                <h4>✅ Green Flags (${insights.greenFlags.length})</h4>
+                ${insights.greenFlags.length > 0 ? 
+                  `<ul>${insights.greenFlags.map(flag => `<li>${flag}</li>`).join('')}</ul>` : 
+                  '<p>No green flags detected</p>'
+                }
+              </div>
+            </div>
+            
+            <div class="recommendations-section">
+              <h4>💡 Recommendations (${insights.recommendations.length})</h4>
+              ${insights.recommendations.length > 0 ? 
+                insights.recommendations.map(rec => `
+                  <div class="recommendation ${rec.priority}">
+                    <h5>${rec.text}</h5>
+                    <p><strong>Impact:</strong> ${rec.impact}</p>
+                    <span class="priority-badge ${rec.priority}">${rec.priority.toUpperCase()}</span>
+                  </div>
+                `).join('') : 
+                '<p>No recommendations at this time</p>'
+              }
+            </div>
+          </div>
+        `;
+        
+        // Update the insights section
+        insightsSection.innerHTML = insightsContent;
+        
+        console.log('📊 Insights updated:', insights);
       }
       
       // Global function for selecting months
