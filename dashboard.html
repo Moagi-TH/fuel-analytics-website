@@ -877,9 +877,14 @@
             <!-- All Reports List -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; margin-bottom: 15px;">
               <h4>All Reports</h4>
-              <button onclick="clearAllReports()" class="button" style="background: #dc2626; color: white; padding: 8px 16px; border-radius: 6px; font-size: 14px;">
-                🗑️ Clear All Reports
-              </button>
+              <div style="display: flex; gap: 10px;">
+                <button onclick="refreshReportsFromStorage()" class="button" style="background: #3B82F6; color: white; padding: 8px 16px; border-radius: 6px; font-size: 14px;">
+                  🔄 Refresh from Storage
+                </button>
+                <button onclick="clearAllReports()" class="button" style="background: #dc2626; color: white; padding: 8px 16px; border-radius: 6px; font-size: 14px;">
+                  🗑️ Clear All Reports
+                </button>
+              </div>
             </div>
             <div class="reports-list" id="reports-list">
               <!-- Reports will be populated here -->
@@ -2580,52 +2585,51 @@
         }
       }
 
-      // Load reports from Supabase storage bucket and database
+      // Load reports directly from Supabase storage bucket (simplified approach)
       async function loadReportsFromDatabase() {
-        console.log('🔄 Loading reports from Supabase storage bucket and database...');
+        console.log('🔄 Loading reports directly from Supabase storage bucket...');
         
         try {
           if (window.supabaseClient) {
-            // First, get all files from storage bucket
-            const { data: storageFiles, error: storageError } = await window.supabaseClient.supabase.storage
-              .from('reports')
+            // Get all files from storage bucket - try both 'reports' and 'fuel-reports' buckets
+            let storageFiles = [];
+            let storageError = null;
+            
+            // Try 'fuel-reports' bucket first (as shown in your screenshot)
+            const { data: fuelReports, error: fuelError } = await window.supabaseClient.supabase.storage
+              .from('fuel-reports')
               .list();
+            
+            if (!fuelError && fuelReports) {
+              storageFiles = fuelReports;
+              console.log('📁 Files found in fuel-reports bucket:', storageFiles);
+            } else {
+              console.log('⚠️ No files in fuel-reports bucket, trying reports bucket...');
+              
+              // Try 'reports' bucket as fallback
+              const { data: reports, error: reportsError } = await window.supabaseClient.supabase.storage
+                .from('reports')
+                .list();
+              
+              if (!reportsError && reports) {
+                storageFiles = reports;
+                console.log('📁 Files found in reports bucket:', storageFiles);
+              } else {
+                storageError = reportsError;
+                console.log('⚠️ No files found in either bucket');
+              }
+            }
             
             if (storageError) {
               console.error('❌ Error loading from storage:', storageError);
               return;
             }
             
-            console.log('📁 Files in storage bucket:', storageFiles);
-            
-            // Get all reports from database
-            const { data: dbReports, error: dbError } = await window.supabaseClient.supabase
-              .from('monthly_reports')
-              .select('*')
-              .order('created_at', { ascending: false });
-            
-            if (dbError) {
-              console.error('❌ Error loading from database:', dbError);
-              return;
-            }
-            
-            console.log('📊 Reports in database:', dbReports);
-            
             // Clear existing reports
             uploadedReports.length = 0;
             
-            // Create a map of database reports by storage path
-            const dbReportsMap = {};
-            if (dbReports) {
-              dbReports.forEach(report => {
-                if (report.storage_path) {
-                  dbReportsMap[report.storage_path] = report;
-                }
-              });
-            }
-            
-            // Process storage files and match with database records
-            if (storageFiles) {
+            // Process each file from storage
+            if (storageFiles && storageFiles.length > 0) {
               for (const file of storageFiles) {
                 console.log('📄 Processing file:', file.name);
                 
@@ -2652,26 +2656,15 @@
                   const createdDate = new Date(file.created_at);
                   month = createdDate.getMonth() + 1;
                   year = createdDate.getFullYear();
-                  
-                  if (file.metadata?.original_name) {
-                    originalFilename = file.metadata.original_name;
-                  } else {
-                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                    originalFilename = `Period Report ${month} ${monthNames[month-1]} ${year}.pdf`;
-                  }
                 }
                 
-                // Check if we have database record for this file
-                const dbReport = dbReportsMap[file.name];
-                
                 const reportData = {
-                  id: dbReport?.id || null,
-                  name: originalFilename,
+                  id: file.id || `storage_${file.name}`,
+                  name: file.name,
                   month: month,
                   year: year,
                   uploadDate: new Date(file.created_at).toLocaleDateString(),
-                  data: dbReport?.data || {
+                  data: {
                     period: { month: month, year: year },
                     fuels: {
                       diesel_ex: { total_revenue_zar: 0, quantity_liters: 0 },
@@ -2693,7 +2686,7 @@
             // Update monthly data
             updateMonthlyDataFromReports();
             
-            console.log('✅ Reports loaded successfully from Supabase storage and database');
+            console.log('✅ Reports loaded successfully from Supabase storage');
             console.log('📊 Total reports loaded:', uploadedReports.length);
             
           } else {
@@ -6052,22 +6045,37 @@
           console.log('Deleting report:', report);
           
           try {
-            // Delete from database if available
-            if (window.supabaseClient && report.id) {
-              const result = await window.supabaseClient.deleteMonthlyReport(report.id);
-              console.log('✅ Report deleted from database:', result);
-            }
-            
-            // Delete from storage bucket if available
+            // Delete from storage bucket directly
             if (window.supabaseClient && report.storagePath) {
-              const { error } = await window.supabaseClient.supabase.storage
-                .from('reports')
+              // Try both buckets
+              let deleted = false;
+              
+              // Try fuel-reports bucket first
+              const { error: fuelError } = await window.supabaseClient.supabase.storage
+                .from('fuel-reports')
                 .remove([report.storagePath]);
               
-              if (error) {
-                console.error('❌ Error deleting from storage:', error);
+              if (!fuelError) {
+                console.log('✅ Report deleted from fuel-reports bucket');
+                deleted = true;
               } else {
-                console.log('✅ Report deleted from storage');
+                console.log('⚠️ Not in fuel-reports bucket, trying reports bucket...');
+                
+                // Try reports bucket
+                const { error: reportsError } = await window.supabaseClient.supabase.storage
+                  .from('reports')
+                  .remove([report.storagePath]);
+                
+                if (!reportsError) {
+                  console.log('✅ Report deleted from reports bucket');
+                  deleted = true;
+                } else {
+                  console.error('❌ Error deleting from both buckets:', reportsError);
+                }
+              }
+              
+              if (!deleted) {
+                throw new Error('Failed to delete from storage buckets');
               }
             }
             
@@ -6096,42 +6104,64 @@
         }
       };
       
-      // Function to clear all reports from Supabase storage
+      // Function to refresh reports from storage
+      window.refreshReportsFromStorage = async function() {
+        console.log('🔄 Refreshing reports from storage...');
+        
+        try {
+          // Reload reports from storage
+          await loadReportsFromDatabase();
+          
+          // Update display
+          renderReportsHistory();
+          updateMostRecentReportDisplay();
+          
+          console.log('✅ Reports refreshed from storage');
+          
+        } catch (error) {
+          console.error('❌ Error refreshing reports:', error);
+          alert('Error refreshing reports: ' + error.message);
+        }
+      };
+      
+      // Function to clear all reports from Supabase storage buckets
       window.clearAllReports = async function() {
         if (confirm('Are you sure you want to delete ALL reports? This action cannot be undone.')) {
-          console.log('🗑️ Clearing all reports from Supabase...');
+          console.log('🗑️ Clearing all reports from Supabase storage buckets...');
           
           try {
             if (window.supabaseClient) {
-              // Get all reports from Supabase
-              const { data: reports, error } = await window.supabaseClient.supabase
-                .from('monthly_reports')
-                .select('*');
+              // Clear from fuel-reports bucket
+              const { data: fuelFiles, error: fuelError } = await window.supabaseClient.supabase.storage
+                .from('fuel-reports')
+                .list();
               
-              if (error) {
-                console.error('❌ Error fetching reports:', error);
-                return;
+              if (!fuelError && fuelFiles && fuelFiles.length > 0) {
+                console.log('🗑️ Deleting', fuelFiles.length, 'files from fuel-reports bucket...');
+                for (const file of fuelFiles) {
+                  await window.supabaseClient.supabase.storage
+                    .from('fuel-reports')
+                    .remove([file.name]);
+                }
+                console.log('✅ All files deleted from fuel-reports bucket');
               }
               
-              // Delete each report from database
-              for (const report of reports) {
-                await window.supabaseClient.deleteMonthlyReport(report.id);
-              }
-              
-              // Clear from storage bucket
-              const { data: files, error: storageError } = await window.supabaseClient.supabase.storage
+              // Clear from reports bucket
+              const { data: reportFiles, error: reportError } = await window.supabaseClient.supabase.storage
                 .from('reports')
                 .list();
               
-              if (!storageError && files) {
-                for (const file of files) {
+              if (!reportError && reportFiles && reportFiles.length > 0) {
+                console.log('🗑️ Deleting', reportFiles.length, 'files from reports bucket...');
+                for (const file of reportFiles) {
                   await window.supabaseClient.supabase.storage
                     .from('reports')
                     .remove([file.name]);
                 }
+                console.log('✅ All files deleted from reports bucket');
               }
               
-              console.log('✅ All reports deleted from Supabase');
+              console.log('✅ All reports deleted from Supabase storage buckets');
             }
             
             // Clear local arrays
