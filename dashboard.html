@@ -2585,9 +2585,9 @@
         }
       }
 
-      // Load reports directly from fuel-reports bucket only (simplified approach)
+      // COMPLETELY RECODED: Load reports directly from fuel-reports bucket
       async function loadReportsFromDatabase() {
-        console.log('🔄 Loading reports from fuel-reports bucket only...');
+        console.log('🔄 COMPLETELY RECODED: Loading reports from fuel-reports bucket...');
         
         try {
           if (!window.supabaseClient) {
@@ -2595,8 +2595,15 @@
             return;
           }
           
-          // Get all files from fuel-reports bucket only
-          console.log('🔍 Querying fuel-reports bucket...');
+          // COMPLETELY CLEAR existing reports first
+          console.log('🧹 Clearing all existing reports...');
+          uploadedReports.length = 0;
+          if (window.monthlyData) {
+            Object.keys(window.monthlyData).forEach(key => delete window.monthlyData[key]);
+          }
+          
+          // Get files from fuel-reports bucket with detailed logging
+          console.log('🔍 Querying fuel-reports bucket with detailed logging...');
           const { data: fuelFiles, error: fuelError } = await window.supabaseClient.supabase.storage
             .from('fuel-reports')
             .list('', {
@@ -2610,27 +2617,50 @@
             return;
           }
           
-          console.log('📁 Raw files from fuel-reports bucket:', fuelFiles);
-          
-          // Clear existing reports
-          uploadedReports.length = 0;
+          console.log('📁 RAW FILES FROM FUEL-REPORTS BUCKET:', fuelFiles);
+          console.log('📊 Number of files found:', fuelFiles ? fuelFiles.length : 0);
           
           // Process each file from fuel-reports bucket
           if (fuelFiles && fuelFiles.length > 0) {
             console.log(`📊 Processing ${fuelFiles.length} files from fuel-reports bucket...`);
             
-            for (const file of fuelFiles) {
-              console.log('📄 Processing file:', file.name);
+            for (let i = 0; i < fuelFiles.length; i++) {
+              const file = fuelFiles[i];
+              console.log(`📄 Processing file ${i + 1}/${fuelFiles.length}:`, file.name);
+              console.log('📄 File details:', {
+                name: file.name,
+                id: file.id,
+                created_at: file.created_at,
+                updated_at: file.updated_at,
+                metadata: file.metadata
+              });
               
-              // Extract month/year from filename
+              // Extract month/year from filename with better pattern matching
               let month = 1, year = 2025;
               
-              // Try to extract from filename patterns
-              let match = file.name.match(/Period Report (\d+) (\w+) (\d{4})/);
+              // Try multiple filename patterns
+              let match = null;
+              
+              // Pattern 1: "Period Report 1 Jul 2025"
+              match = file.name.match(/Period Report (\d+) (\w+) (\d{4})/);
+              
+              // Pattern 2: "test_1756550299389_Period Report 1 Jul 2025"
               if (!match) {
-                const altMatch = file.name.match(/(\w+)-Period Report (\d+) (\w+) (\d{4})/);
-                if (altMatch) {
-                  match = [altMatch[0], altMatch[2], altMatch[3], altMatch[4]];
+                match = file.name.match(/test_\d+_Period Report (\d+) (\w+) (\d{4})/);
+              }
+              
+              // Pattern 3: "period report april" (extract from month name)
+              if (!match) {
+                const monthMatch = file.name.match(/(\w+)/i);
+                if (monthMatch) {
+                  const monthNames = ['january', 'february', 'march', 'april', 'may', 'june', 
+                                     'july', 'august', 'september', 'october', 'november', 'december'];
+                  const monthIndex = monthNames.findIndex(m => file.name.toLowerCase().includes(m));
+                  if (monthIndex !== -1) {
+                    month = monthIndex + 1;
+                    year = 2025; // Default year
+                    console.log(`📅 Extracted month ${month} from filename using month name`);
+                  }
                 }
               }
               
@@ -2639,7 +2669,7 @@
                                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                 month = monthNames.indexOf(match[2]) + 1;
                 year = parseInt(match[3]);
-                console.log(`📅 Extracted date: ${month}/${year} from filename`);
+                console.log(`📅 Extracted date: ${month}/${year} from filename pattern`);
               } else {
                 // Use creation date for UUID filenames
                 const createdDate = new Date(file.created_at);
@@ -2670,6 +2700,7 @@
               
               uploadedReports.push(reportData);
               console.log('✅ Added report:', reportData.name);
+              console.log('📋 Report data:', reportData);
             }
           } else {
             console.log('⚠️ No files found in fuel-reports bucket');
@@ -2678,9 +2709,13 @@
           // Update monthly data
           updateMonthlyDataFromReports();
           
-          console.log('✅ Reports loaded successfully from fuel-reports bucket');
+          console.log('✅ REPORTS LOADED SUCCESSFULLY FROM FUEL-REPORTS BUCKET');
           console.log('📊 Total reports loaded:', uploadedReports.length);
-          console.log('📋 Final uploadedReports array:', uploadedReports);
+          console.log('📋 FINAL UPLOADEDREPORTS ARRAY:', uploadedReports);
+          
+          // Force update the display
+          renderReportsHistory();
+          updateMostRecentReportDisplay();
           
         } catch (error) {
           console.error('❌ Error loading reports from fuel-reports bucket:', error);
@@ -3491,31 +3526,41 @@
       // No sample monthly data - start with empty data
       // monthlyData will be populated when actual reports are uploaded
       
-      // Function to render reports history
+      // COMPLETELY RECODED: Function to render reports history
       function renderReportsHistory() {
-        console.log('🔄 Rendering reports history...');
+        console.log('🔄 COMPLETELY RECODED: Rendering reports history...');
         console.log('📊 Reports to render:', uploadedReports.length);
+        console.log('📋 UploadedReports array:', uploadedReports);
         
         if (uploadedReports.length === 0) {
-          reportsList.innerHTML = '<p class="muted">No reports uploaded yet. Upload your first report to see it here.</p>';
+          reportsList.innerHTML = '<p class="muted">No reports found in fuel-reports bucket. Upload your first report to see it here.</p>';
           console.log('📊 No reports to display');
           return;
         }
         
-        reportsList.innerHTML = uploadedReports.map((report, index) => `
-          <div class="report-item" data-report-id="${report.id || index}">
-            <div class="report-info">
-              <div class="report-title">${report.name}</div>
-              <div class="report-date">${report.month}/${report.year} - Uploaded ${report.uploadDate}</div>
+        // Create HTML for each report with detailed logging
+        const reportsHTML = uploadedReports.map((report, index) => {
+          console.log(`📄 Rendering report ${index + 1}/${uploadedReports.length}:`, report.name);
+          
+          return `
+            <div class="report-item" data-report-id="${report.id || index}">
+              <div class="report-info">
+                <div class="report-title">${report.name}</div>
+                <div class="report-date">${report.month}/${report.year} - Uploaded ${report.uploadDate}</div>
+              </div>
+              <div class="report-actions">
+                <button class="button secondary small" onclick="viewReport(${index})">View</button>
+                <button class="button secondary small" onclick="deleteReport(${index})">Delete</button>
+              </div>
             </div>
-            <div class="report-actions">
-              <button class="button secondary small" onclick="viewReport(${index})">View</button>
-              <button class="button secondary small" onclick="deleteReport(${index})">Delete</button>
-            </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
         
-        console.log('✅ Reports history rendered');
+        console.log('📋 Generated HTML for reports:', reportsHTML);
+        reportsList.innerHTML = reportsHTML;
+        
+        console.log('✅ REPORTS HISTORY RENDERED SUCCESSFULLY');
+        console.log('📊 Total reports displayed:', uploadedReports.length);
       }
       
       // Make renderReportsHistory globally accessible
@@ -6077,19 +6122,24 @@
       };
       
       // Function to refresh reports from storage
+      // COMPLETELY RECODED: Function to refresh reports from storage
       window.refreshReportsFromStorage = async function() {
-        console.log('🔄 Refreshing reports from storage...');
+        console.log('🔄 COMPLETELY RECODED: Refreshing reports from fuel-reports bucket...');
         
         try {
           if (!window.supabaseClient) {
             throw new Error('Supabase client not available');
           }
           
-          // Clear existing reports
+          // COMPLETELY CLEAR existing reports first
+          console.log('🧹 Clearing all existing reports...');
           uploadedReports.length = 0;
+          if (window.monthlyData) {
+            Object.keys(window.monthlyData).forEach(key => delete window.monthlyData[key]);
+          }
           
-          // Get files from fuel-reports bucket only
-          console.log('🔍 Checking fuel-reports bucket...');
+          // Get files from fuel-reports bucket with detailed logging
+          console.log('🔍 Querying fuel-reports bucket with detailed logging...');
           const { data: fuelFiles, error: fuelError } = await window.supabaseClient.supabase.storage
             .from('fuel-reports')
             .list('', {
@@ -6100,22 +6150,53 @@
           
           if (fuelError) {
             console.error('❌ Error accessing fuel-reports bucket:', fuelError);
-          } else if (fuelFiles && fuelFiles.length > 0) {
-            console.log('📁 Found', fuelFiles.length, 'files in fuel-reports bucket:', fuelFiles);
+            return;
+          }
+          
+          console.log('📁 RAW FILES FROM FUEL-REPORTS BUCKET:', fuelFiles);
+          console.log('📊 Number of files found:', fuelFiles ? fuelFiles.length : 0);
+          
+          // Process each file from fuel-reports bucket
+          if (fuelFiles && fuelFiles.length > 0) {
+            console.log(`📊 Processing ${fuelFiles.length} files from fuel-reports bucket...`);
             
-            // Process each file
-            for (const file of fuelFiles) {
-              console.log('📄 Processing file:', file.name);
+            for (let i = 0; i < fuelFiles.length; i++) {
+              const file = fuelFiles[i];
+              console.log(`📄 Processing file ${i + 1}/${fuelFiles.length}:`, file.name);
+              console.log('📄 File details:', {
+                name: file.name,
+                id: file.id,
+                created_at: file.created_at,
+                updated_at: file.updated_at,
+                metadata: file.metadata
+              });
               
-              // Extract month/year from filename
+              // Extract month/year from filename with better pattern matching
               let month = 1, year = 2025;
               
-              // Try to extract from filename patterns
-              let match = file.name.match(/Period Report (\d+) (\w+) (\d{4})/);
+              // Try multiple filename patterns
+              let match = null;
+              
+              // Pattern 1: "Period Report 1 Jul 2025"
+              match = file.name.match(/Period Report (\d+) (\w+) (\d{4})/);
+              
+              // Pattern 2: "test_1756550299389_Period Report 1 Jul 2025"
               if (!match) {
-                const altMatch = file.name.match(/(\w+)-Period Report (\d+) (\w+) (\d{4})/);
-                if (altMatch) {
-                  match = [altMatch[0], altMatch[2], altMatch[3], altMatch[4]];
+                match = file.name.match(/test_\d+_Period Report (\d+) (\w+) (\d{4})/);
+              }
+              
+              // Pattern 3: "period report april" (extract from month name)
+              if (!match) {
+                const monthMatch = file.name.match(/(\w+)/i);
+                if (monthMatch) {
+                  const monthNames = ['january', 'february', 'march', 'april', 'may', 'june', 
+                                     'july', 'august', 'september', 'october', 'november', 'december'];
+                  const monthIndex = monthNames.findIndex(m => file.name.toLowerCase().includes(m));
+                  if (monthIndex !== -1) {
+                    month = monthIndex + 1;
+                    year = 2025; // Default year
+                    console.log(`📅 Extracted month ${month} from filename using month name`);
+                  }
                 }
               }
               
@@ -6124,7 +6205,7 @@
                                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                 month = monthNames.indexOf(match[2]) + 1;
                 year = parseInt(match[3]);
-                console.log(`📅 Extracted date: ${month}/${year} from filename`);
+                console.log(`📅 Extracted date: ${month}/${year} from filename pattern`);
               } else {
                 // Use creation date for UUID filenames
                 const createdDate = new Date(file.created_at);
@@ -6155,6 +6236,7 @@
               
               uploadedReports.push(reportData);
               console.log('✅ Added report:', reportData.name);
+              console.log('📋 Report data:', reportData);
             }
           } else {
             console.log('⚠️ No files found in fuel-reports bucket');
@@ -6167,7 +6249,9 @@
           renderReportsHistory();
           updateMostRecentReportDisplay();
           
-          console.log('✅ Reports refreshed from storage. Total reports:', uploadedReports.length);
+          console.log('✅ REPORTS REFRESHED SUCCESSFULLY FROM FUEL-REPORTS BUCKET');
+          console.log('📊 Total reports loaded:', uploadedReports.length);
+          console.log('📋 FINAL UPLOADEDREPORTS ARRAY:', uploadedReports);
           
         } catch (error) {
           console.error('❌ Error refreshing reports:', error);
