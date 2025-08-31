@@ -2566,45 +2566,107 @@
 
       // Load reports from Supabase database
       async function loadReportsFromDatabase() {
-        if (!db || !db.isInitialized) return;
+        if (!window.supabaseClient) {
+          console.log('⚠️ Supabase client not available');
+          return;
+        }
         
         try {
-          const result = await db.getMonthlyReports();
-          if (result.success) {
-            // Convert database format to local format
-            uploadedReports.length = 0; // Clear existing reports
+          console.log('📊 Loading reports from Supabase database...');
+          const result = await window.supabaseClient.getMonthlyReports();
+          
+          if (result.success && result.reports) {
+            console.log('✅ Reports loaded from database:', result.reports.length);
             
+            // Clear existing reports
+            uploadedReports.length = 0;
+            
+            // Process each report from database
             result.reports.forEach(report => {
+              console.log('📄 Processing report:', report.filename || report.id);
+              
               const reportData = {
-                name: report.file_name,
+                name: report.filename || `Report_${report.report_month}_${report.report_year}`,
                 month: report.report_month,
                 year: report.report_year,
                 uploadDate: new Date(report.created_at).toLocaleDateString(),
-                data: {
+                data: report.data || {
                   period: { month: report.report_month, year: report.report_year },
                   fuels: {
-                    diesel_ex: report.fuel_data.find(f => f.fuel_type === 'diesel_ex') || { total_revenue_zar: 0, quantity_liters: 0 },
-                    vpower_95: report.fuel_data.find(f => f.fuel_type === 'vpower_95') || { total_revenue_zar: 0, quantity_liters: 0 },
-                    vpower_diesel: report.fuel_data.find(f => f.fuel_type === 'vpower_diesel') || { total_revenue_zar: 0, quantity_liters: 0 }
+                    diesel_ex: { total_revenue_zar: 0, quantity_liters: 0 },
+                    vpower_95: { total_revenue_zar: 0, quantity_liters: 0 },
+                    vpower_diesel: { total_revenue_zar: 0, quantity_liters: 0 }
                   },
-                  shop_lines: report.shop_data.map(s => ({
-                    category: s.category,
-                    total_revenue_zar: s.total_revenue,
-                    quantity_units: s.quantity_units
-                  }))
+                  shop_lines: []
                 },
-                id: report.id // Store database ID for operations
+                id: report.id
               };
               
               uploadedReports.push(reportData);
             });
             
+            // Update the reports display
             renderReportsHistory();
-            console.log(`Loaded ${uploadedReports.length} reports from database`);
+            
+            // Also update monthly data for overview
+            updateMonthlyDataFromReports();
+            
+            console.log(`✅ Loaded ${uploadedReports.length} reports from database`);
+          } else {
+            console.log('📊 No reports found in database');
           }
         } catch (error) {
-          console.error('Error loading reports from database:', error);
+          console.error('❌ Error loading reports from database:', error);
         }
+      }
+      
+      // Update monthly data from loaded reports
+      function updateMonthlyDataFromReports() {
+        console.log('🔄 Updating monthly data from reports...');
+        
+        // Clear existing monthly data
+        Object.keys(monthlyData).forEach(key => delete monthlyData[key]);
+        
+        // Process each uploaded report
+        uploadedReports.forEach(report => {
+          const monthKey = `${report.month}/${report.year}`;
+          
+          if (!monthlyData[monthKey]) {
+            monthlyData[monthKey] = [];
+          }
+          
+          monthlyData[monthKey].push(report);
+        });
+        
+        console.log('✅ Monthly data updated from reports');
+        console.log('📊 Available months:', Object.keys(monthlyData));
+        
+        // Update the most recent report display
+        updateMostRecentReportDisplay();
+      }
+      
+      // Update the most recent report display
+      function updateMostRecentReportDisplay() {
+        console.log('🔄 Updating most recent report display...');
+        
+        const recentReportDetails = document.getElementById('recent-report-details');
+        
+        if (uploadedReports.length === 0) {
+          if (recentReportDetails) {
+            recentReportDetails.textContent = 'No reports uploaded yet';
+          }
+          console.log('📊 No reports to display');
+          return;
+        }
+        
+        // Get the most recent report
+        const mostRecent = uploadedReports[0];
+        
+        if (recentReportDetails) {
+          recentReportDetails.textContent = `Showing data for ${mostRecent.month}/${mostRecent.year} - ${mostRecent.name}`;
+        }
+        
+        console.log('✅ Most recent report display updated:', mostRecent.name);
       }
 
       // Load monthly performance from database
@@ -3242,23 +3304,29 @@
       
       // Function to render reports history
       function renderReportsHistory() {
-        if (window.uploadedReports.length === 0) {
+        console.log('🔄 Rendering reports history...');
+        console.log('📊 Reports to render:', uploadedReports.length);
+        
+        if (uploadedReports.length === 0) {
           reportsList.innerHTML = '<p class="muted">No reports uploaded yet. Upload your first report to see it here.</p>';
+          console.log('📊 No reports to display');
           return;
         }
         
-        reportsList.innerHTML = window.uploadedReports.map((report, index) => `
-          <div class="report-item">
+        reportsList.innerHTML = uploadedReports.map((report, index) => `
+          <div class="report-item" data-report-id="${report.id || index}">
             <div class="report-info">
               <div class="report-title">${report.name}</div>
               <div class="report-date">${report.month}/${report.year} - Uploaded ${report.uploadDate}</div>
             </div>
             <div class="report-actions">
-              <button class="button secondary small" onclick="viewReport(${index})">View</button>
-              <button class="button secondary small" onclick="deleteReport(${index})">Delete</button>
+              <button class="button secondary small" onclick="viewReport('${report.id || index}')">View</button>
+              <button class="button secondary small" onclick="deleteReport('${report.id || index}')">Delete</button>
             </div>
           </div>
         `).join('');
+        
+        console.log('✅ Reports history rendered');
       }
       
       // Make renderReportsHistory globally accessible
@@ -7790,6 +7858,8 @@
             // Load reports after initialization with delay
             setTimeout(async () => {
               await loadReports();
+              // Also load reports from database
+              await loadReportsFromDatabase();
               // Also load the latest report data into the dashboard
               await loadLatestReportData();
             }, 2000); // Increased delay for better performance
@@ -7800,6 +7870,8 @@
                       // Load reports after initialization with delay
             setTimeout(async () => {
               await loadReports();
+              // Also load reports from database
+              await loadReportsFromDatabase();
               // Also load the latest report data into the dashboard
               await loadLatestReportData();
             }, 2000); // Increased delay for better performance
