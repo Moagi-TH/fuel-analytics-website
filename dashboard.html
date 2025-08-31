@@ -3045,17 +3045,27 @@
       });
 
       viewHistoryBtn?.addEventListener('click', async () => {
+        console.log('🔄 View History button clicked - loading reports...');
+        
         uploadArea.style.display = 'none';
         manualForm.style.display = 'none';
         monthlyPerformance.style.display = 'none';
         reportsHistory.style.display = 'block';
         
-        // Load reports from both database and storage
-        if (db && db.isInitialized) {
+        // Load reports from Supabase database first
+        if (window.supabaseClient) {
           await loadReportsFromDatabase();
+        } else {
+          console.log('⚠️ Supabase client not available, loading from storage only');
         }
+        
+        // Also load from storage as fallback
         await loadReportsFromStorage();
+        
+        // Render the reports history
         renderReportsHistory();
+        
+        console.log('✅ View History completed');
       });
 
       monthlyPerformanceBtn?.addEventListener('click', () => {
@@ -5487,7 +5497,7 @@
           console.log('Total files after subfolder search:', allFiles.length);
           
           // Clear existing reports (but keep the array reference)
-          window.uploadedReports.splice(0, window.uploadedReports.length);
+          uploadedReports.splice(0, uploadedReports.length);
           
           // Convert storage files to report format
           for (const file of allFiles) {
@@ -5564,18 +5574,18 @@
                 storagePath: file.name
               };
               
-              window.uploadedReports.push(reportData);
+              uploadedReports.push(reportData);
               console.log('Added report to array:', reportData.name);
-              console.log('Array length after adding:', window.uploadedReports.length);
+              console.log('Array length after adding:', uploadedReports.length);
             } else {
               console.log('File is not a PDF or has invalid format:', file.name, 'Metadata:', file.metadata);
             }
           }
           
           renderReportsHistory();
-          console.log(`Loaded ${window.uploadedReports.length} reports from storage`);
-          console.log('uploadedReports array after loading:', window.uploadedReports);
-          console.log('window.uploadedReports reference:', window.uploadedReports);
+          console.log(`Loaded ${uploadedReports.length} reports from storage`);
+          console.log('uploadedReports array after loading:', uploadedReports);
+          console.log('window.uploadedReports reference:', uploadedReports);
           
         } catch (error) {
           console.error('Error loading reports from storage:', error);
@@ -5597,9 +5607,9 @@
       // Global functions for report actions
       window.viewReport = function(index) {
         console.log('viewReport called with index:', index);
-        console.log('uploadedReports:', window.uploadedReports);
+        console.log('uploadedReports:', uploadedReports);
         
-        const report = window.uploadedReports[index];
+        const report = uploadedReports[index];
         console.log('Selected report:', report);
         
         if (report && report.storagePath) {
@@ -5712,18 +5722,18 @@
       
       window.deleteReport = function(index) {
         console.log('deleteReport called with index:', index);
-        console.log('uploadedReports:', window.uploadedReports);
+        console.log('uploadedReports:', uploadedReports);
         
         if (confirm('Are you sure you want to delete this report?')) {
-          const report = window.uploadedReports[index];
+          const report = uploadedReports[index];
           console.log('Deleting report:', report);
           
           // Delete from database if available
-          if (window.db && window.db.isInitialized && report.id) {
-            deleteReportFromDatabase(report.id);
+          if (window.supabaseClient && report.id) {
+            deleteReport(report.id);
           }
           
-          window.uploadedReports.splice(index, 1);
+          uploadedReports.splice(index, 1);
           
           // Remove from monthly data
           const monthKey = `${report.month}/${report.year}`;
