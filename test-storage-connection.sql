@@ -78,7 +78,7 @@ SELECT * FROM list_storage_files();
 -- Also check the monthly_reports table to see what's stored there
 SELECT 
     id,
-    filename,
+    file_name,
     storage_path,
     report_month,
     report_year,
