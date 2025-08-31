@@ -8863,6 +8863,17 @@
           setupTestButtons();
           
           console.log('✅ All button functionality setup complete');
+          
+          // Force refresh reports from storage when page loads
+          console.log('🔄 Force refreshing reports from storage on page load...');
+          setTimeout(() => {
+            if (window.refreshReportsFromStorage) {
+              console.log('🔄 Calling refreshReportsFromStorage...');
+              window.refreshReportsFromStorage();
+            } else {
+              console.error('❌ refreshReportsFromStorage function not found!');
+            }
+          }, 2000);
         }
         
         function handleNavClick(e) {
@@ -8889,6 +8900,19 @@
           if (targetSection) {
             targetSection.style.display = 'block';
             console.log('✅ Section shown:', sectionId);
+          }
+          
+          // Special handling for reports section - force refresh
+          if (href === '#reports') {
+            console.log('🔄 Reports section clicked - forcing refresh...');
+            setTimeout(() => {
+              if (window.refreshReportsFromStorage) {
+                console.log('🔄 Calling refreshReportsFromStorage from reports section...');
+                window.refreshReportsFromStorage();
+              } else {
+                console.error('❌ refreshReportsFromStorage function not found!');
+              }
+            }, 500);
           }
           
           // Special handling for users section
@@ -8954,6 +8978,10 @@
         }
         
         function setupTestButtons() {
+          // DISABLED: This function was interfering with onclick handlers
+          console.log('🔄 setupTestButtons DISABLED to prevent onclick interference');
+          return;
+          
           // Setup test and utility buttons with comprehensive debugging
           const allButtons = document.querySelectorAll('button');
           console.log('🔄 Setting up', allButtons.length, 'buttons...');
