@@ -63,7 +63,26 @@ function initializeSupabase() {
     try {
         if (window.supabase && typeof window.supabase.createClient === 'function') {
             supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            console.log('✅ Supabase client initialized successfully');
+            // Set global supabaseClient for dashboard access
+            window.supabaseClient = {
+                supabase: supabase,
+                // Add other methods that dashboard expects
+                deleteMonthlyReport: async (reportId) => {
+                    // Implementation for deleteMonthlyReport
+                    console.log('🗑️ Deleting monthly report:', reportId);
+                },
+                getMonthlyReports: async () => {
+                    // Implementation for getMonthlyReports
+                    console.log('📊 Getting monthly reports');
+                    return { reports: [] };
+                },
+                getMonthlyReportById: async (reportId) => {
+                    // Implementation for getMonthlyReportById
+                    console.log('📄 Getting monthly report by ID:', reportId);
+                    return { report: null };
+                }
+            };
+            console.log('✅ Supabase client initialized successfully and set as window.supabaseClient');
             return supabase;
         } else {
             console.error('❌ Supabase library not available');

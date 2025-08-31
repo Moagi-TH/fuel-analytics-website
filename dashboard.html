@@ -2590,9 +2590,23 @@
         console.log('🔄 COMPLETELY RECODED: Loading reports from fuel-reports bucket...');
         
         try {
+          // Check and initialize Supabase client if not available
           if (!window.supabaseClient) {
-            console.log('⚠️ Supabase client not available');
-            return;
+            console.log('⚠️ Supabase client not available, attempting to initialize...');
+            
+            // Try to initialize from supabase-client.js
+            if (typeof initializeSupabase === 'function') {
+              const client = initializeSupabase();
+              if (client) {
+                console.log('✅ Supabase client initialized successfully');
+              } else {
+                console.error('❌ Failed to initialize Supabase client');
+                return;
+              }
+            } else {
+              console.error('❌ Supabase client not available and initializeSupabase function not found');
+              return;
+            }
           }
           
           // COMPLETELY CLEAR existing reports first
@@ -6127,8 +6141,21 @@
         console.log('🔄 COMPLETELY RECODED: Refreshing reports from fuel-reports bucket...');
         
         try {
+          // Check and initialize Supabase client if not available
           if (!window.supabaseClient) {
-            throw new Error('Supabase client not available');
+            console.log('⚠️ Supabase client not available, attempting to initialize...');
+            
+            // Try to initialize from supabase-client.js
+            if (typeof initializeSupabase === 'function') {
+              const client = initializeSupabase();
+              if (client) {
+                console.log('✅ Supabase client initialized successfully');
+              } else {
+                throw new Error('Failed to initialize Supabase client');
+              }
+            } else {
+              throw new Error('Supabase client not available and initializeSupabase function not found');
+            }
           }
           
           // COMPLETELY CLEAR existing reports first
