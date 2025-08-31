@@ -2722,8 +2722,8 @@
         updateMostRecentReportDisplay();
       }
       
-      // Update the most recent report display
-      function updateMostRecentReportDisplay() {
+      // Update the most recent report display (global function)
+      window.updateMostRecentReportDisplay = function() {
         console.log('🔄 Updating most recent report display...');
         
         const recentReportDetails = document.getElementById('recent-report-details');
@@ -2750,7 +2750,7 @@
         }
         
         console.log('✅ Most recent report display updated:', mostRecent.name);
-      }
+      };
       
       // Update overview metrics with report data
       function updateOverviewMetrics(reportData) {
@@ -6109,14 +6109,153 @@
         console.log('🔄 Refreshing reports from storage...');
         
         try {
-          // Reload reports from storage
-          await loadReportsFromDatabase();
+          if (!window.supabaseClient) {
+            throw new Error('Supabase client not available');
+          }
+          
+          // Clear existing reports
+          uploadedReports.length = 0;
+          
+          // Try to get files from fuel-reports bucket first
+          console.log('🔍 Checking fuel-reports bucket...');
+          const { data: fuelFiles, error: fuelError } = await window.supabaseClient.supabase.storage
+            .from('fuel-reports')
+            .list();
+          
+          if (fuelError) {
+            console.error('❌ Error accessing fuel-reports bucket:', fuelError);
+          } else if (fuelFiles && fuelFiles.length > 0) {
+            console.log('📁 Found', fuelFiles.length, 'files in fuel-reports bucket:', fuelFiles);
+            
+            // Process each file
+            for (const file of fuelFiles) {
+              console.log('📄 Processing file:', file.name);
+              
+              // Extract month/year from filename
+              let month = 1, year = 2025;
+              
+              // Try to extract from filename patterns
+              let match = file.name.match(/Period Report (\d+) (\w+) (\d{4})/);
+              if (!match) {
+                const altMatch = file.name.match(/(\w+)-Period Report (\d+) (\w+) (\d{4})/);
+                if (altMatch) {
+                  match = [altMatch[0], altMatch[2], altMatch[3], altMatch[4]];
+                }
+              }
+              
+              if (match) {
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                month = monthNames.indexOf(match[2]) + 1;
+                year = parseInt(match[3]);
+              } else {
+                // Use creation date for UUID filenames
+                const createdDate = new Date(file.created_at);
+                month = createdDate.getMonth() + 1;
+                year = createdDate.getFullYear();
+              }
+              
+              const reportData = {
+                id: file.id || `storage_${file.name}`,
+                name: file.name,
+                month: month,
+                year: year,
+                uploadDate: new Date(file.created_at).toLocaleDateString(),
+                data: {
+                  period: { month: month, year: year },
+                  fuels: {
+                    diesel_ex: { total_revenue_zar: 0, quantity_liters: 0 },
+                    vpower_95: { total_revenue_zar: 0, quantity_liters: 0 },
+                    vpower_diesel: { total_revenue_zar: 0, quantity_liters: 0 }
+                  },
+                  shop_lines: []
+                },
+                storagePath: file.name,
+                size: file.metadata?.size || 0,
+                lastModified: file.updated_at
+              };
+              
+              uploadedReports.push(reportData);
+              console.log('✅ Added report:', reportData.name);
+            }
+          } else {
+            console.log('⚠️ No files found in fuel-reports bucket');
+          }
+          
+          // Try reports bucket as fallback
+          console.log('🔍 Checking reports bucket...');
+          const { data: reportFiles, error: reportError } = await window.supabaseClient.supabase.storage
+            .from('reports')
+            .list();
+          
+          if (reportError) {
+            console.error('❌ Error accessing reports bucket:', reportError);
+          } else if (reportFiles && reportFiles.length > 0) {
+            console.log('📁 Found', reportFiles.length, 'files in reports bucket:', reportFiles);
+            
+            // Process each file
+            for (const file of reportFiles) {
+              console.log('📄 Processing file:', file.name);
+              
+              // Extract month/year from filename
+              let month = 1, year = 2025;
+              
+              // Try to extract from filename patterns
+              let match = file.name.match(/Period Report (\d+) (\w+) (\d{4})/);
+              if (!match) {
+                const altMatch = file.name.match(/(\w+)-Period Report (\d+) (\w+) (\d{4})/);
+                if (altMatch) {
+                  match = [altMatch[0], altMatch[2], altMatch[3], altMatch[4]];
+                }
+              }
+              
+              if (match) {
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                month = monthNames.indexOf(match[2]) + 1;
+                year = parseInt(match[3]);
+              } else {
+                // Use creation date for UUID filenames
+                const createdDate = new Date(file.created_at);
+                month = createdDate.getMonth() + 1;
+                year = createdDate.getFullYear();
+              }
+              
+              const reportData = {
+                id: file.id || `storage_${file.name}`,
+                name: file.name,
+                month: month,
+                year: year,
+                uploadDate: new Date(file.created_at).toLocaleDateString(),
+                data: {
+                  period: { month: month, year: year },
+                  fuels: {
+                    diesel_ex: { total_revenue_zar: 0, quantity_liters: 0 },
+                    vpower_95: { total_revenue_zar: 0, quantity_liters: 0 },
+                    vpower_diesel: { total_revenue_zar: 0, quantity_liters: 0 }
+                  },
+                  shop_lines: []
+                },
+                storagePath: file.name,
+                size: file.metadata?.size || 0,
+                lastModified: file.updated_at
+              };
+              
+              uploadedReports.push(reportData);
+              console.log('✅ Added report:', reportData.name);
+            }
+          } else {
+            console.log('⚠️ No files found in reports bucket');
+          }
+          
+          // Update monthly data
+          updateMonthlyDataFromReports();
           
           // Update display
           renderReportsHistory();
           updateMostRecentReportDisplay();
           
-          console.log('✅ Reports refreshed from storage');
+          console.log('✅ Reports refreshed from storage. Total reports:', uploadedReports.length);
           
         } catch (error) {
           console.error('❌ Error refreshing reports:', error);
