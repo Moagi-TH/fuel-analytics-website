@@ -2736,30 +2736,38 @@
         }
       }
       
-      // Update monthly data from loaded reports
-      function updateMonthlyDataFromReports() {
+      // Update monthly data from loaded reports (global function)
+      window.updateMonthlyDataFromReports = function() {
         console.log('🔄 Updating monthly data from reports...');
         
         // Clear existing monthly data
-        Object.keys(monthlyData).forEach(key => delete monthlyData[key]);
+        if (window.monthlyData) {
+          Object.keys(window.monthlyData).forEach(key => delete window.monthlyData[key]);
+        }
         
         // Process each uploaded report
-        uploadedReports.forEach(report => {
-          const monthKey = `${report.month}/${report.year}`;
-          
-          if (!monthlyData[monthKey]) {
-            monthlyData[monthKey] = [];
-          }
-          
-          monthlyData[monthKey].push(report);
-        });
+        if (window.uploadedReports && window.uploadedReports.length > 0) {
+          window.uploadedReports.forEach(report => {
+            const monthKey = `${report.month}/${report.year}`;
+            
+            if (!window.monthlyData[monthKey]) {
+              window.monthlyData[monthKey] = [];
+            }
+            
+            window.monthlyData[monthKey].push(report);
+          });
+        }
         
         console.log('✅ Monthly data updated from reports');
-        console.log('📊 Available months:', Object.keys(monthlyData));
+        console.log('📊 Available months:', Object.keys(window.monthlyData || {}));
         
         // Update the most recent report display
-        updateMostRecentReportDisplay();
-      }
+        if (typeof window.updateMostRecentReportDisplay === 'function') {
+          window.updateMostRecentReportDisplay();
+        } else {
+          console.error('❌ updateMostRecentReportDisplay function not found');
+        }
+      };
       
       // Update the most recent report display (global function)
       window.updateMostRecentReportDisplay = function() {
