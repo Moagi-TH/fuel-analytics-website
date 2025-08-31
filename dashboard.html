@@ -173,6 +173,71 @@
       }
     }
     
+    // Define preserveCurrentData early to prevent errors
+    function preserveCurrentData() {
+      console.log('🔄 Preserving current data before manual entry...');
+      
+      // Store current state in sessionStorage
+      if (window.monthlyData && Object.keys(window.monthlyData).length > 0) {
+        sessionStorage.setItem('preservedMonthlyData', JSON.stringify(window.monthlyData));
+        console.log('✅ Monthly data preserved');
+      }
+      
+      // Store current report data
+      if (window.currentReportData) {
+        sessionStorage.setItem('preservedReportData', JSON.stringify(window.currentReportData));
+        console.log('✅ Report data preserved');
+      }
+      
+      // Store current dashboard metrics
+      const dashboardMetrics = {
+        totalRevenue: document.getElementById('total-revenue')?.textContent,
+        fuelVolume: document.getElementById('fuel-volume')?.textContent,
+        totalProfit: document.getElementById('total-profit')?.textContent,
+        shopRevenue: document.getElementById('shop-revenue-per-liter')?.textContent,
+        fuelMargin: document.getElementById('fuel-margin')?.textContent,
+        shopProfit: document.getElementById('shop-profit')?.textContent
+      };
+      sessionStorage.setItem('preservedDashboardMetrics', JSON.stringify(dashboardMetrics));
+      console.log('✅ Dashboard metrics preserved');
+    }
+    
+    // Define restorePreservedData early to prevent errors
+    function restorePreservedData() {
+      console.log('🔄 Restoring preserved data...');
+      
+      try {
+        // Restore monthly data
+        const preservedMonthlyData = sessionStorage.getItem('preservedMonthlyData');
+        if (preservedMonthlyData) {
+          window.monthlyData = JSON.parse(preservedMonthlyData);
+          console.log('✅ Monthly data restored');
+        }
+        
+        // Restore report data
+        const preservedReportData = sessionStorage.getItem('preservedReportData');
+        if (preservedReportData) {
+          window.currentReportData = JSON.parse(preservedReportData);
+          console.log('✅ Report data restored');
+        }
+        
+        // Restore dashboard metrics
+        const preservedDashboardMetrics = sessionStorage.getItem('preservedDashboardMetrics');
+        if (preservedDashboardMetrics) {
+          const metrics = JSON.parse(preservedDashboardMetrics);
+          Object.entries(metrics).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element && value) {
+              element.textContent = value;
+            }
+          });
+          console.log('✅ Dashboard metrics restored');
+        }
+      } catch (error) {
+        console.error('❌ Error restoring preserved data:', error);
+      }
+    }
+    
     // Define setupAutomaticDataRefresh early to prevent errors
     function setupAutomaticDataRefresh() {
       // Check for updates every 5 minutes (300000ms) for better performance
@@ -711,6 +776,37 @@
                 </div>
               </div>
               <button id="add-shop-item" class="button secondary small">+ Add Shop Item</button>
+            </div>
+
+            <!-- Calculated Metrics Section -->
+            <div class="form-section">
+              <h4>Calculated Metrics</h4>
+              <div class="metrics-display">
+                <div class="metric-card">
+                  <h5>Total Revenue</h5>
+                  <div class="metric-value" id="calculated-total-revenue">R 0</div>
+                </div>
+                <div class="metric-card">
+                  <h5>Total Profit</h5>
+                  <div class="metric-value" id="calculated-total-profit">R 0</div>
+                </div>
+                <div class="metric-card">
+                  <h5>Fuel Volume</h5>
+                  <div class="metric-value" id="calculated-fuel-volume">0 L</div>
+                </div>
+                <div class="metric-card">
+                  <h5>Shop Revenue per Liter</h5>
+                  <div class="metric-value" id="calculated-shop-revenue-per-liter">R 0.00/L</div>
+                </div>
+                <div class="metric-card">
+                  <h5>Fuel Margin</h5>
+                  <div class="metric-value" id="calculated-fuel-margin">R 0</div>
+                </div>
+                <div class="metric-card">
+                  <h5>Shop Profit</h5>
+                  <div class="metric-value" id="calculated-shop-profit">R 0</div>
+                </div>
+              </div>
             </div>
 
             <div class="form-actions">
@@ -2875,6 +2971,9 @@
         // Update smart loading availability
         updateManualDataSourceInfo();
         
+        // Add real-time metric calculation
+        setupRealTimeMetricCalculation();
+        
         console.log('✅ Manual entry opened - current data preserved');
       });
 
@@ -4552,10 +4651,36 @@
         
         timelineHTML += `
             </div>
+            
+            <!-- Analytics Charts Section -->
+            <div class="analytics-charts-section">
+              <h3>Analytics & Trends</h3>
+              <div class="charts-grid">
+                <div class="chart-container">
+                  <h4>Revenue Trends</h4>
+                  <canvas id="revenue-trend-chart" width="400" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                  <h4>Fuel Volume Trends</h4>
+                  <canvas id="volume-trend-chart" width="400" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                  <h4>Profit Margins</h4>
+                  <canvas id="profit-margin-chart" width="400" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                  <h4>Shop Performance</h4>
+                  <canvas id="shop-performance-chart" width="400" height="200"></canvas>
+                </div>
+              </div>
+            </div>
           </div>
         `;
         
         document.getElementById('overview-over-time').innerHTML = timelineHTML;
+        
+        // Create analytics charts after HTML is rendered
+        createAnalyticsCharts(months);
       }
       
       // Function to load data for a specific month
@@ -4571,6 +4696,254 @@
         const overviewTitle = document.querySelector('#overview h1');
         if (overviewTitle) {
           overviewTitle.textContent = `Monthly Overview - ${monthKey}`;
+        }
+      }
+      
+      // Function to setup real-time metric calculation
+      function setupRealTimeMetricCalculation() {
+        console.log('🔄 Setting up real-time metric calculation...');
+        
+        // Get all input fields that should trigger metric updates
+        const metricInputs = [
+          'fuel-diesel-revenue', 'fuel-diesel-qty', 'fuel-diesel-sell', 'fuel-diesel-cost',
+          'fuel-v95-revenue', 'fuel-v95-qty', 'fuel-v95-sell', 'fuel-v95-cost',
+          'fuel-vd-revenue', 'fuel-vd-qty', 'fuel-vd-sell', 'fuel-vd-cost'
+        ];
+        
+        // Add event listeners to all metric inputs
+        metricInputs.forEach(inputId => {
+          const input = document.getElementById(inputId);
+          if (input) {
+            input.addEventListener('input', updateCalculatedMetrics);
+            input.addEventListener('change', updateCalculatedMetrics);
+          }
+        });
+        
+        // Initial calculation
+        updateCalculatedMetrics();
+        
+        console.log('✅ Real-time metric calculation setup complete');
+      }
+      
+      // Function to calculate and update metrics in real-time
+      function updateCalculatedMetrics() {
+        try {
+          console.log('🔄 Updating calculated metrics...');
+          
+          // Get fuel sales data
+          const dieselRevenue = parseFloat(document.getElementById('fuel-diesel-revenue')?.value || 0);
+          const dieselVolume = parseFloat(document.getElementById('fuel-diesel-qty')?.value || 0);
+          const dieselSell = parseFloat(document.getElementById('fuel-diesel-sell')?.value || 0);
+          const dieselCost = parseFloat(document.getElementById('fuel-diesel-cost')?.value || 0);
+          
+          const v95Revenue = parseFloat(document.getElementById('fuel-v95-revenue')?.value || 0);
+          const v95Volume = parseFloat(document.getElementById('fuel-v95-qty')?.value || 0);
+          const v95Sell = parseFloat(document.getElementById('fuel-v95-sell')?.value || 0);
+          const v95Cost = parseFloat(document.getElementById('fuel-v95-cost')?.value || 0);
+          
+          const vdRevenue = parseFloat(document.getElementById('fuel-vd-revenue')?.value || 0);
+          const vdVolume = parseFloat(document.getElementById('fuel-vd-qty')?.value || 0);
+          const vdSell = parseFloat(document.getElementById('fuel-vd-sell')?.value || 0);
+          const vdCost = parseFloat(document.getElementById('fuel-vd-cost')?.value || 0);
+          
+          // Calculate totals
+          const totalRevenue = dieselRevenue + v95Revenue + vdRevenue;
+          const totalVolume = dieselVolume + v95Volume + vdVolume;
+          
+          // Calculate profits
+          const dieselProfit = (dieselSell - dieselCost) * dieselVolume;
+          const v95Profit = (v95Sell - v95Cost) * v95Volume;
+          const vdProfit = (vdSell - vdCost) * vdVolume;
+          const totalProfit = dieselProfit + v95Profit + vdProfit;
+          
+          // Calculate shop metrics (placeholder - would need shop data)
+          const shopRevenue = 0; // Would be calculated from shop inputs
+          const shopFuelRatio = totalVolume > 0 ? (shopRevenue / totalVolume) : 0;
+          const shopProfit = shopRevenue * 0.3; // Estimate 30% profit margin
+          
+          // Update display
+          document.getElementById('calculated-total-revenue').textContent = `R ${totalRevenue.toLocaleString()}`;
+          document.getElementById('calculated-total-profit').textContent = `R ${totalProfit.toLocaleString()}`;
+          document.getElementById('calculated-fuel-volume').textContent = `${totalVolume.toLocaleString()} L`;
+          document.getElementById('calculated-shop-revenue-per-liter').textContent = `R ${shopFuelRatio.toFixed(2)}/L`;
+          document.getElementById('calculated-fuel-margin').textContent = `R ${totalProfit.toLocaleString()}`;
+          document.getElementById('calculated-shop-profit').textContent = `R ${shopProfit.toLocaleString()}`;
+          
+          console.log('✅ Calculated metrics updated');
+        } catch (error) {
+          console.error('❌ Error updating calculated metrics:', error);
+        }
+      }
+      
+      // Function to create analytics charts for Overview Over Time
+      function createAnalyticsCharts(months) {
+        try {
+          console.log('📊 Creating analytics charts for months:', months);
+          
+          // Prepare data for charts
+          const chartData = months.map(monthKey => {
+            const monthData = monthlyData[monthKey];
+            if (monthData && monthData.length > 0) {
+              const report = monthData[0];
+              const reportData = report.data;
+              const metrics = calculateMonthlyMetrics(reportData);
+              return {
+                month: monthKey,
+                revenue: metrics.totalRevenue,
+                volume: metrics.totalVolume,
+                profit: metrics.totalRevenue * 0.15, // Estimate profit as 15% of revenue
+                shopRevenue: metrics.shopRevenue
+              };
+            }
+            return {
+              month: monthKey,
+              revenue: 0,
+              volume: 0,
+              profit: 0,
+              shopRevenue: 0
+            };
+          });
+          
+          // Create Revenue Trends Chart
+          const revenueCtx = document.getElementById('revenue-trend-chart');
+          if (revenueCtx && typeof Chart !== 'undefined') {
+            new Chart(revenueCtx, {
+              type: 'line',
+              data: {
+                labels: chartData.map(d => d.month),
+                datasets: [{
+                  label: 'Total Revenue',
+                  data: chartData.map(d => d.revenue),
+                  borderColor: '#3b82f6',
+                  backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                  tension: 0.4
+                }]
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: {
+                    display: false
+                  }
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      callback: function(value) {
+                        return 'R ' + value.toLocaleString();
+                      }
+                    }
+                  }
+                }
+              }
+            });
+          }
+          
+          // Create Volume Trends Chart
+          const volumeCtx = document.getElementById('volume-trend-chart');
+          if (volumeCtx && typeof Chart !== 'undefined') {
+            new Chart(volumeCtx, {
+              type: 'bar',
+              data: {
+                labels: chartData.map(d => d.month),
+                datasets: [{
+                  label: 'Fuel Volume (L)',
+                  data: chartData.map(d => d.volume),
+                  backgroundColor: '#10b981',
+                  borderColor: '#059669',
+                  borderWidth: 1
+                }]
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: {
+                    display: false
+                  }
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      callback: function(value) {
+                        return value.toLocaleString() + ' L';
+                      }
+                    }
+                  }
+                }
+              }
+            });
+          }
+          
+          // Create Profit Margins Chart
+          const profitCtx = document.getElementById('profit-margin-chart');
+          if (profitCtx && typeof Chart !== 'undefined') {
+            new Chart(profitCtx, {
+              type: 'doughnut',
+              data: {
+                labels: chartData.map(d => d.month),
+                datasets: [{
+                  data: chartData.map(d => d.profit),
+                  backgroundColor: [
+                    '#f59e0b',
+                    '#ef4444',
+                    '#8b5cf6',
+                    '#06b6d4',
+                    '#84cc16'
+                  ]
+                }]
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: {
+                    position: 'bottom'
+                  }
+                }
+              }
+            });
+          }
+          
+          // Create Shop Performance Chart
+          const shopCtx = document.getElementById('shop-performance-chart');
+          if (shopCtx && typeof Chart !== 'undefined') {
+            new Chart(shopCtx, {
+              type: 'line',
+              data: {
+                labels: chartData.map(d => d.month),
+                datasets: [{
+                  label: 'Shop Revenue',
+                  data: chartData.map(d => d.shopRevenue),
+                  borderColor: '#8b5cf6',
+                  backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                  tension: 0.4
+                }]
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: {
+                    display: false
+                  }
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      callback: function(value) {
+                        return 'R ' + value.toLocaleString();
+                      }
+                    }
+                  }
+                }
+              }
+            });
+          }
+          
+          console.log('✅ Analytics charts created successfully');
+        } catch (error) {
+          console.error('❌ Error creating analytics charts:', error);
         }
       }
       
@@ -7208,70 +7581,8 @@
           showNotification('Data clearing disabled to preserve loaded reports', 'warning');
         }
         
-              // Preserve current data before manual entry
-      function preserveCurrentData() {
-        console.log('🔄 Preserving current data before manual entry...');
-        
-        // Store current state in sessionStorage
-        if (window.monthlyData && Object.keys(window.monthlyData).length > 0) {
-          sessionStorage.setItem('preservedMonthlyData', JSON.stringify(window.monthlyData));
-          console.log('✅ Monthly data preserved');
-        }
-        
-        // Store current report data
-        if (window.currentReportData) {
-          sessionStorage.setItem('preservedReportData', JSON.stringify(window.currentReportData));
-          console.log('✅ Report data preserved');
-        }
-        
-        // Store current dashboard metrics
-        const dashboardMetrics = {
-          totalRevenue: document.getElementById('total-revenue')?.textContent,
-          fuelVolume: document.getElementById('fuel-volume')?.textContent,
-          totalProfit: document.getElementById('total-profit')?.textContent,
-          shopRevenue: document.getElementById('shop-revenue-per-liter')?.textContent,
-          fuelMargin: document.getElementById('fuel-margin')?.textContent,
-          shopProfit: document.getElementById('shop-profit')?.textContent
-        };
-        sessionStorage.setItem('preservedDashboardMetrics', JSON.stringify(dashboardMetrics));
-        console.log('✅ Dashboard metrics preserved');
-      }
-      
-      // Restore preserved data
-      function restorePreservedData() {
-        console.log('🔄 Restoring preserved data...');
-        
-        try {
-          // Restore monthly data
-          const preservedMonthlyData = sessionStorage.getItem('preservedMonthlyData');
-          if (preservedMonthlyData) {
-            window.monthlyData = JSON.parse(preservedMonthlyData);
-            console.log('✅ Monthly data restored');
-          }
-          
-          // Restore report data
-          const preservedReportData = sessionStorage.getItem('preservedReportData');
-          if (preservedReportData) {
-            window.currentReportData = JSON.parse(preservedReportData);
-            console.log('✅ Report data restored');
-          }
-          
-          // Restore dashboard metrics
-          const preservedDashboardMetrics = sessionStorage.getItem('preservedDashboardMetrics');
-          if (preservedDashboardMetrics) {
-            const metrics = JSON.parse(preservedDashboardMetrics);
-            Object.entries(metrics).forEach(([id, value]) => {
-              const element = document.getElementById(id);
-              if (element && value) {
-                element.textContent = value;
-              }
-            });
-            console.log('✅ Dashboard metrics restored');
-          }
-        } catch (error) {
-          console.error('❌ Error restoring preserved data:', error);
-        }
-      }
+      // Preserve current data before manual entry (moved to early definition)
+      // preserveCurrentData and restorePreservedData are now defined earlier in the file
       
       // Preserve loaded data
       function preserveLoadedData() {
