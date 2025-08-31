@@ -9,7 +9,7 @@ RETURNS TABLE (
     file_size BIGINT,
     created_at TIMESTAMPTZ,
     updated_at TIMESTAMPTZ,
-    metadata JSONB
+    metadata_json JSONB
 ) 
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -20,10 +20,10 @@ BEGIN
     SELECT 
         'fuel-reports'::TEXT as bucket_name,
         name::TEXT as file_name,
-        metadata->>'size'::BIGINT as file_size,
+        (metadata->>'size')::BIGINT as file_size,
         created_at,
         updated_at,
-        metadata
+        metadata as metadata_json
     FROM storage.objects 
     WHERE bucket_id = 'fuel-reports'
     ORDER BY created_at DESC;
@@ -33,10 +33,10 @@ BEGIN
     SELECT 
         'reports'::TEXT as bucket_name,
         name::TEXT as file_name,
-        metadata->>'size'::BIGINT as file_size,
+        (metadata->>'size')::BIGINT as file_size,
         created_at,
         updated_at,
-        metadata
+        metadata as metadata_json
     FROM storage.objects 
     WHERE bucket_id = 'reports'
     ORDER BY created_at DESC;
@@ -49,6 +49,29 @@ GRANT EXECUTE ON FUNCTION list_storage_files() TO anon;
 
 -- Test query to see what's actually in the storage
 SELECT * FROM list_storage_files();
+
+-- Simple direct queries to test storage bucket access
+-- Test fuel-reports bucket directly
+SELECT 
+    'fuel-reports' as bucket_name,
+    name as file_name,
+    (metadata->>'size')::BIGINT as file_size,
+    created_at,
+    updated_at
+FROM storage.objects 
+WHERE bucket_id = 'fuel-reports'
+ORDER BY created_at DESC;
+
+-- Test reports bucket directly
+SELECT 
+    'reports' as bucket_name,
+    name as file_name,
+    (metadata->>'size')::BIGINT as file_size,
+    created_at,
+    updated_at
+FROM storage.objects 
+WHERE bucket_id = 'reports'
+ORDER BY created_at DESC;
 
 -- Also check the monthly_reports table to see what's stored there
 SELECT 
