@@ -5950,11 +5950,17 @@
       
       // Global functions for report actions
       window.viewReport = function(index) {
-        console.log('viewReport called with index:', index);
-        console.log('uploadedReports:', uploadedReports);
+        console.log('🔄 viewReport called with index:', index);
+        console.log('📋 uploadedReports:', window.uploadedReports);
         
-        const report = uploadedReports[index];
-        console.log('Selected report:', report);
+        if (!window.uploadedReports || !window.uploadedReports[index]) {
+          console.error('❌ Report not found at index:', index);
+          alert('Error: Report not found');
+          return;
+        }
+        
+        const report = window.uploadedReports[index];
+        console.log('📄 Selected report:', report);
         
         if (!report) {
           console.error('Report not found at index:', index);
@@ -5986,15 +5992,58 @@
             overviewLink.click();
           }
         } else if (report.storagePath) {
-          // For storage reports, open PDF
-          openPdfFromStorage(report.storagePath, report.name);
+          // For storage reports, open PDF from fuel-reports bucket
+          console.log('📄 Opening PDF from fuel-reports bucket:', report.storagePath);
+          openPdfFromFuelReportsBucket(report.storagePath, report.name);
         } else {
-          console.error('Report has no data or storage path:', report);
+          console.error('❌ Report has no data or storage path:', report);
           alert('Error: Report data not available');
         }
       };
       
-      // Function to open PDF from Supabase Storage
+      // Function to open PDF from fuel-reports bucket
+      async function openPdfFromFuelReportsBucket(storagePath, fileName) {
+        try {
+          console.log('🔄 Opening PDF from fuel-reports bucket:', storagePath);
+          console.log('📄 File name:', fileName);
+          
+          if (!window.supabaseClient) {
+            console.error('❌ Supabase client not available');
+            alert('Error: Cannot access storage');
+            return;
+          }
+          
+          // Get signed URL from fuel-reports bucket
+          const { data: signedUrl, error } = await window.supabaseClient.supabase.storage
+            .from('fuel-reports')
+            .createSignedUrl(storagePath, 60);
+          
+          if (error) {
+            console.error('❌ Error creating signed URL:', error);
+            alert('Error: Cannot access file');
+            return;
+          }
+          
+          if (signedUrl) {
+            console.log('✅ Signed URL created:', signedUrl.signedUrl);
+            
+            // Open PDF in new tab
+            window.open(signedUrl.signedUrl, '_blank');
+            
+            // Show success message
+            showNotification('PDF opened successfully', 'success');
+          } else {
+            console.error('❌ No signed URL returned');
+            alert('Error: Cannot access file');
+          }
+          
+        } catch (error) {
+          console.error('❌ Error opening PDF:', error);
+          alert('Error: Cannot open PDF');
+        }
+      }
+      
+      // Function to open PDF from Supabase Storage (legacy)
       async function openPdfFromStorage(storagePath, fileName) {
         try {
           console.log('Opening PDF from storage:', storagePath);
