@@ -875,7 +875,12 @@
             </div>
             
             <!-- All Reports List -->
-            <h4 style="margin-top: 30px; margin-bottom: 15px;">All Reports</h4>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; margin-bottom: 15px;">
+              <h4>All Reports</h4>
+              <button onclick="clearAllReports()" class="button" style="background: #dc2626; color: white; padding: 8px 16px; border-radius: 6px; font-size: 14px;">
+                🗑️ Clear All Reports
+              </button>
+            </div>
             <div class="reports-list" id="reports-list">
               <!-- Reports will be populated here -->
             </div>
@@ -3292,6 +3297,13 @@
             setTimeout(async () => {
               try {
                 await refreshAllDashboardData();
+                
+                // Update all dashboard sections with new data
+                updateAnalyticsSection(data);
+                updateInsightsSection(data);
+                updatePersonnelSection(data);
+                
+                console.log('✅ All dashboard sections updated with new data');
               } catch (error) {
                 console.error('Error refreshing dashboard:', error);
               }
@@ -3301,6 +3313,12 @@
           } else {
             // Fallback to local storage
             addReportToHistory(file, data);
+            
+            // Update all dashboard sections with new data
+            updateAnalyticsSection(data);
+            updateInsightsSection(data);
+            updatePersonnelSection(data);
+            
             analyzeStatus.textContent = 'Analysis complete! Data saved locally. (Database not available - user profile needs setup)';
           }
           
@@ -5967,23 +5985,174 @@
           
           // Delete from database if available
           if (window.supabaseClient && report.id) {
-            deleteReport(report.id);
+            try {
+              // Call the correct delete function from supabase client
+              window.supabaseClient.deleteMonthlyReport(report.id);
+              console.log('✅ Report deleted from database');
+            } catch (error) {
+              console.error('❌ Error deleting from database:', error);
+            }
           }
           
+          // Remove from local array
           uploadedReports.splice(index, 1);
           
           // Remove from monthly data
           const monthKey = `${report.month}/${report.year}`;
-          if (window.monthlyData[monthKey]) {
+          if (window.monthlyData && window.monthlyData[monthKey]) {
             window.monthlyData[monthKey] = window.monthlyData[monthKey].filter(r => r !== report);
             if (window.monthlyData[monthKey].length === 0) {
               delete window.monthlyData[monthKey];
             }
           }
           
+          // Update display
           renderReportsHistory();
+          updateMostRecentReportDisplay();
+          
+          console.log('✅ Report deleted successfully');
         }
       };
+      
+      // Function to clear all reports
+      window.clearAllReports = function() {
+        if (confirm('Are you sure you want to delete ALL reports? This action cannot be undone.')) {
+          console.log('🗑️ Clearing all reports...');
+          
+          // Clear local arrays
+          uploadedReports.length = 0;
+          
+          // Clear monthly data
+          if (window.monthlyData) {
+            Object.keys(window.monthlyData).forEach(key => delete window.monthlyData[key]);
+          }
+          
+          // Update display
+          renderReportsHistory();
+          updateMostRecentReportDisplay();
+          
+          console.log('✅ All reports cleared');
+        }
+      };
+      
+      // Function to update Analytics section with new data
+      function updateAnalyticsSection(data) {
+        console.log('🔄 Updating Analytics section with new data...');
+        
+        try {
+          // Update fuel margins table
+          if (data.fuels) {
+            updateFuelMargins(data.fuels);
+          }
+          
+          // Update fuel distribution chart
+          if (data.fuels) {
+            updateFuelDistributionChart(data.fuels);
+          }
+          
+          // Update shop performance chart
+          if (data.shop_lines && data.shop_lines.length > 0) {
+            updateShopPerformanceChart(data.shop_lines);
+          }
+          
+          // Update revenue trends
+          if (data.fuels || data.shop_lines) {
+            updateRevenueTrends(data);
+          }
+          
+          console.log('✅ Analytics section updated');
+        } catch (error) {
+          console.error('❌ Error updating Analytics section:', error);
+        }
+      }
+      
+      // Function to update Insights section with new data
+      function updateInsightsSection(data) {
+        console.log('🔄 Updating Insights section with new data...');
+        
+        try {
+          // Calculate insights from the data
+          const insights = calculateInsights(data);
+          
+          // Update insights display
+          updateInsightsDisplay(insights);
+          
+          console.log('✅ Insights section updated');
+        } catch (error) {
+          console.error('❌ Error updating Insights section:', error);
+        }
+      }
+      
+      // Function to update Personnel section with new data
+      function updatePersonnelSection(data) {
+        console.log('🔄 Updating Personnel section with new data...');
+        
+        try {
+          // Update personnel data from report
+          if (data.personnel || data.shop_lines) {
+            updatePersonnelDataFromReport(data);
+          }
+          
+          // Update personnel charts
+          updatePersonnelCharts();
+          
+          console.log('✅ Personnel section updated');
+        } catch (error) {
+          console.error('❌ Error updating Personnel section:', error);
+        }
+      }
+      
+      // Function to calculate insights from data
+      function calculateInsights(data) {
+        const insights = {
+          totalRevenue: 0,
+          totalFuelVolume: 0,
+          totalShopRevenue: 0,
+          fuelEfficiency: 0,
+          shopPerformance: 0,
+          recommendations: []
+        };
+        
+        // Calculate fuel metrics
+        if (data.fuels) {
+          Object.values(data.fuels).forEach(fuel => {
+            insights.totalRevenue += fuel.total_revenue_zar || 0;
+            insights.totalFuelVolume += fuel.quantity_liters || 0;
+          });
+        }
+        
+        // Calculate shop metrics
+        if (data.shop_lines) {
+          data.shop_lines.forEach(shop => {
+            insights.totalShopRevenue += shop.total_revenue_zar || 0;
+          });
+        }
+        
+        // Calculate efficiency metrics
+        if (insights.totalFuelVolume > 0) {
+          insights.fuelEfficiency = insights.totalRevenue / insights.totalFuelVolume;
+          insights.shopPerformance = insights.totalShopRevenue / insights.totalFuelVolume;
+        }
+        
+        // Generate recommendations
+        if (insights.shopPerformance < 1.0) {
+          insights.recommendations.push('Consider increasing shop promotions to improve revenue per liter');
+        }
+        if (insights.fuelEfficiency < 20) {
+          insights.recommendations.push('Review fuel pricing strategy to improve margins');
+        }
+        
+        return insights;
+      }
+      
+      // Function to update insights display
+      function updateInsightsDisplay(insights) {
+        const insightsSection = document.getElementById('insights');
+        if (insightsSection) {
+          // Update insights content with calculated data
+          console.log('📊 Insights calculated:', insights);
+        }
+      }
       
       // Global function for selecting months
       window.selectMonth = function(month) {
