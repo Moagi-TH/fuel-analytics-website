@@ -2598,7 +2598,11 @@
             // Try 'fuel-reports' bucket first (as shown in your screenshot)
             const { data: fuelReports, error: fuelError } = await window.supabaseClient.supabase.storage
               .from('fuel-reports')
-              .list();
+              .list('', {
+                limit: 100,
+                offset: 0,
+                sortBy: { column: 'created_at', order: 'desc' }
+              });
             
             if (!fuelError && fuelReports) {
               storageFiles = fuelReports;
@@ -2609,7 +2613,11 @@
               // Try 'reports' bucket as fallback
               const { data: reports, error: reportsError } = await window.supabaseClient.supabase.storage
                 .from('reports')
-                .list();
+                .list('', {
+                  limit: 100,
+                  offset: 0,
+                  sortBy: { column: 'created_at', order: 'desc' }
+                });
               
               if (!reportsError && reports) {
                 storageFiles = reports;
@@ -6120,7 +6128,11 @@
           console.log('🔍 Checking fuel-reports bucket...');
           const { data: fuelFiles, error: fuelError } = await window.supabaseClient.supabase.storage
             .from('fuel-reports')
-            .list();
+            .list('', {
+              limit: 100,
+              offset: 0,
+              sortBy: { column: 'created_at', order: 'desc' }
+            });
           
           if (fuelError) {
             console.error('❌ Error accessing fuel-reports bucket:', fuelError);
@@ -6186,7 +6198,11 @@
           console.log('🔍 Checking reports bucket...');
           const { data: reportFiles, error: reportError } = await window.supabaseClient.supabase.storage
             .from('reports')
-            .list();
+            .list('', {
+              limit: 100,
+              offset: 0,
+              sortBy: { column: 'created_at', order: 'desc' }
+            });
           
           if (reportError) {
             console.error('❌ Error accessing reports bucket:', reportError);
