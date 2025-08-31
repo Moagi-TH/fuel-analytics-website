@@ -7,8 +7,8 @@ RETURNS TABLE (
     bucket_name TEXT,
     file_name TEXT,
     file_size BIGINT,
-    created_at TIMESTAMPTZ,
-    updated_at TIMESTAMPTZ,
+    file_created_at TIMESTAMPTZ,
+    file_updated_at TIMESTAMPTZ,
     metadata_json JSONB
 ) 
 LANGUAGE plpgsql
@@ -21,8 +21,8 @@ BEGIN
         'fuel-reports'::TEXT as bucket_name,
         name::TEXT as file_name,
         (metadata->>'size')::BIGINT as file_size,
-        created_at,
-        updated_at,
+        created_at as file_created_at,
+        updated_at as file_updated_at,
         metadata as metadata_json
     FROM storage.objects 
     WHERE bucket_id = 'fuel-reports'
@@ -34,8 +34,8 @@ BEGIN
         'reports'::TEXT as bucket_name,
         name::TEXT as file_name,
         (metadata->>'size')::BIGINT as file_size,
-        created_at,
-        updated_at,
+        created_at as file_created_at,
+        updated_at as file_updated_at,
         metadata as metadata_json
     FROM storage.objects 
     WHERE bucket_id = 'reports'
@@ -47,17 +47,15 @@ $$;
 GRANT EXECUTE ON FUNCTION list_storage_files() TO authenticated;
 GRANT EXECUTE ON FUNCTION list_storage_files() TO anon;
 
--- Test query to see what's actually in the storage
-SELECT * FROM list_storage_files();
-
--- Simple direct queries to test storage bucket access
+-- Simple direct queries to test storage bucket access (no function needed)
 -- Test fuel-reports bucket directly
 SELECT 
     'fuel-reports' as bucket_name,
     name as file_name,
     (metadata->>'size')::BIGINT as file_size,
     created_at,
-    updated_at
+    updated_at,
+    metadata
 FROM storage.objects 
 WHERE bucket_id = 'fuel-reports'
 ORDER BY created_at DESC;
@@ -68,10 +66,14 @@ SELECT
     name as file_name,
     (metadata->>'size')::BIGINT as file_size,
     created_at,
-    updated_at
+    updated_at,
+    metadata
 FROM storage.objects 
 WHERE bucket_id = 'reports'
 ORDER BY created_at DESC;
+
+-- Test the function (optional)
+SELECT * FROM list_storage_files();
 
 -- Also check the monthly_reports table to see what's stored there
 SELECT 
