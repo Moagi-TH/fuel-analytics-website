@@ -24,7 +24,9 @@ The test page was just for debugging. Let's focus on the main dashboard at `http
 3. **Or let the dashboard create one automatically**
 
 ### **Step 3: Test the Dashboard**
-1. **Open**: `http://localhost:8000/dashboard.html`
+1. **Open**: `
+
+http://localhost:8000/dashboard.html`
 2. **Check console** for any errors
 3. **Try uploading a PDF** to test data persistence
 

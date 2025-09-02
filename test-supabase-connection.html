@@ -6,331 +6,147 @@
     <title>Supabase Connection Test</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
-        .success { background-color: #d4edda; border-color: #c3e6cb; }
-        .error { background-color: #f8d7da; border-color: #f5c6cb; }
-        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
         button { padding: 10px 20px; margin: 5px; cursor: pointer; }
-        pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
     </style>
 </head>
 <body>
-    <h1>🔗 Supabase Connection Test</h1>
+    <h1>Supabase Connection Test</h1>
+    
+    <div id="status"></div>
+    
+    <button onclick="testConnection()">Test Connection</button>
+    <button onclick="testAuth()">Test Authentication</button>
+    <button onclick="testDatabase()">Test Database</button>
+    <button onclick="testStorage()">Test Storage</button>
+    <button onclick="clearResults()">Clear Results</button>
+    
+    <div id="results"></div>
 
-    <div class="test-section">
-        <h2>Test 1: Basic Connection</h2>
-        <button onclick="testBasicConnection()">Test Basic Connection</button>
-        <div id="basic-result"></div>
-    </div>
-
-    <div class="test-section">
-        <h2>Test 2: Authentication Status</h2>
-        <button onclick="testAuthStatus()">Check Auth Status</button>
-        <div id="auth-result"></div>
-    </div>
-
-    <div class="test-section">
-        <h2>Test 3: Database Tables</h2>
-        <button onclick="testDatabaseTables()">Check Tables</button>
-        <div id="tables-result"></div>
-    </div>
-
-    <div class="test-section">
-        <h2>Test 4: Test Auth Only (No Tables)</h2>
-        <button onclick="testAuthOnly()">Test Authentication Endpoint</button>
-        <div id="auth-only-result"></div>
-    </div>
-
-    <div class="test-section">
-        <h2>Test 5: Create Test Data</h2>
-        <button onclick="createTestData()">Create Test Company & User</button>
-        <div id="test-data-result"></div>
-    </div>
-
-    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./supabase-client.js?v=4"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        async function testBasicConnection() {
-            const resultDiv = document.getElementById('basic-result');
-            resultDiv.innerHTML = '<p>🔄 Testing connection...</p>';
-
-            try {
-                // Test if Supabase client is available
-                if (!window.supabase) {
-                    throw new Error('Supabase client not loaded');
-                }
-
-                console.log('Supabase client available:', !!window.supabase);
-                console.log('Testing with URL:', 'https://fynfomhoikzpsrbghnzr.supabase.co');
-                console.log('Testing with key:', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.cEOR4UiBh1tWXFL6nC7ftRpi2un8DfCAG5cD7xdd_Cw');
-
-                // Test basic client creation
-                const testClient = window.supabase.createClient(
-                    'https://fynfomhoikzpsrbghnzr.supabase.co',
-                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.cEOR4UiBh1tWXFL6nC7ftRpi2un8DfCAG5cD7xdd_Cw'
-                );
-
-                console.log('Test client created:', !!testClient);
-
-                // Test a simple query - try auth first to avoid table issues
-                console.log('Testing authentication endpoint...');
-                const { data: authData, error: authError } = await testClient.auth.getSession();
-                
-                if (authError) {
-                    console.log('Auth test failed:', authError);
-                    // Try a simple table query as fallback
-                    console.log('Trying table query as fallback...');
-                    const { data, error } = await testClient.from('companies').select('count').limit(1);
-                    
-                    if (error) {
-                        throw error;
-                    }
-                    
-                    resultDiv.innerHTML = `
-                        <div class="success">
-                            <h3>✅ Connection Successful!</h3>
-                            <p>Supabase client is working correctly</p>
-                            <p>Note: Database tables may not be set up yet</p>
-                            <pre>Response: ${JSON.stringify(data, null, 2)}</pre>
-                        </div>
-                    `;
-                    return;
-                }
-
-                // If auth works, try the table query
-                const { data, error } = await testClient.from('companies').select('count').limit(1);
-
-                if (error) {
-                    throw error;
-                }
-
-                resultDiv.innerHTML = `
-                    <div class="success">
-                        <h3>✅ Connection Successful!</h3>
-                        <p>Supabase client is working correctly</p>
-                        <pre>Response: ${JSON.stringify(data, null, 2)}</pre>
-                    </div>
-                `;
-            } catch (error) {
-                console.error('Connection test failed:', error);
-                resultDiv.innerHTML = `
-                    <div class="error">
-                        <h3>❌ Connection Failed</h3>
-                        <p>Error: ${error.message}</p>
-                        <pre>Details: ${JSON.stringify(error, null, 2)}</pre>
-                        <p><strong>Debugging Info:</strong></p>
-                        <ul>
-                            <li>Supabase client loaded: ${!!window.supabase}</li>
-                            <li>Error type: ${error.constructor.name}</li>
-                            <li>Error code: ${error.code || 'N/A'}</li>
-                        </ul>
-                        <p><strong>Next Steps:</strong></p>
-                        <ol>
-                            <li>Check your Supabase project URL and API key</li>
-                            <li>Verify the database schema has been applied</li>
-                            <li>Ensure Row Level Security policies are configured</li>
-                            <li>Try refreshing the page with Ctrl+F5 (hard refresh)</li>
-                        </ol>
-                    </div>
-                `;
-            }
+        const SUPABASE_URL = 'https://fynfomhoikzpsrbghnzr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.cEOR4UiBh1tWXFL6nC7ftRpi2un8DfCAG5cD7xdd_Cw';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            results.appendChild(div);
         }
-
-        async function testAuthStatus() {
-            const resultDiv = document.getElementById('auth-result');
-            resultDiv.innerHTML = '<p>🔄 Checking authentication...</p>';
-
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        async function testConnection() {
+            addResult('Testing Supabase connection...', 'info');
             try {
-                const { data: { session }, error } = await window.supabase.auth.getSession();
-
-                if (error) throw error;
-
-                if (session) {
-                    resultDiv.innerHTML = `
-                        <div class="success">
-                            <h3>✅ User Authenticated</h3>
-                            <p>Email: ${session.user.email}</p>
-                            <p>User ID: ${session.user.id}</p>
-                        </div>
-                    `;
+                const { data, error } = await supabase.from('companies').select('count').limit(1);
+                if (error) {
+                    addResult(`Connection failed: ${error.message}`, 'error');
                 } else {
-                    resultDiv.innerHTML = `
-                        <div class="warning">
-                            <h3>⚠️ No Active Session</h3>
-                            <p>No user is currently logged in</p>
-                            <p>You'll need to sign in to test database operations</p>
-                        </div>
-                    `;
+                    addResult('✅ Supabase connection successful!', 'success');
                 }
-            } catch (error) {
-                resultDiv.innerHTML = `
-                    <div class="error">
-                        <h3>❌ Auth Check Failed</h3>
-                        <p>Error: ${error.message}</p>
-                    </div>
-                `;
+            } catch (err) {
+                addResult(`Connection error: ${err.message}`, 'error');
             }
         }
-
-        async function testDatabaseTables() {
-            const resultDiv = document.getElementById('tables-result');
-            resultDiv.innerHTML = '<p>🔄 Checking database tables...</p>';
-
-            const tables = ['companies', 'profiles', 'monthly_reports', 'fuel_data', 'shop_data'];
-
+        
+        async function testAuth() {
+            addResult('Testing authentication...', 'info');
             try {
-                let results = [];
-
-                for (const table of tables) {
-                    try {
-                        const { data, error } = await window.supabase.from(table).select('count').limit(1);
+                // Try to sign in with test user
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: 'test@fuelstation.com',
+                    password: 'testpassword123'
+                });
+                
                         if (error) {
-                            results.push({ table, status: 'error', error: error.message });
+                    addResult(`Authentication failed: ${error.message}`, 'error');
+                } else {
+                    addResult(`✅ Authentication successful! User: ${data.user.email}`, 'success');
+                    
+                    // Test user profile
+                    const { data: profile, error: profileError } = await supabase
+                        .from('profiles')
+                        .select('*, companies(*)')
+                        .eq('id', data.user.id)
+                        .single();
+                    
+                    if (profileError) {
+                        addResult(`Profile fetch failed: ${profileError.message}`, 'error');
                         } else {
-                            results.push({ table, status: 'success', count: data?.length || 0 });
-                        }
-                    } catch (err) {
-                        results.push({ table, status: 'error', error: err.message });
+                        addResult(`✅ Profile found! Company: ${profile.companies?.name || 'No company'}`, 'success');
                     }
                 }
-
-                const successCount = results.filter(r => r.status === 'success').length;
-                const errorCount = results.filter(r => r.status === 'error').length;
-
-                resultDiv.innerHTML = `
-                    <div class="${errorCount > 0 ? 'warning' : 'success'}">
-                        <h3>📊 Tables Check Results</h3>
-                        <p>Tables found: ${successCount}/${tables.length}</p>
-                        <ul>
-                            ${results.map(r => `
-                                <li>${r.table}: ${r.status === 'success' ?
-                                    `✅ (${r.count} records)` :
-                                    `❌ ${r.error}`}</li>
-                            `).join('')}
-                        </ul>
-                        ${errorCount > 0 ?
-                            '<p><strong>Note:</strong> Some tables may not exist yet. Make sure to apply the database schema.</p>' :
-                            '<p>All required tables are present!</p>'
-                        }
-                    </div>
-                `;
-            } catch (error) {
-                resultDiv.innerHTML = `
-                    <div class="error">
-                        <h3>❌ Table Check Failed</h3>
-                        <p>Error: ${error.message}</p>
-                    </div>
-                `;
+            } catch (err) {
+                addResult(`Authentication error: ${err.message}`, 'error');
             }
         }
-
-        async function createTestData() {
-            const resultDiv = document.getElementById('test-data-result');
-            resultDiv.innerHTML = '<p>🔄 Creating test data...</p>';
-
+        
+        async function testDatabase() {
+            addResult('Testing database tables...', 'info');
             try {
-                // First, check if we have authentication
-                const { data: { session } } = await window.supabase.auth.getSession();
-
-                if (!session) {
-                    resultDiv.innerHTML = `
-                        <div class="warning">
-                            <h3>⚠️ Authentication Required</h3>
-                            <p>You need to be signed in to create test data</p>
-                            <p>Please sign in first using the main dashboard</p>
-                        </div>
-                    `;
-                    return;
+                // Test companies table
+                const { data: companies, error: companiesError } = await supabase
+                    .from('companies')
+                    .select('*')
+                    .limit(5);
+                
+                if (companiesError) {
+                    addResult(`Companies table error: ${companiesError.message}`, 'error');
+                } else {
+                    addResult(`✅ Companies table accessible! Found ${companies.length} companies`, 'success');
                 }
-
-                // Check if user already has a profile/company
-                const { data: profile } = await window.supabase
-                    .from('profiles')
-                    .select('*, companies(*)')
-                    .eq('id', session.user.id)
-                    .single();
-
-                if (profile) {
-                    resultDiv.innerHTML = `
-                        <div class="success">
-                            <h3>✅ Profile Already Exists</h3>
-                            <p>User: ${profile.first_name} ${profile.last_name}</p>
-                            <p>Company: ${profile.companies?.name}</p>
-                            <p>Role: ${profile.role}</p>
-                        </div>
-                    `;
-                    return;
+                
+                // Test monthly_reports table
+                const { data: reports, error: reportsError } = await supabase
+                    .from('monthly_reports')
+                    .select('*')
+                    .limit(5);
+                
+                if (reportsError) {
+                    addResult(`Monthly reports table error: ${reportsError.message}`, 'error');
+                } else {
+                    addResult(`✅ Monthly reports table accessible! Found ${reports.length} reports`, 'success');
                 }
-
-                resultDiv.innerHTML = `
-                    <div class="warning">
-                        <h3>ℹ️ Manual Setup Required</h3>
-                        <p>Test data creation requires manual setup in Supabase Dashboard:</p>
-                        <ol>
-                            <li>Go to <a href="https://supabase.com/dashboard/project/fynfomhoikzpsrbghnzr" target="_blank">Supabase Dashboard</a></li>
-                            <li>Create a test user in Authentication → Users</li>
-                            <li>Create a company and profile using the SQL editor</li>
-                            <li>Sign in with the test user credentials</li>
-                        </ol>
-                        <p>Refer to <code>SUPABASE_SETUP.md</code> for detailed instructions.</p>
-                    </div>
-                `;
-
-            } catch (error) {
-                resultDiv.innerHTML = `
-                    <div class="error">
-                        <h3>❌ Test Data Creation Failed</h3>
-                        <p>Error: ${error.message}</p>
-                    </div>
-                `;
+                
+            } catch (err) {
+                addResult(`Database error: ${err.message}`, 'error');
             }
         }
-
-        async function testAuthOnly() {
-            const resultDiv = document.getElementById('auth-only-result');
-            resultDiv.innerHTML = '<p>🔄 Testing authentication endpoint...</p>';
-
+        
+                async function testStorage() {
+            addResult('Testing storage bucket...', 'info');
             try {
-                if (!window.supabase) {
-                    throw new Error('Supabase client not loaded');
-                }
-
-                const testClient = window.supabase.createClient(
-                    'https://fynfomhoikzpsrbghnzr.supabase.co',
-                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.cEOR4UiBh1tWXFL6nC7ftRpi2un8DfCAG5cD7xdd_Cw'
-                );
-
-                // Test only the auth endpoint (no database tables needed)
-                const { data, error } = await testClient.auth.getSession();
+                const { data, error } = await supabase.storage
+                    .from('reports')
+                    .list('', { limit: 10 });
 
                 if (error) {
-                    throw error;
+                    addResult(`Storage error: ${error.message}`, 'error');
+                } else {
+                    addResult(`✅ Storage bucket accessible! Found ${data.length} files`, 'success');
+                    if (data.length > 0) {
+                        addResult(`Files: ${data.map(f => f.name).join(', ')}`, 'info');
+                    }
                 }
-
-                resultDiv.innerHTML = `
-                    <div class="success">
-                        <h3>✅ Authentication Endpoint Working!</h3>
-                        <p>Supabase connection is working correctly</p>
-                        <p>Session data: ${data.session ? 'Active session' : 'No active session'}</p>
-                        <p><strong>Next:</strong> Apply database schema to fix table queries</p>
-                    </div>
-                `;
-            } catch (error) {
-                resultDiv.innerHTML = `
-                    <div class="error">
-                        <h3>❌ Authentication Test Failed</h3>
-                        <p>Error: ${error.message}</p>
-                        <pre>Details: ${JSON.stringify(error, null, 2)}</pre>
-                    </div>
-                `;
+            } catch (err) {
+                addResult(`Storage error: ${err.message}`, 'error');
             }
         }
-
-        // Auto-run basic tests on page load
-        window.addEventListener('load', async () => {
-            await testBasicConnection();
-            await testAuthStatus();
+        
+        // Auto-run connection test on load
+        window.addEventListener('load', () => {
+            addResult('Page loaded, ready for testing...', 'info');
         });
     </script>
 </body>

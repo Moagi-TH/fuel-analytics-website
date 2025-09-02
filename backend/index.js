@@ -9,7 +9,8 @@ const app = express();
 app.use(cors());
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const HAS_OPENAI = !!process.env.OPENAI_API_KEY;
+const openai = HAS_OPENAI ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
@@ -17,8 +18,14 @@ app.post('/analyze-report', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'file is required' });
     // 1) Extract text from PDF
-    const pdfData = await pdfParse(req.file.buffer);
-    const text = String(pdfData.text || '').slice(0, 200000); // cap length
+    let text = '';
+    try {
+      const pdfData = await pdfParse(req.file.buffer);
+      text = String(pdfData.text || '').slice(0, 200000); // cap length
+    } catch (e) {
+      console.warn('pdf-parse failed, proceeding with empty text:', e?.message);
+      text = '';
+    }
 
     // 2) Ask OpenAI to extract JSON per schema
     const system = `You are extracting structured business data from a monthly fuel business report. Rules:
@@ -81,21 +88,58 @@ app.post('/analyze-report', upload.single('file'), async (req, res) => {
 
     const user = `PDF text (truncated if very long):\n\n${text}\n\nReturn JSON only.`;
 
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: system },
-        { role: 'user', content: user }
-      ],
-      response_format: { type: 'json_schema', json_schema: { name: 'fuel_report', schema } },
-      temperature: 0.1
-    });
+    let parsed = null;
 
-    const content = response.choices?.[0]?.message?.content;
-    let parsed;
-    try { parsed = JSON.parse(content); } catch { parsed = null; }
+    if (HAS_OPENAI) {
+      try {
+        const response = await openai.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: system },
+            { role: 'user', content: user }
+          ],
+          response_format: { type: 'json_schema', json_schema: { name: 'fuel_report', schema } },
+          temperature: 0.1
+        });
+        const content = response.choices?.[0]?.message?.content;
+        try { parsed = JSON.parse(content); } catch { parsed = null; }
+      } catch (modelErr) {
+        console.warn('OpenAI call failed, using fallback:', modelErr?.message);
+      }
+    }
 
-    if (!parsed) return res.status(502).json({ error: 'invalid JSON from model' });
+    // Fallback if model unavailable or invalid JSON
+    if (!parsed) {
+      // Extract month/year from filename if possible
+      const name = req.file?.originalname || '';
+      const m = name.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)|([0-9]{1,2})\s+(\d{4})/i);
+      const now = new Date();
+      const fallback = {
+        period: { month: now.getMonth() + 1, year: now.getFullYear() },
+        fuels: {
+          diesel_ex: { total_revenue_zar: 0, quantity_liters: 0 },
+          vpower_95: { total_revenue_zar: 0, quantity_liters: 0 },
+          vpower_diesel: { total_revenue_zar: 0, quantity_liters: 0 }
+        },
+        shop_lines: [
+          { category: 'Deli Onsite', total_revenue_zar: 0, quantity_units: 0 }
+        ],
+        forecast: {
+          method: 'na',
+          assumptions: 'fallback',
+          fuels: {
+            diesel_ex: { quantity_liters: 0, total_revenue_zar: 0 },
+            vpower_95: { quantity_liters: 0, total_revenue_zar: 0 },
+            vpower_diesel: { quantity_liters: 0, total_revenue_zar: 0 }
+          },
+          shop_lines: [
+            { category: 'Deli Onsite', quantity_units: 0, total_revenue_zar: 0 }
+          ]
+        },
+        notes: HAS_OPENAI ? 'Model failed, using safe fallback' : 'No OPENAI_API_KEY, using safe fallback'
+      };
+      parsed = fallback;
+    }
 
     // Normalize typo safeguards
     if (parsed?.fuels?.vpower_diesel && parsed.fuels.vpower_diesel.quantity_lers !== undefined) {
