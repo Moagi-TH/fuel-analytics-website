@@ -3646,7 +3646,7 @@
       // monthlyData will be populated when actual reports are uploaded
       
       // COMPLETELY RECODED: Function to render reports history
-      window.renderReportsHistory = function renderReportsHistory() {
+      function renderReportsHistory() {
         console.log('🔄 COMPLETELY RECODED: Rendering reports history...');
         console.log('📊 Reports to render:', uploadedReports.length);
         console.log('📋 UploadedReports array:', uploadedReports);
@@ -3681,6 +3681,9 @@
         console.log('✅ REPORTS HISTORY RENDERED SUCCESSFULLY');
         console.log('📊 Total reports displayed:', uploadedReports.length);
       }
+
+      // Make renderReportsHistory globally accessible
+      window.renderReportsHistory = renderReportsHistory;
 
       // Safe scheduler: ensure renderReportsHistory runs once it is defined and DOM is ready
       window.queueRenderReportsHistory = function queueRenderReportsHistory(maxTries = 30) {
@@ -3746,8 +3749,7 @@
         }
       };
       
-      // Make renderReportsHistory globally accessible
-      window.renderReportsHistory = renderReportsHistory;
+      // renderReportsHistory is already globally accessible from line 3649
       
       // Function to check for duplicate files
       function isDuplicateFile(file) {
