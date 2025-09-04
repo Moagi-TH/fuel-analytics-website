@@ -2251,16 +2251,78 @@
       // If no parameters provided, get data from uploadedReports
       if (!fuelData && !shopData && window.uploadedReports && window.uploadedReports.length > 0) {
         console.log('📊 No parameters provided, getting data from uploadedReports...');
+        console.log('📊 Total reports available:', window.uploadedReports.length);
+        console.log('📊 All reports:', window.uploadedReports);
+        
         const latestReport = window.uploadedReports[0]; // Most recent report
+        console.log('📊 Latest report structure:', latestReport);
         
         if (latestReport && latestReport.data) {
+          console.log('📊 Latest report data structure:', latestReport.data);
           fuelData = latestReport.data.fuels || {};
           shopData = latestReport.data.shop_lines || [];
-          console.log('📊 Using data from latest report:', latestReport.name);
+          console.log('📊 Extracted fuel data:', fuelData);
+          console.log('📊 Extracted shop data:', shopData);
         } else {
-          console.log('⚠️ No data found in latest report, using empty data');
-          fuelData = {};
-          shopData = [];
+          console.log('⚠️ No data found in latest report, checking alternative data structure...');
+          
+          // Try alternative data structure - maybe data is stored directly in the report
+          if (latestReport.fuels) {
+            console.log('📊 Found fuels data directly in report:', latestReport.fuels);
+            fuelData = latestReport.fuels;
+          }
+          if (latestReport.shop_lines) {
+            console.log('📊 Found shop_lines data directly in report:', latestReport.shop_lines);
+            shopData = latestReport.shop_lines;
+          }
+          
+          if (!fuelData) fuelData = {};
+          if (!shopData) shopData = [];
+        }
+      }
+      
+      // If still no data, try to get data from manual entry form
+      if ((!fuelData || Object.keys(fuelData).length === 0) && (!shopData || shopData.length === 0)) {
+        console.log('📊 No report data found, trying to get data from manual entry form...');
+        
+        // Get fuel data from manual entry form
+        const dieselRevenue = parseFloat(document.getElementById('fuel-diesel-revenue')?.value || 0);
+        const dieselQty = parseFloat(document.getElementById('fuel-diesel-qty')?.value || 0);
+        const dieselSell = parseFloat(document.getElementById('fuel-diesel-sell')?.value || 0);
+        const dieselCost = parseFloat(document.getElementById('fuel-diesel-cost')?.value || 0);
+        
+        const v95Revenue = parseFloat(document.getElementById('fuel-v95-revenue')?.value || 0);
+        const v95Qty = parseFloat(document.getElementById('fuel-v95-qty')?.value || 0);
+        const v95Sell = parseFloat(document.getElementById('fuel-v95-sell')?.value || 0);
+        const v95Cost = parseFloat(document.getElementById('fuel-v95-cost')?.value || 0);
+        
+        const vdRevenue = parseFloat(document.getElementById('fuel-vdiesel-revenue')?.value || 0);
+        const vdQty = parseFloat(document.getElementById('fuel-vdiesel-qty')?.value || 0);
+        const vdSell = parseFloat(document.getElementById('fuel-vdiesel-sell')?.value || 0);
+        const vdCost = parseFloat(document.getElementById('fuel-vdiesel-cost')?.value || 0);
+        
+        if (dieselRevenue > 0 || v95Revenue > 0 || vdRevenue > 0) {
+          console.log('📊 Found manual entry data, using it for dashboard metrics');
+          fuelData = {
+            diesel_ex: {
+              total_revenue_zar: dieselRevenue,
+              quantity_liters: dieselQty,
+              selling_price_per_liter: dieselSell,
+              cost_price_per_liter: dieselCost
+            },
+            vpower_95: {
+              total_revenue_zar: v95Revenue,
+              quantity_liters: v95Qty,
+              selling_price_per_liter: v95Sell,
+              cost_price_per_liter: v95Cost
+            },
+            vpower_diesel: {
+              total_revenue_zar: vdRevenue,
+              quantity_liters: vdQty,
+              selling_price_per_liter: vdSell,
+              cost_price_per_liter: vdCost
+            }
+          };
         }
       }
       
@@ -2287,8 +2349,8 @@
         if (fuel.profit_zar !== null && fuel.profit_zar !== undefined) {
           return sum + (fuel.profit_zar || 0);
         } else if (fuel.sell && fuel.cost && fuel.qty_l) {
-          const profit = (fuel.sell - fuel.cost) * fuel.qty_l;
-          return sum + (profit || 0);
+        const profit = (fuel.sell - fuel.cost) * fuel.qty_l;
+        return sum + (profit || 0);
         } else if (fuel.sell && fuel.cost && fuel.quantity_liters) {
           const profit = (fuel.sell - fuel.cost) * fuel.quantity_liters;
           return sum + (profit || 0);
@@ -2306,7 +2368,7 @@
       const ratioDisplay = `R ${shopFuelRatio}/L`;
 
       console.log('📊 Calculated metrics:', { totalRevenue, totalProfit, totalVolume, shopFuelRatio: ratioDisplay });
-      
+
       // Update metric cards
       const totalRevenueEl = document.getElementById('total-revenue');
       if (totalRevenueEl) totalRevenueEl.textContent = formatRand(totalRevenue);
@@ -2348,7 +2410,7 @@
         } else {
           // Default to 25% margin if no other data available
           const profit = (shop.revenue || shop.total_revenue_zar || 0) * 0.25;
-          return sum + profit;
+        return sum + profit;
         }
       }, 0);
       
@@ -2558,8 +2620,8 @@
                 // Only load from database if no reports found in storage
                 if (uploadedReports.length === 0) {
                   console.log('⚠️ No reports in storage, loading from database as fallback...');
-                  await loadReportsFromDatabase();
-                  await loadMonthlyPerformanceFromDatabase();
+                await loadReportsFromDatabase();
+                await loadMonthlyPerformanceFromDatabase();
                 }
                 
                 // Run fast tests and cleanup asynchronously
@@ -2631,8 +2693,8 @@
                   }
                 } catch (error) {
                   console.log('⚠️ Authentication failed, using local storage:', error.message);
-                  // Try to create a test user for demonstration
-                  await createTestUser();
+                // Try to create a test user for demonstration
+                await createTestUser();
                 }
               }
             } else {
@@ -2667,7 +2729,7 @@
       }
 
       // Functions moved to earlier in the file to prevent scope issues
-      
+
       // Show sample data for demonstration
       function showSampleData() {
         console.log('Showing sample data for demonstration...');
@@ -2762,8 +2824,8 @@
           // Check if database is available
           if (!db || !db.isInitialized) {
             console.log('⚠️ Database not initialized, skipping database load');
-            return;
-          }
+                return;
+              }
           
           console.log('🔍 Loading reports from monthly_reports table...');
           
@@ -2777,13 +2839,13 @@
               console.log('No existing reports, loading from database');
             } else {
               console.log('Keeping existing reports, database reports will be added');
-            }
-            
+          }
+          
             // Clear monthly data to rebuild it
-            if (window.monthlyData) {
-              Object.keys(window.monthlyData).forEach(key => delete window.monthlyData[key]);
-            }
-            
+          if (window.monthlyData) {
+            Object.keys(window.monthlyData).forEach(key => delete window.monthlyData[key]);
+          }
+          
             // Process each report from database
             result.reports.forEach((report, index) => {
               console.log(`📄 Processing database report ${index + 1}/${result.reports.length}:`, report.file_name);
@@ -2820,23 +2882,23 @@
               );
               
               if (!existingReport) {
-                uploadedReports.push(reportData);
+              uploadedReports.push(reportData);
                 console.log('✅ Added database report:', reportData.name);
-              } else {
+          } else {
                 console.log('Database report already exists, skipping:', reportData.name);
-              }
+          }
             });
-            
-            // Update monthly data
-            updateMonthlyDataFromReports();
-            
+          
+          // Update monthly data
+          updateMonthlyDataFromReports();
+          
             console.log('✅ REPORTS LOADED SUCCESSFULLY FROM DATABASE');
-            console.log('📊 Total reports loaded:', uploadedReports.length);
-            console.log('📋 FINAL UPLOADEDREPORTS ARRAY:', uploadedReports);
-            
-            // Force update the display
+          console.log('📊 Total reports loaded:', uploadedReports.length);
+          console.log('📋 FINAL UPLOADEDREPORTS ARRAY:', uploadedReports);
+          
+          // Force update the display
             window.renderReportsHistory();
-            updateMostRecentReportDisplay();
+          updateMostRecentReportDisplay();
           } else {
             console.log('⚠️ No reports found in database or error:', result.error);
           }
@@ -3747,9 +3809,9 @@
             } catch (err) {
               console.error('❌ Error during renderReportsHistory:', err);
             }
-            return;
-          }
-          
+          return;
+        }
+        
           if (attempt++ < maxTries) {
             const missing = [];
             if (typeof renderFunction !== 'function') missing.push('renderReportsHistory function');
@@ -3793,6 +3855,21 @@
           }
         } else {
           console.error('❌ renderReportsHistory function not available');
+        }
+      };
+
+      // Manual trigger function to force dashboard metrics update
+      window.forceUpdateDashboard = function() {
+        console.log('🔧 Manual trigger: forceUpdateDashboard called');
+        if (typeof window.updateDashboardMetrics === 'function') {
+          try {
+            window.updateDashboardMetrics();
+            console.log('✅ Manual dashboard update successful');
+          } catch (error) {
+            console.error('❌ Manual dashboard update failed:', error);
+          }
+        } else {
+          console.error('❌ updateDashboardMetrics function not available');
         }
       };
       
@@ -4385,15 +4462,15 @@
             if (report.id && typeof report.id === 'string' && report.id.length > 10) {
               // This looks like a database ID, try to load from database
               console.log('🔄 Loading report from database...');
-              
-              if (!window.supabaseClient) {
-                showNotification('Database not initialized', 'error');
-                return;
-              }
-              
+            
+            if (!window.supabaseClient) {
+              showNotification('Database not initialized', 'error');
+              return;
+            }
+            
               const result = await window.supabaseClient.getMonthlyReportById(report.id);
-              
-              if (result.success && result.report) {
+            
+            if (result.success && result.report) {
                 console.log('✅ Report loaded from database:', result.report);
                 await loadReportData(result.report);
                 window.location.hash = '#overview';
@@ -5147,8 +5224,8 @@
           // Only load from database if no reports found in storage
           if (uploadedReports.length === 0) {
             console.log('⚠️ No reports in storage, loading from database as fallback...');
-            await loadReportsFromDatabase();
-            await loadMonthlyPerformanceFromDatabase();
+          await loadReportsFromDatabase();
+          await loadMonthlyPerformanceFromDatabase();
           }
           
           // 2. Update monthly overview with current month data
@@ -5371,7 +5448,7 @@
               <h1>Overview Over Time</h1>
               <p>Historical performance trends and monthly comparisons</p>
               <div class="overview-actions">
-                <button onclick="showMonthlyOverview()" class="button secondary">Back to Monthly Overview</button>
+              <button onclick="showMonthlyOverview()" class="button secondary">Back to Monthly Overview</button>
               </div>
             </div>
             <div class="timeline-container">
@@ -5991,7 +6068,7 @@
               <h1>Overview Over Time</h1>
               <p>Overall performance across all months</p>
               <div class="overview-actions">
-                <button onclick="showMonthlyOverview()" class="button secondary">Back to Monthly Overview</button>
+              <button onclick="showMonthlyOverview()" class="button secondary">Back to Monthly Overview</button>
               </div>
             </div>
             
@@ -6439,8 +6516,8 @@
               });
               
               if (!existingReport) {
-                uploadedReports.push(reportData);
-                console.log('Added report to array:', reportData.name);
+              uploadedReports.push(reportData);
+              console.log('Added report to array:', reportData.name);
               } else {
                 console.log('Report already exists, skipping:', reportData.name);
               }
@@ -10037,7 +10114,7 @@
               await loadReportsFromStorage();
               // Only load from database if no reports found in storage
               if (uploadedReports.length === 0) {
-                await loadReportsFromDatabase();
+              await loadReportsFromDatabase();
               }
               // Also load the latest report data into the dashboard (guarded)
               if (typeof window.loadLatestReportData === 'function') {
@@ -10068,7 +10145,7 @@
             await loadReportsFromStorage();
             // Only load from database if no reports found in storage
             if (uploadedReports.length === 0) {
-              await loadReportsFromDatabase();
+            await loadReportsFromDatabase();
             }
             // Also load the latest report data into the dashboard (guarded)
             if (typeof window.loadLatestReportData === 'function') {
