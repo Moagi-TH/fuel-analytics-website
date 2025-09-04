@@ -3232,6 +3232,60 @@
       window.uploadedReports = uploadedReports;
       window.monthlyData = monthlyData;
 
+      // Define critical functions early to prevent scope issues
+      function renderReportsHistory() {
+        console.log('🔄 COMPLETELY RECODED: Rendering reports history...');
+        console.log('📊 Reports to render:', uploadedReports.length);
+        console.log('📋 UploadedReports array:', uploadedReports);
+        
+        if (uploadedReports.length === 0) {
+          const reportsList = document.getElementById('reports-list');
+          if (reportsList) {
+            reportsList.innerHTML = '<p class="muted">No reports found in reports bucket. Upload your first report to see it here.</p>';
+          }
+          console.log('📊 No reports to display');
+          return;
+        }
+        
+        const reportsList = document.getElementById('reports-list');
+        if (!reportsList) {
+          console.error('❌ reports-list element not found');
+          return;
+        }
+        
+        const reportsHTML = uploadedReports.map((report, index) => {
+          const monthKey = `${report.month}/${report.year}`;
+          const sizeKB = Math.round((report.size || 0) / 1024);
+          const uploadDate = new Date(report.lastModified || Date.now()).toLocaleDateString();
+          
+          return `
+            <div class="report-item" data-index="${index}">
+              <div class="report-header">
+                <h4>${report.name}</h4>
+                <div class="report-actions">
+                  <button class="btn btn-sm btn-primary" onclick="viewReport(${index})">View</button>
+                  <button class="btn btn-sm btn-danger" onclick="deleteReport(${index})">Delete</button>
+                </div>
+              </div>
+              <div class="report-details">
+                <span class="report-period">${monthKey}</span>
+                <span class="report-size">${sizeKB} KB</span>
+                <span class="report-date">${uploadDate}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+        
+        console.log('📋 Generated HTML for reports:', reportsHTML);
+        reportsList.innerHTML = reportsHTML;
+        
+        console.log('✅ REPORTS HISTORY RENDERED SUCCESSFULLY');
+        console.log('📊 Total reports displayed:', uploadedReports.length);
+      }
+
+      // Make renderReportsHistory globally accessible
+      window.renderReportsHistory = renderReportsHistory;
+
       // Use local backend server for PDF parsing
       const BACKEND_URL = 'http://localhost:8787';
 
@@ -3645,45 +3699,7 @@
       // No sample monthly data - start with empty data
       // monthlyData will be populated when actual reports are uploaded
       
-      // COMPLETELY RECODED: Function to render reports history
-      function renderReportsHistory() {
-        console.log('🔄 COMPLETELY RECODED: Rendering reports history...');
-        console.log('📊 Reports to render:', uploadedReports.length);
-        console.log('📋 UploadedReports array:', uploadedReports);
-        
-        if (uploadedReports.length === 0) {
-          reportsList.innerHTML = '<p class="muted">No reports found in reports bucket. Upload your first report to see it here.</p>';
-          console.log('📊 No reports to display');
-          return;
-        }
-        
-        // Create HTML for each report with detailed logging
-        const reportsHTML = uploadedReports.map((report, index) => {
-          console.log(`📄 Rendering report ${index + 1}/${uploadedReports.length}:`, report.name);
-          
-          return `
-            <div class="report-item" data-report-id="${report.id || index}">
-              <div class="report-info">
-                <div class="report-title">${report.name}</div>
-                <div class="report-date">${report.month}/${report.year} - Uploaded ${report.uploadDate}</div>
-              </div>
-              <div class="report-actions">
-                <button class="button secondary small" onclick="viewReport(${index})">View</button>
-                <button class="button secondary small" onclick="deleteReport(${index})">Delete</button>
-              </div>
-            </div>
-          `;
-        }).join('');
-        
-        console.log('📋 Generated HTML for reports:', reportsHTML);
-        reportsList.innerHTML = reportsHTML;
-        
-        console.log('✅ REPORTS HISTORY RENDERED SUCCESSFULLY');
-        console.log('📊 Total reports displayed:', uploadedReports.length);
-      }
-
-      // Make renderReportsHistory globally accessible
-      window.renderReportsHistory = renderReportsHistory;
+      // renderReportsHistory function moved to top of script to prevent scope issues
 
       // Safe scheduler: ensure renderReportsHistory runs once it is defined and DOM is ready
       window.queueRenderReportsHistory = function queueRenderReportsHistory(maxTries = 30) {
