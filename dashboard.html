@@ -3238,6 +3238,9 @@
         console.log('📊 Reports to render:', uploadedReports.length);
         console.log('📋 UploadedReports array:', uploadedReports);
         
+        // Clean up any duplicates before rendering
+        removeDuplicatesFromReports();
+        
         if (uploadedReports.length === 0) {
           const reportsList = document.getElementById('reports-list');
           if (reportsList) {
@@ -3767,11 +3770,14 @@
       
       // renderReportsHistory is already globally accessible from line 3649
       
-      // Function to check for duplicate files
+      // Function to check for duplicate files - STRICT VERSION
       function isDuplicateFile(file) {
         return uploadedReports.some(report => {
           // Check exact name match
-          if (report.name === file.name) return true;
+          if (report.name === file.name) {
+            console.log('🚫 Duplicate found: Exact name match:', file.name);
+            return true;
+          }
           
           // Check if it's the same report by extracting key identifiers
           const reportName = report.name || '';
@@ -3791,20 +3797,52 @@
             
             // If same day, month, and year, it's likely the same report
             if (reportDay === fileDay && reportMonth.toLowerCase() === fileMonth.toLowerCase() && reportYear === fileYear) {
+              console.log('🚫 Duplicate found: Same date period:', `${fileDay} ${fileMonth} ${fileYear}`);
               return true;
             }
+          }
+          
+          // Check for same month/year combination (even if day is different)
+          if (report.month === file.month && report.year === file.year) {
+            console.log('🚫 Duplicate found: Same month/year:', `${file.month}/${file.year}`);
+            return true;
           }
           
           // Check for similar file sizes (within 1KB tolerance)
           if (Math.abs((report.size || 0) - (file.size || 0)) < 1024) {
             // Additional check: if both contain "Period Report" and similar dates
             if (reportName.includes('Period Report') && fileName.includes('Period Report')) {
+              console.log('🚫 Duplicate found: Similar size and Period Report:', file.name);
               return true;
             }
           }
           
           return false;
         });
+      }
+
+      // Function to remove duplicates from existing uploadedReports array
+      function removeDuplicatesFromReports() {
+        const uniqueReports = [];
+        const seen = new Set();
+        
+        for (const report of uploadedReports) {
+          // Create a unique key based on month/year and name
+          const key = `${report.month}/${report.year}_${report.name}`;
+          
+          if (!seen.has(key)) {
+            seen.add(key);
+            uniqueReports.push(report);
+          } else {
+            console.log('🗑️ Removing duplicate report:', report.name);
+          }
+        }
+        
+        if (uniqueReports.length !== uploadedReports.length) {
+          console.log(`🧹 Cleaned up duplicates: ${uploadedReports.length} → ${uniqueReports.length} reports`);
+          uploadedReports.length = 0; // Clear the array
+          uploadedReports.push(...uniqueReports); // Add unique reports back
+        }
       }
       
       // Function to add report to history
@@ -4158,7 +4196,7 @@
         }
         
         // Optimized delete report function with button state management
-        async function deleteReport(reportId) {
+        window.deleteReport = async function deleteReport(reportId) {
           try {
             console.log('🗑️ Deleting report:', reportId);
             
@@ -4269,7 +4307,7 @@
         }
         
         // Optimized view report function with loading states
-        async function viewReport(reportIndexOrId) {
+        window.viewReport = async function viewReport(reportIndexOrId) {
           try {
             console.log('👁️ Viewing report with parameter:', reportIndexOrId);
             
