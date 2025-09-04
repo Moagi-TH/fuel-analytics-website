@@ -2288,21 +2288,31 @@
       console.log('📊 Calculated metrics:', { totalRevenue, totalProfit, totalVolume, shopFuelRatio: ratioDisplay });
       
       // Update metric cards
-      document.getElementById('total-revenue').textContent = formatRand(totalRevenue);
-      document.getElementById('total-profit').textContent = formatRand(totalProfit);
-      document.getElementById('fuel-volume').textContent = `${totalVolume.toLocaleString()} L`;
-      document.getElementById('shop-revenue-per-liter').textContent = ratioDisplay;
+      const totalRevenueEl = document.getElementById('total-revenue');
+      if (totalRevenueEl) totalRevenueEl.textContent = formatRand(totalRevenue);
+      
+      const totalProfitEl = document.getElementById('total-profit');
+      if (totalProfitEl) totalProfitEl.textContent = formatRand(totalProfit);
+      const fuelVolumeEl = document.getElementById('fuel-volume');
+      if (fuelVolumeEl) {
+        fuelVolumeEl.textContent = `${totalVolume.toLocaleString()} L`;
+      }
+      const shopRevenuePerLiterEl = document.getElementById('shop-revenue-per-liter');
+      if (shopRevenuePerLiterEl) shopRevenuePerLiterEl.textContent = ratioDisplay;
 
       // Update KPI indicators
       // 1. Shop to Fuel Ratio (shop revenue per liter of fuel)
-      document.getElementById('shop-fuel-ratio-kpi').textContent = ratioDisplay;
+      const shopFuelRatioKpiEl = document.getElementById('shop-fuel-ratio-kpi');
+      if (shopFuelRatioKpiEl) shopFuelRatioKpiEl.textContent = ratioDisplay;
       
       // 2. Fuel Margins in Rands (total fuel profit)
-      document.getElementById('fuel-margins-rand').textContent = formatRand(totalProfit);
+      const fuelMarginsRandEl = document.getElementById('fuel-margins-rand');
+      if (fuelMarginsRandEl) fuelMarginsRandEl.textContent = formatRand(totalProfit);
       
       // 3. Revenue Growth Rate (month-over-month - simulated for now)
       const growthRate = Math.random() > 0.5 ? Math.floor(Math.random() * 20) + 1 : -(Math.floor(Math.random() * 10) + 1);
-      document.getElementById('revenue-growth-rate').textContent = `${growthRate > 0 ? '+' : ''}${growthRate}%`;
+      const revenueGrowthRateEl = document.getElementById('revenue-growth-rate');
+      if (revenueGrowthRateEl) revenueGrowthRateEl.textContent = `${growthRate > 0 ? '+' : ''}${growthRate}%`;
       
       // 4. Shop Profit (calculated from selling price - buying price for each category)
       const shopProfit = shopData.reduce((sum, shop) => {
@@ -3676,18 +3686,32 @@
       window.queueRenderReportsHistory = function queueRenderReportsHistory(maxTries = 30) {
         let attempt = 0;
         const tryRender = () => {
-          if (typeof window.renderReportsHistory === 'function') {
+          const renderFunction = window.renderReportsHistory;
+          const reportsListEl = document.getElementById('reports-list');
+          
+          if (typeof renderFunction === 'function' && reportsListEl) {
             try {
-              window.renderReportsHistory();
+              console.log('✅ Scheduler: Both function and DOM element ready, rendering...');
+              renderFunction();
+              console.log('✅ Scheduler: Reports rendered successfully');
             } catch (err) {
               console.error('❌ Error during renderReportsHistory:', err);
             }
             return;
           }
+          
           if (attempt++ < maxTries) {
-            setTimeout(tryRender, 100);
+            const missing = [];
+            if (typeof renderFunction !== 'function') missing.push('renderReportsHistory function');
+            if (!reportsListEl) missing.push('reports-list element');
+            console.log(`⏳ Scheduler: Waiting for ${missing.join(' and ')}... Attempt ${attempt}/${maxTries}`);
+            setTimeout(tryRender, 200);
           } else {
             console.error('❌ renderReportsHistory not available after waiting');
+            console.error('❌ Final state:', {
+              renderFunction: typeof renderFunction,
+              reportsListEl: !!reportsListEl
+            });
           }
         };
         tryRender();
@@ -3695,15 +3719,32 @@
 
       // Try rendering after initial DOM load
       document.addEventListener('DOMContentLoaded', () => {
+        console.log('🚀 DOM Content Loaded - Starting scheduler...');
         window.queueRenderReportsHistory();
       });
 
       // Re-attempt rendering when navigating to the reports section
       window.addEventListener('hashchange', () => {
         if (location.hash.includes('reports')) {
+          console.log('🔄 Hash changed to reports - Starting scheduler...');
           window.queueRenderReportsHistory();
         }
       });
+
+      // Manual trigger function for debugging
+      window.forceRenderReports = function() {
+        console.log('🔧 Manual trigger: forceRenderReports called');
+        if (typeof window.renderReportsHistory === 'function') {
+          try {
+            window.renderReportsHistory();
+            console.log('✅ Manual render successful');
+          } catch (error) {
+            console.error('❌ Manual render failed:', error);
+          }
+        } else {
+          console.error('❌ renderReportsHistory function not available');
+        }
+      };
       
       // Make renderReportsHistory globally accessible
       window.renderReportsHistory = renderReportsHistory;
@@ -5431,12 +5472,25 @@
           const shopProfit = shopRevenue * 0.3; // Estimate 30% profit margin
           
           // Update display
-          document.getElementById('calculated-total-revenue').textContent = `R ${totalRevenue.toLocaleString()}`;
-          document.getElementById('calculated-total-profit').textContent = `R ${totalProfit.toLocaleString()}`;
-          document.getElementById('calculated-fuel-volume').textContent = `${totalVolume.toLocaleString()} L`;
-          document.getElementById('calculated-shop-revenue-per-liter').textContent = `R ${shopFuelRatio.toFixed(2)}/L`;
-          document.getElementById('calculated-fuel-margin').textContent = `R ${totalProfit.toLocaleString()}`;
-          document.getElementById('calculated-shop-profit').textContent = `R ${shopProfit.toLocaleString()}`;
+          const calculatedTotalRevenueEl = document.getElementById('calculated-total-revenue');
+          if (calculatedTotalRevenueEl) calculatedTotalRevenueEl.textContent = `R ${totalRevenue.toLocaleString()}`;
+          
+          const calculatedTotalProfitEl = document.getElementById('calculated-total-profit');
+          if (calculatedTotalProfitEl) calculatedTotalProfitEl.textContent = `R ${totalProfit.toLocaleString()}`;
+          
+          const calculatedFuelVolumeEl = document.getElementById('calculated-fuel-volume');
+          if (calculatedFuelVolumeEl) {
+            calculatedFuelVolumeEl.textContent = `${totalVolume.toLocaleString()} L`;
+          }
+          
+          const calculatedShopRevenuePerLiterEl = document.getElementById('calculated-shop-revenue-per-liter');
+          if (calculatedShopRevenuePerLiterEl) calculatedShopRevenuePerLiterEl.textContent = `R ${shopFuelRatio.toFixed(2)}/L`;
+          
+          const calculatedFuelMarginEl = document.getElementById('calculated-fuel-margin');
+          if (calculatedFuelMarginEl) calculatedFuelMarginEl.textContent = `R ${totalProfit.toLocaleString()}`;
+          
+          const calculatedShopProfitEl = document.getElementById('calculated-shop-profit');
+          if (calculatedShopProfitEl) calculatedShopProfitEl.textContent = `R ${shopProfit.toLocaleString()}`;
           
           console.log('✅ Calculated metrics updated');
         } catch (error) {
