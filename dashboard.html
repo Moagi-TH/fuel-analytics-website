@@ -2901,7 +2901,7 @@
               );
               
               if (!existingReport) {
-              uploadedReports.push(reportData);
+              window.uploadedReports.push(reportData);
                 console.log('✅ Added database report:', reportData.name);
           } else {
                 console.log('Database report already exists, skipping:', reportData.name);
@@ -3081,6 +3081,8 @@
         // Update URL hash
         window.location.hash = '#overview';
         
+
+
 
         console.log('✅ Navigated to overview section');
       }
@@ -3956,7 +3958,7 @@
       
       // Function to check for duplicate files - STRICT VERSION
       function isDuplicateFile(file) {
-        return uploadedReports.some(report => {
+        return window.uploadedReports.some(report => {
           // Check exact name match
           if (report.name === file.name) {
             console.log('🚫 Duplicate found: Exact name match:', file.name);
@@ -4010,7 +4012,7 @@
         const uniqueReports = [];
         const seen = new Set();
         
-        for (const report of uploadedReports) {
+        for (const report of window.uploadedReports) {
           // Create a unique key based on month/year and name
           const key = `${report.month}/${report.year}_${report.name}`;
           
@@ -4022,10 +4024,10 @@
           }
         }
         
-        if (uniqueReports.length !== uploadedReports.length) {
-          console.log(`🧹 Cleaned up duplicates: ${uploadedReports.length} → ${uniqueReports.length} reports`);
-          uploadedReports.length = 0; // Clear the array
-          uploadedReports.push(...uniqueReports); // Add unique reports back
+        if (uniqueReports.length !== window.uploadedReports.length) {
+          console.log(`🧹 Cleaned up duplicates: ${window.uploadedReports.length} → ${uniqueReports.length} reports`);
+          window.uploadedReports.length = 0; // Clear the array
+          window.uploadedReports.push(...uniqueReports); // Add unique reports back
         }
       }
       
@@ -6460,8 +6462,8 @@
           // Storage bucket is the source of truth, so if it's empty, clear everything
           if (allFiles.length === 0) {
             console.log('🚨 STORAGE BUCKET IS EMPTY - Clearing all reports and showing zero values');
-            uploadedReports.length = 0; // Clear the array
-            Object.keys(monthlyData).forEach(key => delete monthlyData[key]); // Clear monthly data
+            window.uploadedReports.length = 0; // Clear the array
+            Object.keys(window.monthlyData).forEach(key => delete window.monthlyData[key]); // Clear monthly data
             
             // Clear preserved data and show zero values
             clearPreservedData();
@@ -6478,8 +6480,8 @@
           
           // If we have files in storage, clear existing reports first (storage is source of truth)
           console.log('📁 Files found in storage, clearing existing reports and loading from storage...');
-          uploadedReports.length = 0; // Clear the array
-          Object.keys(monthlyData).forEach(key => delete monthlyData[key]); // Clear monthly data
+          window.uploadedReports.length = 0; // Clear the array
+          Object.keys(window.monthlyData).forEach(key => delete window.monthlyData[key]); // Clear monthly data
           
           // Convert storage files to report format
           for (const file of allFiles) {
@@ -6596,7 +6598,7 @@
               };
               
               // Check if report already exists (from database) to avoid duplicates
-              const existingReport = uploadedReports.find(r => {
+              const existingReport = window.uploadedReports.find(r => {
                 // Exact name match
                 if (r.name === reportData.name) return true;
                 
@@ -6634,12 +6636,12 @@
               });
               
               if (!existingReport) {
-              uploadedReports.push(reportData);
+              window.uploadedReports.push(reportData);
               console.log('Added report to array:', reportData.name);
               } else {
                 console.log('Report already exists, skipping:', reportData.name);
               }
-              console.log('Array length after processing:', uploadedReports.length);
+              console.log('Array length after processing:', window.uploadedReports.length);
             } else {
               console.log('File is not a PDF or has invalid format:', file.name, 'Metadata:', file.metadata);
             }
@@ -6947,7 +6949,7 @@
           // CRITICAL FIX: Always clear existing reports when refreshing from storage
           // Storage bucket is the source of truth
           console.log('🧹 Clearing existing reports - storage is source of truth...');
-          uploadedReports.length = 0;
+          window.uploadedReports.length = 0;
           if (window.monthlyData) {
             Object.keys(window.monthlyData).forEach(key => delete window.monthlyData[key]);
           }
@@ -7087,7 +7089,7 @@
                 lastModified: file.updated_at
               };
               
-              uploadedReports.push(reportData);
+              window.uploadedReports.push(reportData);
               console.log('✅ Added report:', reportData.name);
               console.log('📋 Report data:', reportData);
             }
@@ -7114,11 +7116,11 @@
           }
           
           console.log('✅ REPORTS REFRESHED SUCCESSFULLY FROM FUEL-REPORTS BUCKET');
-          console.log('📊 Total reports loaded:', uploadedReports.length);
-          console.log('📋 FINAL UPLOADEDREPORTS ARRAY:', uploadedReports);
+          console.log('📊 Total reports loaded:', window.uploadedReports.length);
+          console.log('📋 FINAL UPLOADEDREPORTS ARRAY:', window.uploadedReports);
           
           // If no reports found, clear preserved data and show zero values
-          if (uploadedReports.length === 0) {
+          if (window.uploadedReports.length === 0) {
             console.log('📊 No reports found, clearing preserved data and showing zero values');
             clearPreservedData();
             showZeroValues();
