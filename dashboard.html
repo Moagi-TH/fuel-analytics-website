@@ -2615,13 +2615,32 @@
                 document.getElementById('user-email').textContent = result.user.email;
                 
                 // Load existing reports from storage first (source of truth)
-                await loadReportsFromStorage();
+                // Try to load from localStorage first (for cross-session persistence)
+                const restoredFromLocalStorage = window.loadUserDataFromLocalStorage();
                 
-                // Only load from database if no reports found in storage
-                if (uploadedReports.length === 0) {
-                  console.log('⚠️ No reports in storage, loading from database as fallback...');
-                await loadReportsFromDatabase();
-                await loadMonthlyPerformanceFromDatabase();
+                if (restoredFromLocalStorage) {
+                  console.log('✅ Data restored from localStorage, updating dashboard...');
+                  // Update dashboard with restored data
+                  if (typeof window.updateMonthlyDataFromReports === 'function') {
+                    window.updateMonthlyDataFromReports();
+                  }
+                  if (typeof window.updateDashboardMetrics === 'function') {
+                    window.updateDashboardMetrics();
+                  }
+                } else {
+                  // Load existing reports from storage first (source of truth)
+                  await loadReportsFromStorage();
+                  
+                  // Only load from database if no reports found in storage
+                  if (uploadedReports.length === 0) {
+                    console.log('⚠️ No reports in storage, loading from database as fallback...');
+                    await loadReportsFromDatabase();
+                    await loadMonthlyPerformanceFromDatabase();
+                  }
+                  
+                  // Save to localStorage for next session
+                  window.saveUserDataToLocalStorage();
+                }
                 }
                 
                 // Run fast tests and cleanup asynchronously
@@ -3062,6 +3081,7 @@
         // Update URL hash
         window.location.hash = '#overview';
         
+
         console.log('✅ Navigated to overview section');
       }
 
@@ -3661,6 +3681,9 @@
             // Also save to local storage as backup
             addReportToHistory(file, data);
             console.log('✅ Report also saved to local storage as backup');
+            
+            // Save updated data to localStorage for persistence across sessions
+            window.saveUserDataToLocalStorage();
           } else {
             // Fallback to local storage
             console.log('⚠️ Database not available, saving to local storage only');
@@ -3670,6 +3693,9 @@
             updateAnalyticsSection(data);
             updateInsightsSection(data);
             updatePersonnelSection(data);
+            
+            // Save updated data to localStorage for persistence across sessions
+            window.saveUserDataToLocalStorage();
             
             analyzeStatus.textContent = 'Analysis complete! Data saved locally. (Database not available - user profile needs setup)';
           }
@@ -3870,6 +3896,59 @@
           }
         } else {
           console.error('❌ updateDashboardMetrics function not available');
+        }
+      };
+
+      // Data persistence functions for cross-session data
+      window.saveUserDataToLocalStorage = function() {
+        try {
+          const userData = {
+            uploadedReports: window.uploadedReports || [],
+            monthlyData: window.monthlyData || {},
+            lastUpdated: new Date().toISOString(),
+            userId: window.supabaseClient?.currentUser?.id || 'anonymous'
+          };
+          
+          localStorage.setItem('fuelAnalytics_userData', JSON.stringify(userData));
+          console.log('💾 User data saved to localStorage:', userData);
+        } catch (error) {
+          console.error('❌ Error saving user data:', error);
+        }
+      };
+
+      window.loadUserDataFromLocalStorage = function() {
+        try {
+          const savedData = localStorage.getItem('fuelAnalytics_userData');
+          if (savedData) {
+            const userData = JSON.parse(savedData);
+            console.log('📂 Loading user data from localStorage:', userData);
+            
+            // Only load if it's recent (within 24 hours) and from the same user
+            const lastUpdated = new Date(userData.lastUpdated);
+            const now = new Date();
+            const hoursDiff = (now - lastUpdated) / (1000 * 60 * 60);
+            
+            if (hoursDiff < 24 && userData.uploadedReports && userData.uploadedReports.length > 0) {
+              window.uploadedReports = userData.uploadedReports;
+              window.monthlyData = userData.monthlyData;
+              console.log('✅ User data restored from localStorage');
+              return true;
+            } else {
+              console.log('⚠️ Saved data is too old or empty, not restoring');
+            }
+          }
+        } catch (error) {
+          console.error('❌ Error loading user data:', error);
+        }
+        return false;
+      };
+
+      window.clearUserDataFromLocalStorage = function() {
+        try {
+          localStorage.removeItem('fuelAnalytics_userData');
+          console.log('🗑️ User data cleared from localStorage');
+        } catch (error) {
+          console.error('❌ Error clearing user data:', error);
         }
       };
       
@@ -6459,12 +6538,51 @@
                 }
               }
               
+              // Try to get actual report data from database first
+              let actualReportData = null;
+              if (window.supabaseClient && window.supabaseClient.supabase) {
+                try {
+                  console.log('🔍 Looking for database record for file:', originalFilename);
+                  const { data: dbReports, error: dbError } = await window.supabaseClient.supabase
+                    .from('monthly_reports')
+                    .select('*')
+                    .eq('file_name', originalFilename)
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+                  
+                  if (!dbError && dbReports && dbReports.length > 0) {
+                    const dbReport = dbReports[0];
+                    console.log('✅ Found database record with actual data:', dbReport);
+                    
+                    // Convert database format to expected format
+                    actualReportData = {
+                      period: { month: dbReport.report_month, year: dbReport.report_year },
+                      fuels: {
+                        diesel_ex: dbReport.fuel_data.find(f => f.fuel_type === 'diesel_ex') || { total_revenue_zar: 0, quantity_liters: 0 },
+                        vpower_95: dbReport.fuel_data.find(f => f.fuel_type === 'vpower_95') || { total_revenue_zar: 0, quantity_liters: 0 },
+                        vpower_diesel: dbReport.fuel_data.find(f => f.fuel_type === 'vpower_diesel') || { total_revenue_zar: 0, quantity_liters: 0 }
+                      },
+                      shop_lines: dbReport.shop_data.map(s => ({
+                        category: s.category,
+                        total_revenue_zar: s.total_revenue,
+                        quantity_units: s.quantity_units
+                      }))
+                    };
+                    console.log('📊 Converted database data:', actualReportData);
+                  } else {
+                    console.log('⚠️ No database record found for file:', originalFilename);
+                  }
+                } catch (error) {
+                  console.error('❌ Error fetching database record:', error);
+                }
+              }
+
               const reportData = {
                 name: originalFilename,
                 month: month,
                 year: year,
                 uploadDate: new Date(file.created_at).toLocaleDateString(),
-                data: {
+                data: actualReportData || {
                   period: { month: month, year: year },
                   fuels: {
                     diesel_ex: { total_revenue_zar: 0, quantity_liters: 0 },
@@ -6910,13 +7028,52 @@
                 console.log(`📅 Using creation date: ${month}/${year}`);
               }
               
+              // Try to get actual report data from database first
+              let actualReportData = null;
+              if (window.supabaseClient && window.supabaseClient.supabase) {
+                try {
+                  console.log('🔍 Looking for database record for file:', file.name);
+                  const { data: dbReports, error: dbError } = await window.supabaseClient.supabase
+                    .from('monthly_reports')
+                    .select('*')
+                    .eq('file_name', file.name)
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+                  
+                  if (!dbError && dbReports && dbReports.length > 0) {
+                    const dbReport = dbReports[0];
+                    console.log('✅ Found database record with actual data:', dbReport);
+                    
+                    // Convert database format to expected format
+                    actualReportData = {
+                      period: { month: dbReport.report_month, year: dbReport.report_year },
+                      fuels: {
+                        diesel_ex: dbReport.fuel_data.find(f => f.fuel_type === 'diesel_ex') || { total_revenue_zar: 0, quantity_liters: 0 },
+                        vpower_95: dbReport.fuel_data.find(f => f.fuel_type === 'vpower_95') || { total_revenue_zar: 0, quantity_liters: 0 },
+                        vpower_diesel: dbReport.fuel_data.find(f => f.fuel_type === 'vpower_diesel') || { total_revenue_zar: 0, quantity_liters: 0 }
+                      },
+                      shop_lines: dbReport.shop_data.map(s => ({
+                        category: s.category,
+                        total_revenue_zar: s.total_revenue,
+                        quantity_units: s.quantity_units
+                      }))
+                    };
+                    console.log('📊 Converted database data:', actualReportData);
+                  } else {
+                    console.log('⚠️ No database record found for file:', file.name);
+                  }
+                } catch (error) {
+                  console.error('❌ Error fetching database record:', error);
+                }
+              }
+
               const reportData = {
                 id: file.id || `storage_${file.name}`,
                 name: file.name,
                 month: month,
                 year: year,
                 uploadDate: new Date(file.created_at).toLocaleDateString(),
-                data: {
+                data: actualReportData || {
                   period: { month: month, year: year },
                   fuels: {
                     diesel_ex: { total_revenue_zar: 0, quantity_liters: 0 },
