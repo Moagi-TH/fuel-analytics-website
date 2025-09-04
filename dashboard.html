@@ -2245,8 +2245,28 @@
     }
 
     // Update dashboard metrics
-    function updateDashboardMetrics(fuelData, shopData) {
+    window.updateDashboardMetrics = function updateDashboardMetrics(fuelData, shopData) {
       console.log('🔄 updateDashboardMetrics called with:', { fuelData, shopData });
+      
+      // If no parameters provided, get data from uploadedReports
+      if (!fuelData && !shopData && window.uploadedReports && window.uploadedReports.length > 0) {
+        console.log('📊 No parameters provided, getting data from uploadedReports...');
+        const latestReport = window.uploadedReports[0]; // Most recent report
+        
+        if (latestReport && latestReport.data) {
+          fuelData = latestReport.data.fuels || {};
+          shopData = latestReport.data.shop_lines || [];
+          console.log('📊 Using data from latest report:', latestReport.name);
+        } else {
+          console.log('⚠️ No data found in latest report, using empty data');
+          fuelData = {};
+          shopData = [];
+        }
+      }
+      
+      // Ensure we have data to work with
+      if (!fuelData) fuelData = {};
+      if (!shopData) shopData = [];
       
       // Calculate total revenue (fuel + shop sales)
       const totalFuelRevenue = Object.values(fuelData).reduce((sum, fuel) => {
@@ -2856,6 +2876,14 @@
           window.updateMostRecentReportDisplay();
         } else {
           console.error('❌ updateMostRecentReportDisplay function not found');
+        }
+        
+        // CRITICAL: Update dashboard metrics with the latest report data
+        if (typeof window.updateDashboardMetrics === 'function') {
+          console.log('🔄 Calling updateDashboardMetrics to populate dashboard...');
+          window.updateDashboardMetrics();
+        } else {
+          console.error('❌ updateDashboardMetrics function not found');
         }
       };
       
