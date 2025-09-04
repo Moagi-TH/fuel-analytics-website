@@ -267,7 +267,7 @@
           
           try {
             const { data: files, error } = await window.supabaseClient.supabase.storage
-              .from('reports')
+              .from('fuel-reports')
               .list('', { limit: 1 });
             
             if (!error && files && files.length === 0) {
@@ -3127,7 +3127,7 @@
                 
                 const fileName = `${result.reportId}_${reportData.fileName || 'report.pdf'}`;
                                  const { data: uploadData, error: uploadError } = await supabase.storage
-                   .from('reports')
+                   .from('fuel-reports')
                    .upload(fileName, reportData.pdfFile, {
                     cacheControl: '3600',
                     upsert: false
@@ -3334,7 +3334,7 @@
         if (uploadedReports.length === 0) {
           const reportsList = document.getElementById('reports-list');
           if (reportsList) {
-            reportsList.innerHTML = '<p class="muted">No reports found in reports bucket. Upload your first report to see it here.</p>';
+            reportsList.innerHTML = '<p class="muted">No reports found in fuel-reports bucket. Upload your first report to see it here.</p>';
           }
           console.log('📊 No reports to display');
           return;
@@ -6332,9 +6332,9 @@
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDUwNTc5MSwiZXhwIjoyMDcwMDgxNzkxfQ.LAo0ngckbfAwplBvvQv9zhIzgvTT88H4ZKluHrV8Opo'
           );
           
-          // List files in the reports bucket (including subfolders)
+          // List files in the fuel-reports bucket (including subfolders)
           const { data: files, error } = await supabaseClient.storage
-            .from('reports')
+            .from('fuel-reports')
             .list('', {
               limit: 1000, // Increased limit to get all files
               offset: 0,
@@ -6359,7 +6359,7 @@
               // This might be a folder, try to list its contents
               try {
                 const { data: subFiles, error: subError } = await supabaseClient.storage
-                  .from('reports')
+                  .from('fuel-reports')
                   .list(item.name, {
                     limit: 1000,
                     offset: 0
@@ -6390,7 +6390,7 @@
             
             // Update the reports list to show empty state
             if (reportsList) {
-              reportsList.innerHTML = '<p class="muted">No reports found in storage bucket. Upload your first report to see it here.</p>';
+              reportsList.innerHTML = '<p class="muted">No reports found in fuel-reports bucket. Upload your first report to see it here.</p>';
             }
             
             console.log('✅ All reports cleared - storage bucket is empty');
@@ -6406,7 +6406,7 @@
           for (const file of allFiles) {
             console.log('Processing file:', file.name, 'Type:', typeof file.name, 'Full file object:', file);
             
-            // For Supabase reports bucket: process ALL files as potential reports
+            // For Supabase fuel-reports bucket: process ALL files as potential reports
             // This ensures we capture all uploaded reports regardless of naming pattern
             const isReportFile = file.name && (
               file.name.endsWith('.pdf') || 
@@ -6414,7 +6414,7 @@
               file.metadata?.content_type === 'application/pdf' ||
               file.name.includes('Period Report') ||
               file.name.includes('Report') ||
-              // For development: assume any file in reports bucket is a report
+              // For development: assume any file in fuel-reports bucket is a report
               true
             );
             
@@ -6603,8 +6603,8 @@
             overviewLink.click();
           }
         } else if (report.storagePath) {
-          // For storage reports, open PDF from reports bucket
-          console.log('📄 Opening PDF from reports bucket:', report.storagePath);
+          // For storage reports, open PDF from fuel-reports bucket
+          console.log('📄 Opening PDF from fuel-reports bucket:', report.storagePath);
           openPdfFromReportsBucket(report.storagePath, report.name);
         } else {
           console.error('❌ Report has no data or storage path:', report);
@@ -6615,7 +6615,7 @@
       // Function to open PDF from fuel-reports bucket
       async function openPdfFromReportsBucket(storagePath, fileName) {
         try {
-          console.log('🔄 Opening PDF from reports bucket:', storagePath);
+          console.log('🔄 Opening PDF from fuel-reports bucket:', storagePath);
           console.log('📄 File name:', fileName);
           
           if (!window.supabaseClient) {
@@ -6624,9 +6624,9 @@
             return;
           }
           
-          // Get signed URL from reports bucket
+          // Get signed URL from fuel-reports bucket
           const { data: signedUrl, error } = await window.supabaseClient.supabase.storage
-            .from('reports')
+            .from('fuel-reports')
             .createSignedUrl(storagePath, 60);
           
           if (error) {
@@ -6674,7 +6674,7 @@
           // Strategy 1: Try the original storage path
           console.log('Trying original path:', storagePath);
           const result1 = await supabaseClient.storage
-            .from('reports')
+            .from('fuel-reports')
             .createSignedUrl(storagePath, 60);
           
           if (!result1.error) {
@@ -6689,7 +6689,7 @@
             console.log('Trying with UUID folder:', pathWithFolder);
             
             const result2 = await supabaseClient.storage
-              .from('reports')
+              .from('fuel-reports')
               .createSignedUrl(pathWithFolder, 60);
             
             if (!result2.error) {
@@ -6701,7 +6701,7 @@
               // Strategy 3: List all files and find the correct path
               console.log('Trying to list all files to find correct path...');
               const { data: allFiles, error: listError } = await supabaseClient.storage
-                .from('reports')
+                .from('fuel-reports')
                 .list('', { limit: 1000 });
               
               if (!listError && allFiles) {
@@ -6715,7 +6715,7 @@
                 if (targetFile) {
                   console.log('Found file in listing:', targetFile.name);
                   const result3 = await supabaseClient.storage
-                    .from('reports')
+                    .from('fuel-reports')
                     .createSignedUrl(targetFile.name, 60);
                   
                   if (!result3.error) {
@@ -6762,20 +6762,20 @@
           console.log('📄 Deleting report:', report);
           
           try {
-            // Delete from reports bucket only
+            // Delete from fuel-reports bucket only
             if (window.supabaseClient && report.storagePath) {
-              console.log('🗑️ Deleting from reports bucket:', report.storagePath);
+              console.log('🗑️ Deleting from fuel-reports bucket:', report.storagePath);
               
               const { error: deleteError } = await window.supabaseClient.supabase.storage
-                .from('reports')
+                .from('fuel-reports')
                 .remove([report.storagePath]);
               
               if (deleteError) {
-                console.error('❌ Error deleting from reports bucket:', deleteError);
-                throw new Error('Failed to delete from reports bucket');
+                console.error('❌ Error deleting from fuel-reports bucket:', deleteError);
+                throw new Error('Failed to delete from fuel-reports bucket');
               }
               
-              console.log('✅ Report deleted from reports bucket');
+              console.log('✅ Report deleted from fuel-reports bucket');
             }
             
             // Remove from local array
@@ -6794,7 +6794,7 @@
             window.renderReportsHistory();
             updateMostRecentReportDisplay();
             
-            console.log('✅ Report deleted successfully from reports bucket');
+            console.log('✅ Report deleted successfully from fuel-reports bucket');
             
           } catch (error) {
             console.error('❌ Error deleting report:', error);
@@ -6806,7 +6806,7 @@
       // Function to refresh reports from storage
       // COMPLETELY RECODED: Function to refresh reports from storage
       window.refreshReportsFromStorage = async function() {
-        console.log('🔄 COMPLETELY RECODED: Refreshing reports from reports bucket...');
+        console.log('🔄 COMPLETELY RECODED: Refreshing reports from fuel-reports bucket...');
         
         try {
           // Check and initialize Supabase client if not available
@@ -6834,10 +6834,10 @@
             Object.keys(window.monthlyData).forEach(key => delete window.monthlyData[key]);
           }
           
-          // Get files from reports bucket with detailed logging
-          console.log('🔍 Querying reports bucket with detailed logging...');
+          // Get files from fuel-reports bucket with detailed logging
+          console.log('🔍 Querying fuel-reports bucket with detailed logging...');
           const { data: reportFiles, error: reportError } = await window.supabaseClient.supabase.storage
-            .from('reports')
+            .from('fuel-reports')
             .list('', {
               limit: 100,
               offset: 0,
@@ -6845,16 +6845,16 @@
             });
           
           if (reportError) {
-            console.error('❌ Error accessing reports bucket:', reportError);
+            console.error('❌ Error accessing fuel-reports bucket:', reportError);
             return;
           }
           
-          console.log('📁 RAW FILES FROM REPORTS BUCKET:', reportFiles);
+          console.log('📁 RAW FILES FROM FUEL-REPORTS BUCKET:', reportFiles);
           console.log('📊 Number of files found:', reportFiles ? reportFiles.length : 0);
           
-          // Process each file from reports bucket
+          // Process each file from fuel-reports bucket
           if (reportFiles && reportFiles.length > 0) {
-            console.log(`📊 Processing ${reportFiles.length} files from reports bucket...`);
+            console.log(`📊 Processing ${reportFiles.length} files from fuel-reports bucket...`);
             
             for (let i = 0; i < reportFiles.length; i++) {
               const file = reportFiles[i];
@@ -6935,7 +6935,7 @@
               console.log('📋 Report data:', reportData);
             }
           } else {
-            console.log('⚠️ No files found in reports bucket');
+            console.log('⚠️ No files found in fuel-reports bucket');
           }
           
           // Update monthly data
@@ -6956,7 +6956,7 @@
             console.warn('loadLatestReportData not available yet');
           }
           
-          console.log('✅ REPORTS REFRESHED SUCCESSFULLY FROM REPORTS BUCKET');
+          console.log('✅ REPORTS REFRESHED SUCCESSFULLY FROM FUEL-REPORTS BUCKET');
           console.log('📊 Total reports loaded:', uploadedReports.length);
           console.log('📋 FINAL UPLOADEDREPORTS ARRAY:', uploadedReports);
           
@@ -6997,7 +6997,7 @@
           }
           
           const { data: storageFiles, error: storageError } = await window.supabaseClient.supabase.storage
-            .from('reports')
+            .from('fuel-reports')
             .list('', { limit: 1000 });
           
           if (storageError) {
@@ -7055,9 +7055,9 @@
           
           try {
             if (window.supabaseClient) {
-              // Clear from reports bucket only
+              // Clear from fuel-reports bucket only
               const { data: reportFiles, error: reportError } = await window.supabaseClient.supabase.storage
-                .from('reports')
+                .from('fuel-reports')
                 .list();
               
               if (!reportError && reportFiles && reportFiles.length > 0) {
@@ -7065,7 +7065,7 @@
                 for (const file of reportFiles) {
                   console.log('🗑️ Deleting file:', file.name);
                   await window.supabaseClient.supabase.storage
-                    .from('reports')
+                    .from('fuel-reports')
                     .remove([file.name]);
                 }
                 console.log('✅ All files deleted from reports bucket');

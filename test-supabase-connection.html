@@ -128,7 +128,7 @@
             addResult('Testing storage bucket...', 'info');
             try {
                 const { data, error } = await supabase.storage
-                    .from('reports')
+                    .from('fuel-reports')
                     .list('', { limit: 10 });
 
                 if (error) {
