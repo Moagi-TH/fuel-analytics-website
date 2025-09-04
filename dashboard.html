@@ -192,9 +192,9 @@
       // Store current dashboard metrics
       const dashboardMetrics = {
         totalRevenue: document.getElementById('total-revenue')?.textContent,
-        fuelVolume: document.getElementById('fuel-volume')?.textContent,
+        fuelVolume: document.getElementById('total-volume')?.textContent,
         totalProfit: document.getElementById('total-profit')?.textContent,
-        shopRevenue: document.getElementById('shop-revenue-per-liter')?.textContent,
+        shopRevenue: document.getElementById('shop-fuel-ratio')?.textContent,
         fuelMargin: document.getElementById('fuel-margin')?.textContent,
         shopProfit: document.getElementById('shop-profit')?.textContent
       };
@@ -229,8 +229,8 @@
       const elements = {
         'total-revenue': 'R 0',
         'total-profit': 'R 0',
-        'fuel-volume': '0 L',
-        'shop-revenue-per-liter': 'R 0.00/L',
+        'total-volume': '0 L',
+        'shop-fuel-ratio': 'R 0.00/L',
         'fuel-margin': 'R 0',
         'shop-profit': 'R 0'
       };
@@ -2293,11 +2293,11 @@
       
       const totalProfitEl = document.getElementById('total-profit');
       if (totalProfitEl) totalProfitEl.textContent = formatRand(totalProfit);
-      const fuelVolumeEl = document.getElementById('fuel-volume');
+      const fuelVolumeEl = document.getElementById('total-volume');
       if (fuelVolumeEl) {
         fuelVolumeEl.textContent = `${totalVolume.toLocaleString()} L`;
       }
-      const shopRevenuePerLiterEl = document.getElementById('shop-revenue-per-liter');
+      const shopRevenuePerLiterEl = document.getElementById('shop-fuel-ratio');
       if (shopRevenuePerLiterEl) shopRevenuePerLiterEl.textContent = ratioDisplay;
 
       // Update KPI indicators
@@ -2682,8 +2682,8 @@
           const elements = {
             'total-revenue': `R ${metrics.totalRevenue.toLocaleString()}`,
             'total-profit': `R ${metrics.totalProfit.toLocaleString()}`,
-            'fuel-volume': `${metrics.fuelVolume.toLocaleString()} L`,
-            'shop-revenue-per-liter': `R ${metrics.shopRevenuePerLiter.toFixed(2)}/L`,
+            'total-volume': `${metrics.fuelVolume.toLocaleString()} L`,
+            'shop-fuel-ratio': `R ${metrics.shopRevenuePerLiter.toFixed(2)}/L`,
             'fuel-margin': `R ${(metrics.totalRevenue * 0.36).toLocaleString()}`,
             'shop-profit': `R ${metrics.shopProfit.toLocaleString()}`
           };
@@ -3966,7 +3966,7 @@
               // Clear dashboard metrics safely
       safeUpdateElement('total-revenue', 'R 0');
       safeUpdateElement('total-profit', 'R 0');
-      safeUpdateElement('fuel-volume', '0 L');
+      safeUpdateElement('total-volume', '0 L');
       safeUpdateElement('shop-fuel-ratio', 'R 0.00/L');
       }
       
@@ -3974,7 +3974,7 @@
       function updateDashboardMetricsFromReport(data) {
         safeUpdateElement('total-revenue', `R ${data.totalRevenue.toLocaleString()}`);
         safeUpdateElement('total-profit', `R ${data.totalProfit.toLocaleString()}`);
-        safeUpdateElement('fuel-volume', `${data.totalFuelVolume.toLocaleString()} L`);
+        safeUpdateElement('total-volume', `${data.totalFuelVolume.toLocaleString()} L`);
         safeUpdateElement('shop-fuel-ratio', `R ${data.shopFuelRatio}/L`);
         
         // Update the monthly overview title to show the month
@@ -4702,7 +4702,7 @@
               
               // Update dashboard elements
               const totalRevenueElement = document.getElementById('total-revenue');
-              const fuelVolumeElement = document.getElementById('fuel-volume');
+              const fuelVolumeElement = document.getElementById('total-volume');
               
               if (totalRevenueElement) {
                 totalRevenueElement.textContent = `R ${totalRevenue.toLocaleString()}`;
@@ -4750,7 +4750,7 @@
               
               // Update dashboard elements
               const totalRevenueElement = document.getElementById('total-revenue');
-              const fuelVolumeElement = document.getElementById('fuel-volume');
+              const fuelVolumeElement = document.getElementById('total-volume');
               
               if (totalRevenueElement) {
                 totalRevenueElement.textContent = `R ${totalRevenue.toLocaleString()}`;
