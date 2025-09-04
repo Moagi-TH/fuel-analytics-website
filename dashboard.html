@@ -2634,8 +2634,8 @@
                   // Only load from database if no reports found in storage
                   if (uploadedReports.length === 0) {
                     console.log('⚠️ No reports in storage, loading from database as fallback...');
-                    await loadReportsFromDatabase();
-                    await loadMonthlyPerformanceFromDatabase();
+                await loadReportsFromDatabase();
+                await loadMonthlyPerformanceFromDatabase();
                   }
                   
                   // Save to localStorage for next session
@@ -3083,7 +3083,7 @@
         
 
 
-
+        
         console.log('✅ Navigated to overview section');
       }
 
@@ -3347,13 +3347,20 @@
       // Define critical functions early to prevent scope issues
       function renderReportsHistory() {
         console.log('🔄 COMPLETELY RECODED: Rendering reports history...');
-        console.log('📊 Reports to render:', uploadedReports.length);
-        console.log('📋 UploadedReports array:', uploadedReports);
+        
+        // Ensure global variables are initialized
+        if (!window.uploadedReports) {
+          console.log('⚠️ window.uploadedReports not initialized in renderReportsHistory, initializing now...');
+          window.uploadedReports = [];
+        }
+        
+        console.log('📊 Reports to render:', window.uploadedReports.length);
+        console.log('📋 UploadedReports array:', window.uploadedReports);
         
         // Clean up any duplicates before rendering
         removeDuplicatesFromReports();
         
-        if (uploadedReports.length === 0) {
+        if (window.uploadedReports.length === 0) {
           const reportsList = document.getElementById('reports-list');
           if (reportsList) {
             reportsList.innerHTML = '<p class="muted">No reports found in fuel-reports bucket. Upload your first report to see it here.</p>';
@@ -3368,7 +3375,7 @@
           return;
         }
         
-        const reportsHTML = uploadedReports.map((report, index) => {
+        const reportsHTML = window.uploadedReports.map((report, index) => {
           const monthKey = `${report.month}/${report.year}`;
           const sizeKB = Math.round((report.size || 0) / 1024);
           const uploadDate = new Date(report.lastModified || Date.now()).toLocaleDateString();
@@ -3958,6 +3965,11 @@
       
       // Function to check for duplicate files - STRICT VERSION
       function isDuplicateFile(file) {
+        // Ensure global variables are initialized
+        if (!window.uploadedReports) {
+          console.log('⚠️ window.uploadedReports not initialized in isDuplicateFile, initializing now...');
+          window.uploadedReports = [];
+        }
         return window.uploadedReports.some(report => {
           // Check exact name match
           if (report.name === file.name) {
@@ -4009,6 +4021,12 @@
 
       // Function to remove duplicates from existing uploadedReports array
       function removeDuplicatesFromReports() {
+        // Ensure global variables are initialized
+        if (!window.uploadedReports) {
+          console.log('⚠️ window.uploadedReports not initialized in removeDuplicatesFromReports, initializing now...');
+          window.uploadedReports = [];
+        }
+        
         const uniqueReports = [];
         const seen = new Set();
         
@@ -6388,6 +6406,16 @@
         try {
           console.log('Loading reports from Supabase Storage...');
           
+          // CRITICAL FIX: Ensure global variables are initialized
+          if (!window.uploadedReports) {
+            console.log('⚠️ window.uploadedReports not initialized, initializing now...');
+            window.uploadedReports = [];
+          }
+          if (!window.monthlyData) {
+            console.log('⚠️ window.monthlyData not initialized, initializing now...');
+            window.monthlyData = {};
+          }
+          
           // Wait for Supabase to be available
           let attempts = 0;
           while (!window.supabase && attempts < 10) {
@@ -6578,7 +6606,7 @@
                   console.error('❌ Error fetching database record:', error);
                 }
               }
-
+              
               const reportData = {
                 name: originalFilename,
                 month: month,
@@ -6929,6 +6957,16 @@
         console.log('🔄 COMPLETELY RECODED: Refreshing reports from fuel-reports bucket...');
         
         try {
+          // CRITICAL FIX: Ensure global variables are initialized
+          if (!window.uploadedReports) {
+            console.log('⚠️ window.uploadedReports not initialized, initializing now...');
+            window.uploadedReports = [];
+          }
+          if (!window.monthlyData) {
+            console.log('⚠️ window.monthlyData not initialized, initializing now...');
+            window.monthlyData = {};
+          }
+          
           // Check and initialize Supabase client if not available
           if (!window.supabaseClient) {
             console.log('⚠️ Supabase client not available, attempting to initialize...');
@@ -7068,7 +7106,7 @@
                   console.error('❌ Error fetching database record:', error);
                 }
               }
-
+              
               const reportData = {
                 id: file.id || `storage_${file.name}`,
                 name: file.name,
