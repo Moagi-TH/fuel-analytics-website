@@ -2350,8 +2350,8 @@
         if (fuel.profit_zar !== null && fuel.profit_zar !== undefined) {
           return sum + (fuel.profit_zar || 0);
         } else if (fuel.sell && fuel.cost && fuel.qty_l) {
-        const profit = (fuel.sell - fuel.cost) * fuel.qty_l;
-        return sum + (profit || 0);
+          const profit = (fuel.sell - fuel.cost) * fuel.qty_l;
+          return sum + (profit || 0);
         } else if (fuel.sell && fuel.cost && fuel.quantity_liters) {
           const profit = (fuel.sell - fuel.cost) * fuel.quantity_liters;
           return sum + (profit || 0);
@@ -2369,7 +2369,7 @@
       const ratioDisplay = `R ${shopFuelRatio}/L`;
 
       console.log('📊 Calculated metrics:', { totalRevenue, totalProfit, totalVolume, shopFuelRatio: ratioDisplay });
-
+      
       // Update metric cards
       const totalRevenueEl = document.getElementById('total-revenue');
       if (totalRevenueEl) totalRevenueEl.textContent = formatRand(totalRevenue);
@@ -2411,7 +2411,7 @@
         } else {
           // Default to 25% margin if no other data available
           const profit = (shop.revenue || shop.total_revenue_zar || 0) * 0.25;
-        return sum + profit;
+          return sum + profit;
         }
       }, 0);
       
@@ -2629,14 +2629,14 @@
                     window.updateDashboardMetrics();
                   }
                 } else {
-                  // Load existing reports from storage first (source of truth)
-                  await loadReportsFromStorage();
-                  
-                  // Only load from database if no reports found in storage
-                  if (uploadedReports.length === 0) {
-                    console.log('⚠️ No reports in storage, loading from database as fallback...');
-                await loadReportsFromDatabase();
-                await loadMonthlyPerformanceFromDatabase();
+                // Load existing reports from storage first (source of truth)
+                await loadReportsFromStorage();
+                
+                // Only load from database if no reports found in storage
+                if (uploadedReports.length === 0) {
+                  console.log('⚠️ No reports in storage, loading from database as fallback...');
+                  await loadReportsFromDatabase();
+                  await loadMonthlyPerformanceFromDatabase();
                   }
                   
                   // Save to localStorage for next session
@@ -2713,8 +2713,8 @@
                   }
                 } catch (error) {
                   console.log('⚠️ Authentication failed, using local storage:', error.message);
-                // Try to create a test user for demonstration
-                await createTestUser();
+                  // Try to create a test user for demonstration
+                  await createTestUser();
                 }
               }
             } else {
@@ -2749,7 +2749,7 @@
       }
 
       // Functions moved to earlier in the file to prevent scope issues
-
+      
       // Show sample data for demonstration
       function showSampleData() {
         console.log('Showing sample data for demonstration...');
@@ -2844,8 +2844,8 @@
           // Check if database is available
           if (!db || !db.isInitialized) {
             console.log('⚠️ Database not initialized, skipping database load');
-                return;
-              }
+            return;
+          }
           
           console.log('🔍 Loading reports from monthly_reports table...');
           
@@ -2859,13 +2859,13 @@
               console.log('No existing reports, loading from database');
             } else {
               console.log('Keeping existing reports, database reports will be added');
-          }
-          
+            }
+            
             // Clear monthly data to rebuild it
-          if (window.monthlyData) {
-            Object.keys(window.monthlyData).forEach(key => delete window.monthlyData[key]);
-          }
-          
+            if (window.monthlyData) {
+              Object.keys(window.monthlyData).forEach(key => delete window.monthlyData[key]);
+            }
+            
             // Process each report from database
             result.reports.forEach((report, index) => {
               console.log(`📄 Processing database report ${index + 1}/${result.reports.length}:`, report.file_name);
@@ -2904,25 +2904,29 @@
               if (!existingReport) {
               window.uploadedReports.push(reportData);
                 console.log('✅ Added database report:', reportData.name);
-          } else {
+              } else {
                 console.log('Database report already exists, skipping:', reportData.name);
-          }
+              }
             });
-          
-          // Update monthly data
+            
+            // Update monthly data
           if (typeof window.updateMonthlyDataFromReports === 'function') {
             window.updateMonthlyDataFromReports();
           } else {
             console.warn('updateMonthlyDataFromReports not yet defined (db load)');
           }
-          
+            
             console.log('✅ REPORTS LOADED SUCCESSFULLY FROM DATABASE');
-          console.log('📊 Total reports loaded:', uploadedReports.length);
-          console.log('📋 FINAL UPLOADEDREPORTS ARRAY:', uploadedReports);
-          
-          // Force update the display
+            console.log('📊 Total reports loaded:', uploadedReports.length);
+            console.log('📋 FINAL UPLOADEDREPORTS ARRAY:', uploadedReports);
+            
+            // Force update the display
             window.renderReportsHistory();
-          updateMostRecentReportDisplay();
+          if (typeof window.updateMostRecentReportDisplay === 'function') {
+            window.updateMostRecentReportDisplay();
+          } else {
+            console.warn('updateMostRecentReportDisplay not yet defined (db load)');
+          }
           } else {
             console.log('⚠️ No reports found in database or error:', result.error);
           }
@@ -3547,7 +3551,11 @@
         setTimeout(() => {
           console.log('🔄 Rendering reports history with', uploadedReports.length, 'reports');
           window.renderReportsHistory();
-          updateMostRecentReportDisplay();
+          if (typeof window.updateMostRecentReportDisplay === 'function') {
+            window.updateMostRecentReportDisplay();
+          } else {
+            console.warn('updateMostRecentReportDisplay not yet defined (history render delay)');
+          }
         }, 200);
         
         console.log('✅ View History completed');
@@ -3849,9 +3857,9 @@
             } catch (err) {
               console.error('❌ Error during renderReportsHistory:', err);
             }
-          return;
-        }
-        
+            return;
+          }
+          
           if (attempt++ < maxTries) {
             const missing = [];
             if (typeof renderFunction !== 'function') missing.push('renderReportsHistory function');
@@ -3897,7 +3905,7 @@
           console.error('❌ renderReportsHistory function not available');
         }
       };
-
+      
       // Manual trigger function to force dashboard metrics update
       window.forceUpdateDashboard = function() {
         console.log('🔧 Manual trigger: forceUpdateDashboard called');
@@ -4566,15 +4574,15 @@
             if (report.id && typeof report.id === 'string' && report.id.length > 10) {
               // This looks like a database ID, try to load from database
               console.log('🔄 Loading report from database...');
-            
-            if (!window.supabaseClient) {
-              showNotification('Database not initialized', 'error');
-              return;
-            }
-            
+              
+              if (!window.supabaseClient) {
+                showNotification('Database not initialized', 'error');
+                return;
+              }
+              
               const result = await window.supabaseClient.getMonthlyReportById(report.id);
-            
-            if (result.success && result.report) {
+              
+              if (result.success && result.report) {
                 console.log('✅ Report loaded from database:', result.report);
                 await loadReportData(result.report);
                 window.location.hash = '#overview';
@@ -5328,8 +5336,8 @@
           // Only load from database if no reports found in storage
           if (uploadedReports.length === 0) {
             console.log('⚠️ No reports in storage, loading from database as fallback...');
-          await loadReportsFromDatabase();
-          await loadMonthlyPerformanceFromDatabase();
+            await loadReportsFromDatabase();
+            await loadMonthlyPerformanceFromDatabase();
           }
           
           // 2. Update monthly overview with current month data
@@ -5552,7 +5560,7 @@
               <h1>Overview Over Time</h1>
               <p>Historical performance trends and monthly comparisons</p>
               <div class="overview-actions">
-              <button onclick="showMonthlyOverview()" class="button secondary">Back to Monthly Overview</button>
+                <button onclick="showMonthlyOverview()" class="button secondary">Back to Monthly Overview</button>
               </div>
             </div>
             <div class="timeline-container">
@@ -6172,7 +6180,7 @@
               <h1>Overview Over Time</h1>
               <p>Overall performance across all months</p>
               <div class="overview-actions">
-              <button onclick="showMonthlyOverview()" class="button secondary">Back to Monthly Overview</button>
+                <button onclick="showMonthlyOverview()" class="button secondary">Back to Monthly Overview</button>
               </div>
             </div>
             
@@ -6670,7 +6678,7 @@
               
               if (!existingReport) {
               window.uploadedReports.push(reportData);
-              console.log('Added report to array:', reportData.name);
+                console.log('Added report to array:', reportData.name);
               } else {
                 console.log('Report already exists, skipping:', reportData.name);
               }
@@ -10324,7 +10332,7 @@
               await loadReportsFromStorage();
               // Only load from database if no reports found in storage
               if (uploadedReports.length === 0) {
-              await loadReportsFromDatabase();
+                await loadReportsFromDatabase();
               }
               // Also load the latest report data into the dashboard (guarded)
               if (typeof window.loadLatestReportData === 'function') {
@@ -10355,7 +10363,7 @@
             await loadReportsFromStorage();
             // Only load from database if no reports found in storage
             if (uploadedReports.length === 0) {
-            await loadReportsFromDatabase();
+              await loadReportsFromDatabase();
             }
             // Also load the latest report data into the dashboard (guarded)
             if (typeof window.loadLatestReportData === 'function') {
