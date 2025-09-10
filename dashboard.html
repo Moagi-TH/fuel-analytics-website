@@ -3471,9 +3471,20 @@
         monthlyPerformance.style.display = 'none';
         // Bring the upload UI into view and open the file picker immediately
         uploadArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        if (reportInputMain) {
-          reportInputMain.click();
-        }
+        // Defer opening the picker so the element is visible and interactive
+        setTimeout(() => {
+          if (!reportInputMain) return;
+          try {
+            if (typeof reportInputMain.showPicker === 'function') {
+              reportInputMain.showPicker();
+            } else {
+              reportInputMain.click();
+            }
+          } catch (e) {
+            // Fallback: require user to click in the zone
+            console.warn('File picker open suppressed by browser:', e?.message || e);
+          }
+        }, 120);
       });
 
       reportInputMain?.addEventListener('change', (event) => {
