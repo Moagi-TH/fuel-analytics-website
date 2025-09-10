@@ -395,12 +395,25 @@ class CollaborationSync {
         console.log('📢 New changes detected from collaborators');
         console.log('💡 Consider refreshing your browser to see updates');
         
-        // Could integrate with browser notifications here
+        // Respect browser permission before attempting system notifications
         if (typeof window !== 'undefined' && window.Notification) {
-            new Notification('Fuel Analytics', {
-                body: 'New changes from collaborators detected',
-                icon: '/icon-192x192.png'
-            });
+            try {
+                if (Notification.permission === 'granted') {
+                    new Notification('Fuel Analytics', {
+                        body: 'New changes from collaborators detected',
+                        icon: '/icon-192x192.png'
+                    });
+                } else {
+                    // Fall back to in-app toast without triggering a permission prompt
+                    if (window.errorHandler && typeof window.errorHandler.showNotification === 'function') {
+                        window.errorHandler.showNotification('New collaborator changes detected', 'info', 'collaboration');
+                    } else if (typeof console !== 'undefined') {
+                        console.log('ℹ️ New collaborator changes detected');
+                    }
+                }
+            } catch (e) {
+                console.warn('Notification suppressed:', e?.message || e);
+            }
         }
     }
 

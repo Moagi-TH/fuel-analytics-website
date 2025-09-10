@@ -6957,7 +6957,11 @@
             
             // Update display
             window.renderReportsHistory();
-            updateMostRecentReportDisplay();
+            if (typeof window.updateMostRecentReportDisplay === 'function') {
+              window.updateMostRecentReportDisplay();
+            } else {
+              console.warn('updateMostRecentReportDisplay not yet defined (after delete)');
+            }
             
             console.log('✅ Report deleted successfully from fuel-reports bucket');
             
@@ -7165,7 +7169,11 @@
           } else {
             console.error('❌ renderReportsHistory function not available');
           }
-          updateMostRecentReportDisplay();
+          if (typeof window.updateMostRecentReportDisplay === 'function') {
+            window.updateMostRecentReportDisplay();
+          } else {
+            console.warn('updateMostRecentReportDisplay not yet defined (bucket load end)');
+          }
           
           // Load the latest report data into the dashboard (guarded)
           if (typeof window.loadLatestReportData === 'function') {
@@ -7255,7 +7263,11 @@
               } else {
                 console.error('❌ renderReportsHistory function not available');
               }
-              updateMostRecentReportDisplay();
+              if (typeof window.updateMostRecentReportDisplay === 'function') {
+                window.updateMostRecentReportDisplay();
+              } else {
+                console.warn('updateMostRecentReportDisplay not yet defined (after orphan cleanup)');
+              }
             }
           } else {
             console.log('✅ Database and storage are in sync');
@@ -7308,7 +7320,11 @@
             } else {
               console.error('❌ renderReportsHistory function not available');
             }
-            updateMostRecentReportDisplay();
+            if (typeof window.updateMostRecentReportDisplay === 'function') {
+              window.updateMostRecentReportDisplay();
+            } else {
+              console.warn('updateMostRecentReportDisplay not yet defined (after clearing all)');
+            }
             
             console.log('✅ All reports cleared successfully from reports bucket');
             
@@ -10348,7 +10364,11 @@
                 } else {
                   console.error('❌ renderReportsHistory function not available');
                 }
-                updateMostRecentReportDisplay();
+                if (typeof window.updateMostRecentReportDisplay === 'function') {
+                  window.updateMostRecentReportDisplay();
+                } else {
+                  console.warn('updateMostRecentReportDisplay not yet defined (init delayed block)');
+                }
                 console.log('📊 Reports display updated after initialization');
               }, 500);
             }, 2000); // Increased delay for better performance
@@ -10379,7 +10399,11 @@
               } else {
                 console.error('❌ renderReportsHistory function not available');
               }
-              updateMostRecentReportDisplay();
+              if (typeof window.updateMostRecentReportDisplay === 'function') {
+                window.updateMostRecentReportDisplay();
+              } else {
+                console.warn('updateMostRecentReportDisplay not yet defined (init immediate block)');
+              }
               console.log('📊 Reports display updated after initialization');
             }, 500);
           }, 2000); // Increased delay for better performance

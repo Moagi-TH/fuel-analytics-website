@@ -293,9 +293,15 @@ self.addEventListener('push', event => {
         ]
     };
     
-    event.waitUntil(
-        self.registration.showNotification('Fuel Analytics', options)
-    );
+    // Only show notification if permission is explicitly granted
+    if (Notification && Notification.permission === 'granted') {
+        event.waitUntil(
+            self.registration.showNotification('Fuel Analytics', options)
+        );
+    } else {
+        // Skip showing system notification to avoid prompting users unexpectedly
+        console.log('🔕 Skipping push notification (permission not granted)');
+    }
 });
 
 // Handle notification clicks
