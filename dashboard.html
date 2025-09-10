@@ -2910,7 +2910,11 @@
             });
           
           // Update monthly data
-          updateMonthlyDataFromReports();
+          if (typeof window.updateMonthlyDataFromReports === 'function') {
+            window.updateMonthlyDataFromReports();
+          } else {
+            console.warn('updateMonthlyDataFromReports not yet defined (db load)');
+          }
           
             console.log('✅ REPORTS LOADED SUCCESSFULLY FROM DATABASE');
           console.log('📊 Total reports loaded:', uploadedReports.length);
@@ -6677,7 +6681,11 @@
           }
           
           // Update monthly data from loaded reports
-          updateMonthlyDataFromReports();
+          if (typeof window.updateMonthlyDataFromReports === 'function') {
+            window.updateMonthlyDataFromReports();
+          } else {
+            console.warn('updateMonthlyDataFromReports not yet defined (file upload)');
+          }
           
           // Load the latest report data into the dashboard (guarded)
           if (typeof window.loadLatestReportData === 'function') {
@@ -7137,7 +7145,11 @@
           }
           
           // Update monthly data
-          updateMonthlyDataFromReports();
+          if (typeof window.updateMonthlyDataFromReports === 'function') {
+            window.updateMonthlyDataFromReports();
+          } else {
+            console.warn('updateMonthlyDataFromReports not yet defined (bucket load)');
+          }
           
           // Update display
           if (window.renderReportsHistory) {
