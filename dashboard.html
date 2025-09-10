@@ -730,6 +730,9 @@
                  <p>Drag & drop your PDF here or click to browse</p>
                  <span class="upload-hint">Supports PDF files up to 10MB</span>
                </div>
+               <div style="margin-top:10px">
+                 <button id="choose-file-btn" class="button secondary" type="button" aria-label="Choose PDF file">Choose PDF…</button>
+               </div>
              </div>
              <div class="upload-actions">
                <button id="analyze-ai" class="button primary">Analyze Report</button>
@@ -1113,7 +1116,6 @@
         </div>
       </div>
     </section>
-
     <!-- Renovation Section -->
     <section id="renovation" class="dashboard-section alt">
       <div class="container">
@@ -1805,7 +1807,6 @@
         </div>
       </div>
     </section>
-
     <!-- Users Section -->
     <section id="users" class="dashboard-section alt">
       <div class="container">
@@ -2583,7 +2584,6 @@
         });
       }
     })();
-
     // Simple state + helpers for upload/inputs and summaries
     (function(){
       // Initialize Supabase integration
@@ -3352,7 +3352,6 @@
       // Make uploadedReports and monthlyData globally accessible
       window.uploadedReports = uploadedReports;
       window.monthlyData = monthlyData;
-
       // Define critical functions early to prevent scope issues
       function renderReportsHistory() {
         console.log('🔄 COMPLETELY RECODED: Rendering reports history...');
@@ -3507,6 +3506,21 @@
           analyzeStatus.textContent = '';
           analyzeBtn.disabled = true;
           placeholder?.classList.remove('has-file');
+        }
+      });
+
+      // Explicit choose file button as a visible fallback
+      const chooseFileBtn = document.getElementById('choose-file-btn');
+      chooseFileBtn?.addEventListener('click', () => {
+        if (!reportInputMain) return;
+        try {
+          if (typeof reportInputMain.showPicker === 'function') {
+            reportInputMain.showPicker();
+          } else {
+            reportInputMain.click();
+          }
+        } catch (e) {
+          console.warn('File picker open suppressed by browser:', e?.message || e);
         }
       });
 
@@ -4147,7 +4161,6 @@
           window.isRenderingMonthlyPerformance = false;
         }
       }
-      
       // Function to load and display most recent report data
       function loadMostRecentReportData(monthKey) {
         if (!monthlyData[monthKey] || monthlyData[monthKey].length === 0) {
@@ -4949,7 +4962,6 @@
         
         console.log('Fuel data loaded successfully from report:', mostRecentReport.filename);
       }
-      
       // Function to load latest report data into dashboard overview
       window.loadLatestReportData = async function loadLatestReportData() {
         try {
@@ -5723,7 +5735,6 @@
         
         console.log('✅ Real-time metric calculation setup complete');
       }
-      
       // Function to calculate and update metrics in real-time
       function updateCalculatedMetrics() {
         try {
@@ -6429,7 +6440,6 @@
           }
         });
       }
-
       // Load reports from Supabase Storage (fallback when database tables don't exist)
       async function loadReportsFromStorage() {
         try {
@@ -7531,7 +7541,6 @@
           }
         });
       }
-      
       // Function to update revenue performance chart
       function updateRevenuePerformanceChart(data) {
         const ctx = document.getElementById('revenue-performance-chart');
@@ -8332,7 +8341,6 @@
       function saveProjectSettings() {
         localStorage.setItem('renovationProjectSettings', JSON.stringify(window.renovationState.projectSettings));
       }
-
       // Update project settings UI
       function updateProjectSettingsUI() {
         const settings = window.renovationState.projectSettings;
@@ -9030,7 +9038,6 @@
         
         return cashFlows;
       }
-      
       // Manual chart refresh function
       async function refreshRenovationCharts() {
         console.log('Manual chart refresh triggered...');
@@ -9826,7 +9833,6 @@
         // Create activity chart
         createApiActivityChart();
       }
-
       // Show notification
       function showNotification(message, type = 'info') {
         // Create notification element
