@@ -12,6 +12,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Fuel Analytics">
   <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cpath fill='%2309172b' d='M0 0h96v96H0z'/%3E%3Cpath fill='%233b82f6' d='M22 70V22a6 6 0 0 1 6-6h20a6 6 0 0 1 6 6v6h8a6 6 0 0 1 6 6v14h2a6 6 0 0 1 6 6v10a10 10 0 1 1-20 0V50h-2v20a6 6 0 0 1-6 6H28a6 6 0 0 1-6-6z'/%3E%3Cpath fill='%23fff' d='M36 28h8v12h-8zM66 36h6v14a3 3 0 1 0 6 0v-8h-2v-6a3 3 0 0 0-3-3h-7z'/%3E%3C/svg%3E" />
   
   <!-- Service Worker Registration -->
   <script>
@@ -192,9 +193,9 @@
       // Store current dashboard metrics
       const dashboardMetrics = {
         totalRevenue: document.getElementById('total-revenue')?.textContent,
-        fuelVolume: document.getElementById('fuel-volume')?.textContent,
+        fuelVolume: document.getElementById('total-volume')?.textContent,
         totalProfit: document.getElementById('total-profit')?.textContent,
-        shopRevenue: document.getElementById('shop-revenue-per-liter')?.textContent,
+        shopRevenue: document.getElementById('shop-fuel-ratio')?.textContent,
         fuelMargin: document.getElementById('fuel-margin')?.textContent,
         shopProfit: document.getElementById('shop-profit')?.textContent
       };
@@ -229,8 +230,8 @@
       const elements = {
         'total-revenue': 'R 0',
         'total-profit': 'R 0',
-        'fuel-volume': '0 L',
-        'shop-revenue-per-liter': 'R 0.00/L',
+        'total-volume': '0 L',
+        'shop-fuel-ratio': 'R 0.00/L',
         'fuel-margin': 'R 0',
         'shop-profit': 'R 0'
       };
@@ -267,7 +268,7 @@
           
           try {
             const { data: files, error } = await window.supabaseClient.supabase.storage
-              .from('reports')
+              .from('fuel-reports')
               .list('', { limit: 1 });
             
             if (!error && files && files.length === 0) {
@@ -2245,8 +2246,90 @@
     }
 
     // Update dashboard metrics
-    function updateDashboardMetrics(fuelData, shopData) {
+    window.updateDashboardMetrics = function updateDashboardMetrics(fuelData, shopData) {
       console.log('🔄 updateDashboardMetrics called with:', { fuelData, shopData });
+      
+      // If no parameters provided, get data from uploadedReports
+      if (!fuelData && !shopData && window.uploadedReports && window.uploadedReports.length > 0) {
+        console.log('📊 No parameters provided, getting data from uploadedReports...');
+        console.log('📊 Total reports available:', window.uploadedReports.length);
+        console.log('📊 All reports:', window.uploadedReports);
+        
+        const latestReport = window.uploadedReports[0]; // Most recent report
+        console.log('📊 Latest report structure:', latestReport);
+        
+        if (latestReport && latestReport.data) {
+          console.log('📊 Latest report data structure:', latestReport.data);
+          fuelData = latestReport.data.fuels || {};
+          shopData = latestReport.data.shop_lines || [];
+          console.log('📊 Extracted fuel data:', fuelData);
+          console.log('📊 Extracted shop data:', shopData);
+        } else {
+          console.log('⚠️ No data found in latest report, checking alternative data structure...');
+          
+          // Try alternative data structure - maybe data is stored directly in the report
+          if (latestReport.fuels) {
+            console.log('📊 Found fuels data directly in report:', latestReport.fuels);
+            fuelData = latestReport.fuels;
+          }
+          if (latestReport.shop_lines) {
+            console.log('📊 Found shop_lines data directly in report:', latestReport.shop_lines);
+            shopData = latestReport.shop_lines;
+          }
+          
+          if (!fuelData) fuelData = {};
+          if (!shopData) shopData = [];
+        }
+      }
+      
+      // If still no data, try to get data from manual entry form
+      if ((!fuelData || Object.keys(fuelData).length === 0) && (!shopData || shopData.length === 0)) {
+        console.log('📊 No report data found, trying to get data from manual entry form...');
+        
+        // Get fuel data from manual entry form
+        const dieselRevenue = parseFloat(document.getElementById('fuel-diesel-revenue')?.value || 0);
+        const dieselQty = parseFloat(document.getElementById('fuel-diesel-qty')?.value || 0);
+        const dieselSell = parseFloat(document.getElementById('fuel-diesel-sell')?.value || 0);
+        const dieselCost = parseFloat(document.getElementById('fuel-diesel-cost')?.value || 0);
+        
+        const v95Revenue = parseFloat(document.getElementById('fuel-v95-revenue')?.value || 0);
+        const v95Qty = parseFloat(document.getElementById('fuel-v95-qty')?.value || 0);
+        const v95Sell = parseFloat(document.getElementById('fuel-v95-sell')?.value || 0);
+        const v95Cost = parseFloat(document.getElementById('fuel-v95-cost')?.value || 0);
+        
+        const vdRevenue = parseFloat(document.getElementById('fuel-vdiesel-revenue')?.value || 0);
+        const vdQty = parseFloat(document.getElementById('fuel-vdiesel-qty')?.value || 0);
+        const vdSell = parseFloat(document.getElementById('fuel-vdiesel-sell')?.value || 0);
+        const vdCost = parseFloat(document.getElementById('fuel-vdiesel-cost')?.value || 0);
+        
+        if (dieselRevenue > 0 || v95Revenue > 0 || vdRevenue > 0) {
+          console.log('📊 Found manual entry data, using it for dashboard metrics');
+          fuelData = {
+            diesel_ex: {
+              total_revenue_zar: dieselRevenue,
+              quantity_liters: dieselQty,
+              selling_price_per_liter: dieselSell,
+              cost_price_per_liter: dieselCost
+            },
+            vpower_95: {
+              total_revenue_zar: v95Revenue,
+              quantity_liters: v95Qty,
+              selling_price_per_liter: v95Sell,
+              cost_price_per_liter: v95Cost
+            },
+            vpower_diesel: {
+              total_revenue_zar: vdRevenue,
+              quantity_liters: vdQty,
+              selling_price_per_liter: vdSell,
+              cost_price_per_liter: vdCost
+            }
+          };
+        }
+      }
+      
+      // Ensure we have data to work with
+      if (!fuelData) fuelData = {};
+      if (!shopData) shopData = [];
       
       // Calculate total revenue (fuel + shop sales)
       const totalFuelRevenue = Object.values(fuelData).reduce((sum, fuel) => {
@@ -2267,8 +2350,8 @@
         if (fuel.profit_zar !== null && fuel.profit_zar !== undefined) {
           return sum + (fuel.profit_zar || 0);
         } else if (fuel.sell && fuel.cost && fuel.qty_l) {
-          const profit = (fuel.sell - fuel.cost) * fuel.qty_l;
-          return sum + (profit || 0);
+        const profit = (fuel.sell - fuel.cost) * fuel.qty_l;
+        return sum + (profit || 0);
         } else if (fuel.sell && fuel.cost && fuel.quantity_liters) {
           const profit = (fuel.sell - fuel.cost) * fuel.quantity_liters;
           return sum + (profit || 0);
@@ -2286,18 +2369,18 @@
       const ratioDisplay = `R ${shopFuelRatio}/L`;
 
       console.log('📊 Calculated metrics:', { totalRevenue, totalProfit, totalVolume, shopFuelRatio: ratioDisplay });
-      
+
       // Update metric cards
       const totalRevenueEl = document.getElementById('total-revenue');
       if (totalRevenueEl) totalRevenueEl.textContent = formatRand(totalRevenue);
       
       const totalProfitEl = document.getElementById('total-profit');
       if (totalProfitEl) totalProfitEl.textContent = formatRand(totalProfit);
-      const fuelVolumeEl = document.getElementById('fuel-volume');
+      const fuelVolumeEl = document.getElementById('total-volume');
       if (fuelVolumeEl) {
         fuelVolumeEl.textContent = `${totalVolume.toLocaleString()} L`;
       }
-      const shopRevenuePerLiterEl = document.getElementById('shop-revenue-per-liter');
+      const shopRevenuePerLiterEl = document.getElementById('shop-fuel-ratio');
       if (shopRevenuePerLiterEl) shopRevenuePerLiterEl.textContent = ratioDisplay;
 
       // Update KPI indicators
@@ -2328,7 +2411,7 @@
         } else {
           // Default to 25% margin if no other data available
           const profit = (shop.revenue || shop.total_revenue_zar || 0) * 0.25;
-          return sum + profit;
+        return sum + profit;
         }
       }, 0);
       
@@ -2533,13 +2616,32 @@
                 document.getElementById('user-email').textContent = result.user.email;
                 
                 // Load existing reports from storage first (source of truth)
-                await loadReportsFromStorage();
+                // Try to load from localStorage first (for cross-session persistence)
+                const restoredFromLocalStorage = window.loadUserDataFromLocalStorage();
                 
-                // Only load from database if no reports found in storage
-                if (uploadedReports.length === 0) {
-                  console.log('⚠️ No reports in storage, loading from database as fallback...');
-                  await loadReportsFromDatabase();
-                  await loadMonthlyPerformanceFromDatabase();
+                if (restoredFromLocalStorage) {
+                  console.log('✅ Data restored from localStorage, updating dashboard...');
+                  // Update dashboard with restored data
+                  if (typeof window.updateMonthlyDataFromReports === 'function') {
+                    window.updateMonthlyDataFromReports();
+                  }
+                  if (typeof window.updateDashboardMetrics === 'function') {
+                    window.updateDashboardMetrics();
+                  }
+                } else {
+                  // Load existing reports from storage first (source of truth)
+                  await loadReportsFromStorage();
+                  
+                  // Only load from database if no reports found in storage
+                  if (uploadedReports.length === 0) {
+                    console.log('⚠️ No reports in storage, loading from database as fallback...');
+                await loadReportsFromDatabase();
+                await loadMonthlyPerformanceFromDatabase();
+                  }
+                  
+                  // Save to localStorage for next session
+                  window.saveUserDataToLocalStorage();
+                }
                 }
                 
                 // Run fast tests and cleanup asynchronously
@@ -2611,8 +2713,8 @@
                   }
                 } catch (error) {
                   console.log('⚠️ Authentication failed, using local storage:', error.message);
-                  // Try to create a test user for demonstration
-                  await createTestUser();
+                // Try to create a test user for demonstration
+                await createTestUser();
                 }
               }
             } else {
@@ -2647,7 +2749,7 @@
       }
 
       // Functions moved to earlier in the file to prevent scope issues
-      
+
       // Show sample data for demonstration
       function showSampleData() {
         console.log('Showing sample data for demonstration...');
@@ -2682,8 +2784,8 @@
           const elements = {
             'total-revenue': `R ${metrics.totalRevenue.toLocaleString()}`,
             'total-profit': `R ${metrics.totalProfit.toLocaleString()}`,
-            'fuel-volume': `${metrics.fuelVolume.toLocaleString()} L`,
-            'shop-revenue-per-liter': `R ${metrics.shopRevenuePerLiter.toFixed(2)}/L`,
+            'total-volume': `${metrics.fuelVolume.toLocaleString()} L`,
+            'shop-fuel-ratio': `R ${metrics.shopRevenuePerLiter.toFixed(2)}/L`,
             'fuel-margin': `R ${(metrics.totalRevenue * 0.36).toLocaleString()}`,
             'shop-profit': `R ${metrics.shopProfit.toLocaleString()}`
           };
@@ -2742,8 +2844,8 @@
           // Check if database is available
           if (!db || !db.isInitialized) {
             console.log('⚠️ Database not initialized, skipping database load');
-            return;
-          }
+                return;
+              }
           
           console.log('🔍 Loading reports from monthly_reports table...');
           
@@ -2757,13 +2859,13 @@
               console.log('No existing reports, loading from database');
             } else {
               console.log('Keeping existing reports, database reports will be added');
-            }
-            
+          }
+          
             // Clear monthly data to rebuild it
-            if (window.monthlyData) {
-              Object.keys(window.monthlyData).forEach(key => delete window.monthlyData[key]);
-            }
-            
+          if (window.monthlyData) {
+            Object.keys(window.monthlyData).forEach(key => delete window.monthlyData[key]);
+          }
+          
             // Process each report from database
             result.reports.forEach((report, index) => {
               console.log(`📄 Processing database report ${index + 1}/${result.reports.length}:`, report.file_name);
@@ -2800,23 +2902,23 @@
               );
               
               if (!existingReport) {
-                uploadedReports.push(reportData);
+              window.uploadedReports.push(reportData);
                 console.log('✅ Added database report:', reportData.name);
-              } else {
+          } else {
                 console.log('Database report already exists, skipping:', reportData.name);
-              }
+          }
             });
-            
-            // Update monthly data
-            updateMonthlyDataFromReports();
-            
+          
+          // Update monthly data
+          updateMonthlyDataFromReports();
+          
             console.log('✅ REPORTS LOADED SUCCESSFULLY FROM DATABASE');
-            console.log('📊 Total reports loaded:', uploadedReports.length);
-            console.log('📋 FINAL UPLOADEDREPORTS ARRAY:', uploadedReports);
-            
-            // Force update the display
+          console.log('📊 Total reports loaded:', uploadedReports.length);
+          console.log('📋 FINAL UPLOADEDREPORTS ARRAY:', uploadedReports);
+          
+          // Force update the display
             window.renderReportsHistory();
-            updateMostRecentReportDisplay();
+          updateMostRecentReportDisplay();
           } else {
             console.log('⚠️ No reports found in database or error:', result.error);
           }
@@ -2856,6 +2958,14 @@
           window.updateMostRecentReportDisplay();
         } else {
           console.error('❌ updateMostRecentReportDisplay function not found');
+        }
+        
+        // CRITICAL: Update dashboard metrics with the latest report data
+        if (typeof window.updateDashboardMetrics === 'function') {
+          console.log('🔄 Calling updateDashboardMetrics to populate dashboard...');
+          window.updateDashboardMetrics();
+        } else {
+          console.error('❌ updateDashboardMetrics function not found');
         }
       };
       
@@ -2972,6 +3082,9 @@
         // Update URL hash
         window.location.hash = '#overview';
         
+
+
+        
         console.log('✅ Navigated to overview section');
       }
 
@@ -3037,7 +3150,7 @@
                 
                 const fileName = `${result.reportId}_${reportData.fileName || 'report.pdf'}`;
                                  const { data: uploadData, error: uploadError } = await supabase.storage
-                   .from('reports')
+                   .from('fuel-reports')
                    .upload(fileName, reportData.pdfFile, {
                     cacheControl: '3600',
                     upsert: false
@@ -3231,6 +3344,70 @@
       // Make uploadedReports and monthlyData globally accessible
       window.uploadedReports = uploadedReports;
       window.monthlyData = monthlyData;
+
+      // Define critical functions early to prevent scope issues
+      function renderReportsHistory() {
+        console.log('🔄 COMPLETELY RECODED: Rendering reports history...');
+        
+        // Ensure global variables are initialized
+        if (!window.uploadedReports) {
+          console.log('⚠️ window.uploadedReports not initialized in renderReportsHistory, initializing now...');
+          window.uploadedReports = [];
+        }
+        
+        console.log('📊 Reports to render:', window.uploadedReports.length);
+        console.log('📋 UploadedReports array:', window.uploadedReports);
+        
+        // Clean up any duplicates before rendering
+        removeDuplicatesFromReports();
+        
+        if (window.uploadedReports.length === 0) {
+          const reportsList = document.getElementById('reports-list');
+          if (reportsList) {
+            reportsList.innerHTML = '<p class="muted">No reports found in fuel-reports bucket. Upload your first report to see it here.</p>';
+          }
+          console.log('📊 No reports to display');
+          return;
+        }
+        
+        const reportsList = document.getElementById('reports-list');
+        if (!reportsList) {
+          console.error('❌ reports-list element not found');
+          return;
+        }
+        
+        const reportsHTML = window.uploadedReports.map((report, index) => {
+          const monthKey = `${report.month}/${report.year}`;
+          const sizeKB = Math.round((report.size || 0) / 1024);
+          const uploadDate = new Date(report.lastModified || Date.now()).toLocaleDateString();
+          
+          return `
+            <div class="report-item" data-index="${index}">
+              <div class="report-header">
+                <h4>${report.name}</h4>
+                <div class="report-actions">
+                  <button class="btn btn-sm btn-primary" onclick="viewReport(${index})">View</button>
+                  <button class="btn btn-sm btn-danger" onclick="deleteReport(${index})">Delete</button>
+                </div>
+              </div>
+              <div class="report-details">
+                <span class="report-period">${monthKey}</span>
+                <span class="report-size">${sizeKB} KB</span>
+                <span class="report-date">${uploadDate}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+        
+        console.log('📋 Generated HTML for reports:', reportsHTML);
+        reportsList.innerHTML = reportsHTML;
+        
+        console.log('✅ REPORTS HISTORY RENDERED SUCCESSFULLY');
+        console.log('📊 Total reports displayed:', uploadedReports.length);
+      }
+
+      // Make renderReportsHistory globally accessible
+      window.renderReportsHistory = renderReportsHistory;
 
       // Use local backend server for PDF parsing
       const BACKEND_URL = 'http://localhost:8787';
@@ -3514,6 +3691,9 @@
             // Also save to local storage as backup
             addReportToHistory(file, data);
             console.log('✅ Report also saved to local storage as backup');
+            
+            // Save updated data to localStorage for persistence across sessions
+            window.saveUserDataToLocalStorage();
           } else {
             // Fallback to local storage
             console.log('⚠️ Database not available, saving to local storage only');
@@ -3523,6 +3703,9 @@
             updateAnalyticsSection(data);
             updateInsightsSection(data);
             updatePersonnelSection(data);
+            
+            // Save updated data to localStorage for persistence across sessions
+            window.saveUserDataToLocalStorage();
             
             analyzeStatus.textContent = 'Analysis complete! Data saved locally. (Database not available - user profile needs setup)';
           }
@@ -3645,42 +3828,7 @@
       // No sample monthly data - start with empty data
       // monthlyData will be populated when actual reports are uploaded
       
-      // COMPLETELY RECODED: Function to render reports history
-      window.renderReportsHistory = function renderReportsHistory() {
-        console.log('🔄 COMPLETELY RECODED: Rendering reports history...');
-        console.log('📊 Reports to render:', uploadedReports.length);
-        console.log('📋 UploadedReports array:', uploadedReports);
-        
-        if (uploadedReports.length === 0) {
-          reportsList.innerHTML = '<p class="muted">No reports found in reports bucket. Upload your first report to see it here.</p>';
-          console.log('📊 No reports to display');
-          return;
-        }
-        
-        // Create HTML for each report with detailed logging
-        const reportsHTML = uploadedReports.map((report, index) => {
-          console.log(`📄 Rendering report ${index + 1}/${uploadedReports.length}:`, report.name);
-          
-          return `
-            <div class="report-item" data-report-id="${report.id || index}">
-              <div class="report-info">
-                <div class="report-title">${report.name}</div>
-                <div class="report-date">${report.month}/${report.year} - Uploaded ${report.uploadDate}</div>
-              </div>
-              <div class="report-actions">
-                <button class="button secondary small" onclick="viewReport(${index})">View</button>
-                <button class="button secondary small" onclick="deleteReport(${index})">Delete</button>
-              </div>
-            </div>
-          `;
-        }).join('');
-        
-        console.log('📋 Generated HTML for reports:', reportsHTML);
-        reportsList.innerHTML = reportsHTML;
-        
-        console.log('✅ REPORTS HISTORY RENDERED SUCCESSFULLY');
-        console.log('📊 Total reports displayed:', uploadedReports.length);
-      }
+      // renderReportsHistory function moved to top of script to prevent scope issues
 
       // Safe scheduler: ensure renderReportsHistory runs once it is defined and DOM is ready
       window.queueRenderReportsHistory = function queueRenderReportsHistory(maxTries = 30) {
@@ -3697,9 +3845,9 @@
             } catch (err) {
               console.error('❌ Error during renderReportsHistory:', err);
             }
-            return;
-          }
-          
+          return;
+        }
+        
           if (attempt++ < maxTries) {
             const missing = [];
             if (typeof renderFunction !== 'function') missing.push('renderReportsHistory function');
@@ -3745,15 +3893,90 @@
           console.error('❌ renderReportsHistory function not available');
         }
       };
+
+      // Manual trigger function to force dashboard metrics update
+      window.forceUpdateDashboard = function() {
+        console.log('🔧 Manual trigger: forceUpdateDashboard called');
+        if (typeof window.updateDashboardMetrics === 'function') {
+          try {
+            window.updateDashboardMetrics();
+            console.log('✅ Manual dashboard update successful');
+          } catch (error) {
+            console.error('❌ Manual dashboard update failed:', error);
+          }
+        } else {
+          console.error('❌ updateDashboardMetrics function not available');
+        }
+      };
+
+      // Data persistence functions for cross-session data
+      window.saveUserDataToLocalStorage = function() {
+        try {
+          const userData = {
+            uploadedReports: window.uploadedReports || [],
+            monthlyData: window.monthlyData || {},
+            lastUpdated: new Date().toISOString(),
+            userId: window.supabaseClient?.currentUser?.id || 'anonymous'
+          };
+          
+          localStorage.setItem('fuelAnalytics_userData', JSON.stringify(userData));
+          console.log('💾 User data saved to localStorage:', userData);
+        } catch (error) {
+          console.error('❌ Error saving user data:', error);
+        }
+      };
+
+      window.loadUserDataFromLocalStorage = function() {
+        try {
+          const savedData = localStorage.getItem('fuelAnalytics_userData');
+          if (savedData) {
+            const userData = JSON.parse(savedData);
+            console.log('📂 Loading user data from localStorage:', userData);
+            
+            // Only load if it's recent (within 24 hours) and from the same user
+            const lastUpdated = new Date(userData.lastUpdated);
+            const now = new Date();
+            const hoursDiff = (now - lastUpdated) / (1000 * 60 * 60);
+            
+            if (hoursDiff < 24 && userData.uploadedReports && userData.uploadedReports.length > 0) {
+              window.uploadedReports = userData.uploadedReports;
+              window.monthlyData = userData.monthlyData;
+              console.log('✅ User data restored from localStorage');
+              return true;
+            } else {
+              console.log('⚠️ Saved data is too old or empty, not restoring');
+            }
+          }
+        } catch (error) {
+          console.error('❌ Error loading user data:', error);
+        }
+        return false;
+      };
+
+      window.clearUserDataFromLocalStorage = function() {
+        try {
+          localStorage.removeItem('fuelAnalytics_userData');
+          console.log('🗑️ User data cleared from localStorage');
+        } catch (error) {
+          console.error('❌ Error clearing user data:', error);
+        }
+      };
       
-      // Make renderReportsHistory globally accessible
-      window.renderReportsHistory = renderReportsHistory;
+      // renderReportsHistory is already globally accessible from line 3649
       
-      // Function to check for duplicate files
+      // Function to check for duplicate files - STRICT VERSION
       function isDuplicateFile(file) {
-        return uploadedReports.some(report => {
+        // Ensure global variables are initialized
+        if (!window.uploadedReports) {
+          console.log('⚠️ window.uploadedReports not initialized in isDuplicateFile, initializing now...');
+          window.uploadedReports = [];
+        }
+        return window.uploadedReports.some(report => {
           // Check exact name match
-          if (report.name === file.name) return true;
+          if (report.name === file.name) {
+            console.log('🚫 Duplicate found: Exact name match:', file.name);
+            return true;
+          }
           
           // Check if it's the same report by extracting key identifiers
           const reportName = report.name || '';
@@ -3773,20 +3996,58 @@
             
             // If same day, month, and year, it's likely the same report
             if (reportDay === fileDay && reportMonth.toLowerCase() === fileMonth.toLowerCase() && reportYear === fileYear) {
+              console.log('🚫 Duplicate found: Same date period:', `${fileDay} ${fileMonth} ${fileYear}`);
               return true;
             }
+          }
+          
+          // Check for same month/year combination (even if day is different)
+          if (report.month === file.month && report.year === file.year) {
+            console.log('🚫 Duplicate found: Same month/year:', `${file.month}/${file.year}`);
+            return true;
           }
           
           // Check for similar file sizes (within 1KB tolerance)
           if (Math.abs((report.size || 0) - (file.size || 0)) < 1024) {
             // Additional check: if both contain "Period Report" and similar dates
             if (reportName.includes('Period Report') && fileName.includes('Period Report')) {
+              console.log('🚫 Duplicate found: Similar size and Period Report:', file.name);
               return true;
             }
           }
           
           return false;
         });
+      }
+
+      // Function to remove duplicates from existing uploadedReports array
+      function removeDuplicatesFromReports() {
+        // Ensure global variables are initialized
+        if (!window.uploadedReports) {
+          console.log('⚠️ window.uploadedReports not initialized in removeDuplicatesFromReports, initializing now...');
+          window.uploadedReports = [];
+        }
+        
+        const uniqueReports = [];
+        const seen = new Set();
+        
+        for (const report of window.uploadedReports) {
+          // Create a unique key based on month/year and name
+          const key = `${report.month}/${report.year}_${report.name}`;
+          
+          if (!seen.has(key)) {
+            seen.add(key);
+            uniqueReports.push(report);
+          } else {
+            console.log('🗑️ Removing duplicate report:', report.name);
+          }
+        }
+        
+        if (uniqueReports.length !== window.uploadedReports.length) {
+          console.log(`🧹 Cleaned up duplicates: ${window.uploadedReports.length} → ${uniqueReports.length} reports`);
+          window.uploadedReports.length = 0; // Clear the array
+          window.uploadedReports.push(...uniqueReports); // Add unique reports back
+        }
       }
       
       // Function to add report to history
@@ -3948,7 +4209,7 @@
               // Clear dashboard metrics safely
       safeUpdateElement('total-revenue', 'R 0');
       safeUpdateElement('total-profit', 'R 0');
-      safeUpdateElement('fuel-volume', '0 L');
+      safeUpdateElement('total-volume', '0 L');
       safeUpdateElement('shop-fuel-ratio', 'R 0.00/L');
       }
       
@@ -3956,7 +4217,7 @@
       function updateDashboardMetricsFromReport(data) {
         safeUpdateElement('total-revenue', `R ${data.totalRevenue.toLocaleString()}`);
         safeUpdateElement('total-profit', `R ${data.totalProfit.toLocaleString()}`);
-        safeUpdateElement('fuel-volume', `${data.totalFuelVolume.toLocaleString()} L`);
+        safeUpdateElement('total-volume', `${data.totalFuelVolume.toLocaleString()} L`);
         safeUpdateElement('shop-fuel-ratio', `R ${data.shopFuelRatio}/L`);
         
         // Update the monthly overview title to show the month
@@ -4140,7 +4401,7 @@
         }
         
         // Optimized delete report function with button state management
-        async function deleteReport(reportId) {
+        window.deleteReport = async function deleteReport(reportId) {
           try {
             console.log('🗑️ Deleting report:', reportId);
             
@@ -4251,7 +4512,7 @@
         }
         
         // Optimized view report function with loading states
-        async function viewReport(reportIndexOrId) {
+        window.viewReport = async function viewReport(reportIndexOrId) {
           try {
             console.log('👁️ Viewing report with parameter:', reportIndexOrId);
             
@@ -4301,15 +4562,15 @@
             if (report.id && typeof report.id === 'string' && report.id.length > 10) {
               // This looks like a database ID, try to load from database
               console.log('🔄 Loading report from database...');
-              
-              if (!window.supabaseClient) {
-                showNotification('Database not initialized', 'error');
-                return;
-              }
-              
+            
+            if (!window.supabaseClient) {
+              showNotification('Database not initialized', 'error');
+              return;
+            }
+            
               const result = await window.supabaseClient.getMonthlyReportById(report.id);
-              
-              if (result.success && result.report) {
+            
+            if (result.success && result.report) {
                 console.log('✅ Report loaded from database:', result.report);
                 await loadReportData(result.report);
                 window.location.hash = '#overview';
@@ -4684,7 +4945,7 @@
               
               // Update dashboard elements
               const totalRevenueElement = document.getElementById('total-revenue');
-              const fuelVolumeElement = document.getElementById('fuel-volume');
+              const fuelVolumeElement = document.getElementById('total-volume');
               
               if (totalRevenueElement) {
                 totalRevenueElement.textContent = `R ${totalRevenue.toLocaleString()}`;
@@ -4732,7 +4993,7 @@
               
               // Update dashboard elements
               const totalRevenueElement = document.getElementById('total-revenue');
-              const fuelVolumeElement = document.getElementById('fuel-volume');
+              const fuelVolumeElement = document.getElementById('total-volume');
               
               if (totalRevenueElement) {
                 totalRevenueElement.textContent = `R ${totalRevenue.toLocaleString()}`;
@@ -5063,8 +5324,8 @@
           // Only load from database if no reports found in storage
           if (uploadedReports.length === 0) {
             console.log('⚠️ No reports in storage, loading from database as fallback...');
-            await loadReportsFromDatabase();
-            await loadMonthlyPerformanceFromDatabase();
+          await loadReportsFromDatabase();
+          await loadMonthlyPerformanceFromDatabase();
           }
           
           // 2. Update monthly overview with current month data
@@ -5287,7 +5548,7 @@
               <h1>Overview Over Time</h1>
               <p>Historical performance trends and monthly comparisons</p>
               <div class="overview-actions">
-                <button onclick="showMonthlyOverview()" class="button secondary">Back to Monthly Overview</button>
+              <button onclick="showMonthlyOverview()" class="button secondary">Back to Monthly Overview</button>
               </div>
             </div>
             <div class="timeline-container">
@@ -5907,7 +6168,7 @@
               <h1>Overview Over Time</h1>
               <p>Overall performance across all months</p>
               <div class="overview-actions">
-                <button onclick="showMonthlyOverview()" class="button secondary">Back to Monthly Overview</button>
+              <button onclick="showMonthlyOverview()" class="button secondary">Back to Monthly Overview</button>
               </div>
             </div>
             
@@ -6146,6 +6407,16 @@
         try {
           console.log('Loading reports from Supabase Storage...');
           
+          // CRITICAL FIX: Ensure global variables are initialized
+          if (!window.uploadedReports) {
+            console.log('⚠️ window.uploadedReports not initialized, initializing now...');
+            window.uploadedReports = [];
+          }
+          if (!window.monthlyData) {
+            console.log('⚠️ window.monthlyData not initialized, initializing now...');
+            window.monthlyData = {};
+          }
+          
           // Wait for Supabase to be available
           let attempts = 0;
           while (!window.supabase && attempts < 10) {
@@ -6171,9 +6442,9 @@
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDUwNTc5MSwiZXhwIjoyMDcwMDgxNzkxfQ.LAo0ngckbfAwplBvvQv9zhIzgvTT88H4ZKluHrV8Opo'
           );
           
-          // List files in the reports bucket (including subfolders)
+          // List files in the fuel-reports bucket (including subfolders)
           const { data: files, error } = await supabaseClient.storage
-            .from('reports')
+            .from('fuel-reports')
             .list('', {
               limit: 1000, // Increased limit to get all files
               offset: 0,
@@ -6198,7 +6469,7 @@
               // This might be a folder, try to list its contents
               try {
                 const { data: subFiles, error: subError } = await supabaseClient.storage
-                  .from('reports')
+                  .from('fuel-reports')
                   .list(item.name, {
                     limit: 1000,
                     offset: 0
@@ -6220,8 +6491,8 @@
           // Storage bucket is the source of truth, so if it's empty, clear everything
           if (allFiles.length === 0) {
             console.log('🚨 STORAGE BUCKET IS EMPTY - Clearing all reports and showing zero values');
-            uploadedReports.length = 0; // Clear the array
-            Object.keys(monthlyData).forEach(key => delete monthlyData[key]); // Clear monthly data
+            window.uploadedReports.length = 0; // Clear the array
+            Object.keys(window.monthlyData).forEach(key => delete window.monthlyData[key]); // Clear monthly data
             
             // Clear preserved data and show zero values
             clearPreservedData();
@@ -6229,7 +6500,7 @@
             
             // Update the reports list to show empty state
             if (reportsList) {
-              reportsList.innerHTML = '<p class="muted">No reports found in storage bucket. Upload your first report to see it here.</p>';
+              reportsList.innerHTML = '<p class="muted">No reports found in fuel-reports bucket. Upload your first report to see it here.</p>';
             }
             
             console.log('✅ All reports cleared - storage bucket is empty');
@@ -6238,14 +6509,14 @@
           
           // If we have files in storage, clear existing reports first (storage is source of truth)
           console.log('📁 Files found in storage, clearing existing reports and loading from storage...');
-          uploadedReports.length = 0; // Clear the array
-          Object.keys(monthlyData).forEach(key => delete monthlyData[key]); // Clear monthly data
+          window.uploadedReports.length = 0; // Clear the array
+          Object.keys(window.monthlyData).forEach(key => delete window.monthlyData[key]); // Clear monthly data
           
           // Convert storage files to report format
           for (const file of allFiles) {
             console.log('Processing file:', file.name, 'Type:', typeof file.name, 'Full file object:', file);
             
-            // For Supabase reports bucket: process ALL files as potential reports
+            // For Supabase fuel-reports bucket: process ALL files as potential reports
             // This ensures we capture all uploaded reports regardless of naming pattern
             const isReportFile = file.name && (
               file.name.endsWith('.pdf') || 
@@ -6253,7 +6524,7 @@
               file.metadata?.content_type === 'application/pdf' ||
               file.name.includes('Period Report') ||
               file.name.includes('Report') ||
-              // For development: assume any file in reports bucket is a report
+              // For development: assume any file in fuel-reports bucket is a report
               true
             );
             
@@ -6298,12 +6569,51 @@
                 }
               }
               
+              // Try to get actual report data from database first
+              let actualReportData = null;
+              if (window.supabaseClient && window.supabaseClient.supabase) {
+                try {
+                  console.log('🔍 Looking for database record for file:', originalFilename);
+                  const { data: dbReports, error: dbError } = await window.supabaseClient.supabase
+                    .from('monthly_reports')
+                    .select('*')
+                    .eq('file_name', originalFilename)
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+                  
+                  if (!dbError && dbReports && dbReports.length > 0) {
+                    const dbReport = dbReports[0];
+                    console.log('✅ Found database record with actual data:', dbReport);
+                    
+                    // Convert database format to expected format
+                    actualReportData = {
+                      period: { month: dbReport.report_month, year: dbReport.report_year },
+                      fuels: {
+                        diesel_ex: dbReport.fuel_data.find(f => f.fuel_type === 'diesel_ex') || { total_revenue_zar: 0, quantity_liters: 0 },
+                        vpower_95: dbReport.fuel_data.find(f => f.fuel_type === 'vpower_95') || { total_revenue_zar: 0, quantity_liters: 0 },
+                        vpower_diesel: dbReport.fuel_data.find(f => f.fuel_type === 'vpower_diesel') || { total_revenue_zar: 0, quantity_liters: 0 }
+                      },
+                      shop_lines: dbReport.shop_data.map(s => ({
+                        category: s.category,
+                        total_revenue_zar: s.total_revenue,
+                        quantity_units: s.quantity_units
+                      }))
+                    };
+                    console.log('📊 Converted database data:', actualReportData);
+                  } else {
+                    console.log('⚠️ No database record found for file:', originalFilename);
+                  }
+                } catch (error) {
+                  console.error('❌ Error fetching database record:', error);
+                }
+              }
+              
               const reportData = {
                 name: originalFilename,
                 month: month,
                 year: year,
                 uploadDate: new Date(file.created_at).toLocaleDateString(),
-                data: {
+                data: actualReportData || {
                   period: { month: month, year: year },
                   fuels: {
                     diesel_ex: { total_revenue_zar: 0, quantity_liters: 0 },
@@ -6317,7 +6627,7 @@
               };
               
               // Check if report already exists (from database) to avoid duplicates
-              const existingReport = uploadedReports.find(r => {
+              const existingReport = window.uploadedReports.find(r => {
                 // Exact name match
                 if (r.name === reportData.name) return true;
                 
@@ -6355,12 +6665,12 @@
               });
               
               if (!existingReport) {
-                uploadedReports.push(reportData);
-                console.log('Added report to array:', reportData.name);
+              window.uploadedReports.push(reportData);
+              console.log('Added report to array:', reportData.name);
               } else {
                 console.log('Report already exists, skipping:', reportData.name);
               }
-              console.log('Array length after processing:', uploadedReports.length);
+              console.log('Array length after processing:', window.uploadedReports.length);
             } else {
               console.log('File is not a PDF or has invalid format:', file.name, 'Metadata:', file.metadata);
             }
@@ -6442,8 +6752,8 @@
             overviewLink.click();
           }
         } else if (report.storagePath) {
-          // For storage reports, open PDF from reports bucket
-          console.log('📄 Opening PDF from reports bucket:', report.storagePath);
+          // For storage reports, open PDF from fuel-reports bucket
+          console.log('📄 Opening PDF from fuel-reports bucket:', report.storagePath);
           openPdfFromReportsBucket(report.storagePath, report.name);
         } else {
           console.error('❌ Report has no data or storage path:', report);
@@ -6454,7 +6764,7 @@
       // Function to open PDF from fuel-reports bucket
       async function openPdfFromReportsBucket(storagePath, fileName) {
         try {
-          console.log('🔄 Opening PDF from reports bucket:', storagePath);
+          console.log('🔄 Opening PDF from fuel-reports bucket:', storagePath);
           console.log('📄 File name:', fileName);
           
           if (!window.supabaseClient) {
@@ -6463,9 +6773,9 @@
             return;
           }
           
-          // Get signed URL from reports bucket
+          // Get signed URL from fuel-reports bucket
           const { data: signedUrl, error } = await window.supabaseClient.supabase.storage
-            .from('reports')
+            .from('fuel-reports')
             .createSignedUrl(storagePath, 60);
           
           if (error) {
@@ -6513,7 +6823,7 @@
           // Strategy 1: Try the original storage path
           console.log('Trying original path:', storagePath);
           const result1 = await supabaseClient.storage
-            .from('reports')
+            .from('fuel-reports')
             .createSignedUrl(storagePath, 60);
           
           if (!result1.error) {
@@ -6528,7 +6838,7 @@
             console.log('Trying with UUID folder:', pathWithFolder);
             
             const result2 = await supabaseClient.storage
-              .from('reports')
+              .from('fuel-reports')
               .createSignedUrl(pathWithFolder, 60);
             
             if (!result2.error) {
@@ -6540,7 +6850,7 @@
               // Strategy 3: List all files and find the correct path
               console.log('Trying to list all files to find correct path...');
               const { data: allFiles, error: listError } = await supabaseClient.storage
-                .from('reports')
+                .from('fuel-reports')
                 .list('', { limit: 1000 });
               
               if (!listError && allFiles) {
@@ -6554,7 +6864,7 @@
                 if (targetFile) {
                   console.log('Found file in listing:', targetFile.name);
                   const result3 = await supabaseClient.storage
-                    .from('reports')
+                    .from('fuel-reports')
                     .createSignedUrl(targetFile.name, 60);
                   
                   if (!result3.error) {
@@ -6601,20 +6911,20 @@
           console.log('📄 Deleting report:', report);
           
           try {
-            // Delete from reports bucket only
+            // Delete from fuel-reports bucket only
             if (window.supabaseClient && report.storagePath) {
-              console.log('🗑️ Deleting from reports bucket:', report.storagePath);
+              console.log('🗑️ Deleting from fuel-reports bucket:', report.storagePath);
               
               const { error: deleteError } = await window.supabaseClient.supabase.storage
-                .from('reports')
+                .from('fuel-reports')
                 .remove([report.storagePath]);
               
               if (deleteError) {
-                console.error('❌ Error deleting from reports bucket:', deleteError);
-                throw new Error('Failed to delete from reports bucket');
+                console.error('❌ Error deleting from fuel-reports bucket:', deleteError);
+                throw new Error('Failed to delete from fuel-reports bucket');
               }
               
-              console.log('✅ Report deleted from reports bucket');
+              console.log('✅ Report deleted from fuel-reports bucket');
             }
             
             // Remove from local array
@@ -6633,7 +6943,7 @@
             window.renderReportsHistory();
             updateMostRecentReportDisplay();
             
-            console.log('✅ Report deleted successfully from reports bucket');
+            console.log('✅ Report deleted successfully from fuel-reports bucket');
             
           } catch (error) {
             console.error('❌ Error deleting report:', error);
@@ -6645,9 +6955,19 @@
       // Function to refresh reports from storage
       // COMPLETELY RECODED: Function to refresh reports from storage
       window.refreshReportsFromStorage = async function() {
-        console.log('🔄 COMPLETELY RECODED: Refreshing reports from reports bucket...');
+        console.log('🔄 COMPLETELY RECODED: Refreshing reports from fuel-reports bucket...');
         
         try {
+          // CRITICAL FIX: Ensure global variables are initialized
+          if (!window.uploadedReports) {
+            console.log('⚠️ window.uploadedReports not initialized, initializing now...');
+            window.uploadedReports = [];
+          }
+          if (!window.monthlyData) {
+            console.log('⚠️ window.monthlyData not initialized, initializing now...');
+            window.monthlyData = {};
+          }
+          
           // Check and initialize Supabase client if not available
           if (!window.supabaseClient) {
             console.log('⚠️ Supabase client not available, attempting to initialize...');
@@ -6668,15 +6988,15 @@
           // CRITICAL FIX: Always clear existing reports when refreshing from storage
           // Storage bucket is the source of truth
           console.log('🧹 Clearing existing reports - storage is source of truth...');
-          uploadedReports.length = 0;
+          window.uploadedReports.length = 0;
           if (window.monthlyData) {
             Object.keys(window.monthlyData).forEach(key => delete window.monthlyData[key]);
           }
           
-          // Get files from reports bucket with detailed logging
-          console.log('🔍 Querying reports bucket with detailed logging...');
+          // Get files from fuel-reports bucket with detailed logging
+          console.log('🔍 Querying fuel-reports bucket with detailed logging...');
           const { data: reportFiles, error: reportError } = await window.supabaseClient.supabase.storage
-            .from('reports')
+            .from('fuel-reports')
             .list('', {
               limit: 100,
               offset: 0,
@@ -6684,16 +7004,16 @@
             });
           
           if (reportError) {
-            console.error('❌ Error accessing reports bucket:', reportError);
+            console.error('❌ Error accessing fuel-reports bucket:', reportError);
             return;
           }
           
-          console.log('📁 RAW FILES FROM REPORTS BUCKET:', reportFiles);
+          console.log('📁 RAW FILES FROM FUEL-REPORTS BUCKET:', reportFiles);
           console.log('📊 Number of files found:', reportFiles ? reportFiles.length : 0);
           
-          // Process each file from reports bucket
+          // Process each file from fuel-reports bucket
           if (reportFiles && reportFiles.length > 0) {
-            console.log(`📊 Processing ${reportFiles.length} files from reports bucket...`);
+            console.log(`📊 Processing ${reportFiles.length} files from fuel-reports bucket...`);
             
             for (let i = 0; i < reportFiles.length; i++) {
               const file = reportFiles[i];
@@ -6749,13 +7069,52 @@
                 console.log(`📅 Using creation date: ${month}/${year}`);
               }
               
+              // Try to get actual report data from database first
+              let actualReportData = null;
+              if (window.supabaseClient && window.supabaseClient.supabase) {
+                try {
+                  console.log('🔍 Looking for database record for file:', file.name);
+                  const { data: dbReports, error: dbError } = await window.supabaseClient.supabase
+                    .from('monthly_reports')
+                    .select('*')
+                    .eq('file_name', file.name)
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+                  
+                  if (!dbError && dbReports && dbReports.length > 0) {
+                    const dbReport = dbReports[0];
+                    console.log('✅ Found database record with actual data:', dbReport);
+                    
+                    // Convert database format to expected format
+                    actualReportData = {
+                      period: { month: dbReport.report_month, year: dbReport.report_year },
+                      fuels: {
+                        diesel_ex: dbReport.fuel_data.find(f => f.fuel_type === 'diesel_ex') || { total_revenue_zar: 0, quantity_liters: 0 },
+                        vpower_95: dbReport.fuel_data.find(f => f.fuel_type === 'vpower_95') || { total_revenue_zar: 0, quantity_liters: 0 },
+                        vpower_diesel: dbReport.fuel_data.find(f => f.fuel_type === 'vpower_diesel') || { total_revenue_zar: 0, quantity_liters: 0 }
+                      },
+                      shop_lines: dbReport.shop_data.map(s => ({
+                        category: s.category,
+                        total_revenue_zar: s.total_revenue,
+                        quantity_units: s.quantity_units
+                      }))
+                    };
+                    console.log('📊 Converted database data:', actualReportData);
+                  } else {
+                    console.log('⚠️ No database record found for file:', file.name);
+                  }
+                } catch (error) {
+                  console.error('❌ Error fetching database record:', error);
+                }
+              }
+              
               const reportData = {
                 id: file.id || `storage_${file.name}`,
                 name: file.name,
                 month: month,
                 year: year,
                 uploadDate: new Date(file.created_at).toLocaleDateString(),
-                data: {
+                data: actualReportData || {
                   period: { month: month, year: year },
                   fuels: {
                     diesel_ex: { total_revenue_zar: 0, quantity_liters: 0 },
@@ -6769,12 +7128,12 @@
                 lastModified: file.updated_at
               };
               
-              uploadedReports.push(reportData);
+              window.uploadedReports.push(reportData);
               console.log('✅ Added report:', reportData.name);
               console.log('📋 Report data:', reportData);
             }
           } else {
-            console.log('⚠️ No files found in reports bucket');
+            console.log('⚠️ No files found in fuel-reports bucket');
           }
           
           // Update monthly data
@@ -6795,12 +7154,12 @@
             console.warn('loadLatestReportData not available yet');
           }
           
-          console.log('✅ REPORTS REFRESHED SUCCESSFULLY FROM REPORTS BUCKET');
-          console.log('📊 Total reports loaded:', uploadedReports.length);
-          console.log('📋 FINAL UPLOADEDREPORTS ARRAY:', uploadedReports);
+          console.log('✅ REPORTS REFRESHED SUCCESSFULLY FROM FUEL-REPORTS BUCKET');
+          console.log('📊 Total reports loaded:', window.uploadedReports.length);
+          console.log('📋 FINAL UPLOADEDREPORTS ARRAY:', window.uploadedReports);
           
           // If no reports found, clear preserved data and show zero values
-          if (uploadedReports.length === 0) {
+          if (window.uploadedReports.length === 0) {
             console.log('📊 No reports found, clearing preserved data and showing zero values');
             clearPreservedData();
             showZeroValues();
@@ -6836,7 +7195,7 @@
           }
           
           const { data: storageFiles, error: storageError } = await window.supabaseClient.supabase.storage
-            .from('reports')
+            .from('fuel-reports')
             .list('', { limit: 1000 });
           
           if (storageError) {
@@ -6894,9 +7253,9 @@
           
           try {
             if (window.supabaseClient) {
-              // Clear from reports bucket only
+              // Clear from fuel-reports bucket only
               const { data: reportFiles, error: reportError } = await window.supabaseClient.supabase.storage
-                .from('reports')
+                .from('fuel-reports')
                 .list();
               
               if (!reportError && reportFiles && reportFiles.length > 0) {
@@ -6904,7 +7263,7 @@
                 for (const file of reportFiles) {
                   console.log('🗑️ Deleting file:', file.name);
                   await window.supabaseClient.supabase.storage
-                    .from('reports')
+                    .from('fuel-reports')
                     .remove([file.name]);
                 }
                 console.log('✅ All files deleted from reports bucket');
@@ -9953,7 +10312,7 @@
               await loadReportsFromStorage();
               // Only load from database if no reports found in storage
               if (uploadedReports.length === 0) {
-                await loadReportsFromDatabase();
+              await loadReportsFromDatabase();
               }
               // Also load the latest report data into the dashboard (guarded)
               if (typeof window.loadLatestReportData === 'function') {
@@ -9984,7 +10343,7 @@
             await loadReportsFromStorage();
             // Only load from database if no reports found in storage
             if (uploadedReports.length === 0) {
-              await loadReportsFromDatabase();
+            await loadReportsFromDatabase();
             }
             // Also load the latest report data into the dashboard (guarded)
             if (typeof window.loadLatestReportData === 'function') {

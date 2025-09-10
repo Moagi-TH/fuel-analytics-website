@@ -37,8 +37,7 @@ const STATIC_FILES = [
     '/utils/offlineManager.js',
     '/utils/accessibility.js',
     'https://cdn.jsdelivr.net/npm/chart.js',
-    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
-    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap'
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
 ];
 
 // Install event - cache static files
