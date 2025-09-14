@@ -1,4 +1,4 @@
-report the <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -1117,17 +1117,17 @@ report the <!DOCTYPE html>
     
     console.log('File display function available: testShowFiles()');
     
-    // IMMEDIATE TEST: Run this automatically after page load
-    setTimeout(function() {
-      console.log('🔄 AUTO-TESTING: Running automatic simple test...');
-      if (typeof window.testShowFiles === 'function') {
-        window.testShowFiles().then(() => {
-          console.log('✅ Auto-test completed');
-        }).catch(error => {
-          console.error('❌ Auto-test failed:', error);
-        });
-      }
-    }, 3000); // Run after 3 seconds
+    // DISABLED: Auto-testing function - removed to prevent auto-running view reports
+    // setTimeout(function() {
+    //   console.log('🔄 AUTO-TESTING: Running automatic simple test...');
+    //   if (typeof window.testShowFiles === 'function') {
+    //     window.testShowFiles().then(() => {
+    //       console.log('✅ Auto-test completed');
+    //     }).catch(error => {
+    //       console.error('❌ Auto-test failed:', error);
+    //     });
+    //   }
+    // }, 3000); // Run after 3 seconds
     
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
@@ -10435,8 +10435,8 @@ report the <!DOCTYPE html>
         updateRenovationMetrics();
       }
 
-      // Select renovation group
-      function selectRenovationGroup(group) {
+      // Select renovation group - EXPOSED TO GLOBAL SCOPE
+      window.selectRenovationGroup = function(group) {
         window.renovationState.selectedGroup = group;
         
         // Update UI
