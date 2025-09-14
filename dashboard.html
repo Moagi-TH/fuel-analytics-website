@@ -142,7 +142,104 @@
       }
     };
     
+    // EMERGENCY FALLBACK - These functions MUST be available
+    window.showReportsNow = window.showReportsNow || function() {
+      console.log('🚨 EMERGENCY: showReportsNow fallback triggered');
+      try {
+        const reportsList = document.getElementById('reports-list');
+        if (reportsList) {
+          if (window.uploadedReports && window.uploadedReports.length > 0) {
+            let html = '<h4>📊 Reports Found (' + window.uploadedReports.length + ')</h4>';
+            window.uploadedReports.forEach((report, index) => {
+              html += '<div class="report-item" style="padding: 15px; margin: 10px 0; background: rgba(15, 23, 42, 0.8); border-radius: 12px; border: 1px solid rgba(31, 41, 55, 0.3);">';
+              html += '<strong>📄 Report ' + (index + 1) + ':</strong> ' + (report.filename || report.name || 'Unknown') + '<br>';
+              html += '<small>📅 Date: ' + (report.date || 'Unknown') + '</small><br>';
+              html += '<small>💾 Size: ' + (report.size || 'Unknown') + ' bytes</small>';
+              html += '</div>';
+            });
+            reportsList.innerHTML = html;
+            console.log('✅ Emergency reports display created');
+          } else {
+            reportsList.innerHTML = '<p style="color: #94a3b8; text-align: center; padding: 20px;">No reports found. Try uploading a PDF report.</p>';
+          }
+        }
+      } catch (error) {
+        console.error('Emergency fallback failed:', error);
+      }
+    };
+
+    window.forceRefreshReports = window.forceRefreshReports || function() {
+      console.log('🚨 EMERGENCY: forceRefreshReports fallback triggered');
+      // Just trigger the display
+      window.showReportsNow();
+    };
+
+    window.testUpload = window.testUpload || function() {
+      console.log('🚨 EMERGENCY: testUpload fallback triggered');
+      const uploadButton = document.getElementById('upload-trigger');
+      const fileInput = document.getElementById('report-file-main');
+      console.log('Upload button exists:', !!uploadButton);
+      console.log('File input exists:', !!fileInput);
+      if (fileInput) {
+        fileInput.click();
+      }
+    };
+
+    console.log('✅ EMERGENCY FUNCTIONS LOADED: showReportsNow, forceRefreshReports, testUpload');
     console.log('✅ quickTest, forceRefreshReports, and testUpload functions loaded and ready!');
+  </script>
+
+  <!-- IMMEDIATE EXECUTION SCRIPT - Runs as soon as possible -->
+  <script>
+    // This runs immediately when the script loads
+    console.log('🚀 IMMEDIATE SCRIPT: Setting up emergency functions...');
+    
+    // Force define the functions immediately
+    if (!window.showReportsNow) {
+      window.showReportsNow = function() {
+        console.log('🚨 IMMEDIATE: showReportsNow called');
+        const reportsList = document.getElementById('reports-list');
+        if (reportsList && window.uploadedReports && window.uploadedReports.length > 0) {
+          let html = '<h4>📊 Reports (' + window.uploadedReports.length + ')</h4>';
+          window.uploadedReports.forEach((report, index) => {
+            html += '<div style="padding: 10px; margin: 5px 0; background: rgba(15, 23, 42, 0.8); border-radius: 8px;">';
+            html += '<strong>📄 Report ' + (index + 1) + ':</strong> ' + (report.filename || report.name || 'Unknown');
+            html += '</div>';
+          });
+          reportsList.innerHTML = html;
+          console.log('✅ Immediate reports display created');
+        } else {
+          console.log('⚠️ No reports data available yet');
+        }
+      };
+    }
+    
+    if (!window.forceRefreshReports) {
+      window.forceRefreshReports = function() {
+        console.log('🚨 IMMEDIATE: forceRefreshReports called');
+        window.showReportsNow();
+      };
+    }
+    
+    // Add a simple manual trigger
+    window.manualShowReports = function() {
+      console.log('🔧 MANUAL: Trying to show reports manually...');
+      if (window.uploadedReports) {
+        console.log('✅ Found uploadedReports:', window.uploadedReports.length);
+        window.showReportsNow();
+      } else {
+        console.log('⚠️ uploadedReports not found, trying to find it...');
+        // Try to find the reports in different ways
+        if (typeof uploadedReports !== 'undefined') {
+          window.uploadedReports = uploadedReports;
+          window.showReportsNow();
+        } else {
+          console.log('❌ No reports data found anywhere');
+        }
+      }
+    };
+    
+    console.log('✅ IMMEDIATE FUNCTIONS READY');
   </script>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -904,7 +1001,7 @@
           <div class="action-card">
             <h3>Upload New Report</h3>
             <p>Upload your monthly PDF report for analysis</p>
-            <button id="upload-trigger" class="button primary" onclick="console.log('Upload button clicked!'); if(typeof window.testUpload === 'function') { window.testUpload(); } else { console.log('testUpload not ready, trying fallback...'); document.getElementById('report-file-main').click(); }">Upload PDF</button>
+            <button id="upload-trigger" class="button primary" onclick="console.log('Upload button clicked!'); try { if(typeof window.testUpload === 'function') { window.testUpload(); } else { console.log('testUpload not ready, trying fallback...'); document.getElementById('report-file-main').click(); } } catch(e) { console.error('Upload error:', e); document.getElementById('report-file-main').click(); }">Upload PDF</button>
           </div>
           <div class="action-card">
             <h3>Manual Entry</h3>
