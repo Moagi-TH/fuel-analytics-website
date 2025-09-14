@@ -2824,14 +2824,14 @@
           <div class="renovation-planning">
             <div class="planning-header">
               <h3>Renovation Planning</h3>
-              <button id="add-renovation-item" class="button primary" onclick="console.log('Add button clicked!'); if(typeof showRenovationForm === 'function') { showRenovationForm(); } else { console.log('showRenovationForm not ready, trying fallback...'); document.getElementById('renovation-item-form').style.display = 'block'; }">+ Add Renovation Item</button>
+              <button id="add-renovation-item" class="button primary" onclick="console.log('Add button clicked!'); if(typeof window.showRenovationForm === 'function') { window.showRenovationForm(); } else { console.log('showRenovationForm not ready, trying fallback...'); document.getElementById('renovation-item-form').style.display = 'block'; }">+ Add Renovation Item</button>
             </div>
 
             <!-- Renovation Groups -->
             <div class="renovation-groups">
               <h4>Renovation Groups</h4>
               <div class="groups-grid">
-                <div class="group-card active" data-group="forecourt" onclick="try{selectRenovationGroup&&selectRenovationGroup('forecourt')}catch(e){console.error(e)}">
+                <div class="group-card active" data-group="forecourt" onclick="try{if(typeof selectRenovationGroup === 'function'){selectRenovationGroup('forecourt')}else{console.log('selectRenovationGroup not ready')}}catch(e){console.error(e)}">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="currentColor"/>
@@ -2840,7 +2840,7 @@
                   </div>
                   <div class="group-name">Forecourt</div>
                 </div>
-                <div class="group-card" data-group="pumps" onclick="try{selectRenovationGroup&&selectRenovationGroup('pumps')}catch(e){console.error(e)}">
+                <div class="group-card" data-group="pumps" onclick="try{if(typeof selectRenovationGroup === 'function'){selectRenovationGroup('pumps')}else{console.log('selectRenovationGroup not ready')}}catch(e){console.error(e)}">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -2848,7 +2848,7 @@
                   </div>
                   <div class="group-name">Pumps & Nozzles</div>
                 </div>
-                <div class="group-card" data-group="deli" onclick="try{selectRenovationGroup&&selectRenovationGroup('deli')}catch(e){console.error(e)}">
+                <div class="group-card" data-group="deli" onclick="try{if(typeof selectRenovationGroup === 'function'){selectRenovationGroup('deli')}else{console.log('selectRenovationGroup not ready')}}catch(e){console.error(e)}">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="currentColor"/>
@@ -2857,7 +2857,7 @@
                   </div>
                   <div class="group-name">Deli</div>
                 </div>
-                <div class="group-card" data-group="shop" onclick="try{selectRenovationGroup&&selectRenovationGroup('shop')}catch(e){console.error(e)}">
+                <div class="group-card" data-group="shop" onclick="try{if(typeof selectRenovationGroup === 'function'){selectRenovationGroup('shop')}else{console.log('selectRenovationGroup not ready')}}catch(e){console.error(e)}">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
@@ -2867,7 +2867,7 @@
                   </div>
                   <div class="group-name">Shop</div>
                 </div>
-                <div class="group-card" data-group="security" onclick="try{selectRenovationGroup&&selectRenovationGroup('security')}catch(e){console.error(e)}">
+                <div class="group-card" data-group="security" onclick="try{if(typeof selectRenovationGroup === 'function'){selectRenovationGroup('security')}else{console.log('selectRenovationGroup not ready')}}catch(e){console.error(e)}">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
@@ -2877,7 +2877,7 @@
                   </div>
                   <div class="group-name">IT & Security</div>
                 </div>
-                <div class="group-card" data-group="compliance" onclick="try{selectRenovationGroup&&selectRenovationGroup('compliance')}catch(e){console.error(e)}">
+                <div class="group-card" data-group="compliance" onclick="try{if(typeof selectRenovationGroup === 'function'){selectRenovationGroup('compliance')}else{console.log('selectRenovationGroup not ready')}}catch(e){console.error(e)}">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -2889,7 +2889,7 @@
                   </div>
                   <div class="group-name">Compliance</div>
                 </div>
-                <div class="group-card" data-group="other" onclick="try{selectRenovationGroup&&selectRenovationGroup('other')}catch(e){console.error(e)}">
+                <div class="group-card" data-group="other" onclick="try{if(typeof selectRenovationGroup === 'function'){selectRenovationGroup('other')}else{console.log('selectRenovationGroup not ready')}}catch(e){console.error(e)}">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -3035,8 +3035,8 @@
 
               <!-- Form Actions -->
               <div class="form-actions">
-                <button id="save-renovation-item" class="button primary" onclick="console.log('Save button clicked!'); if(typeof saveRenovationItem === 'function') { saveRenovationItem(); } else { console.log('saveRenovationItem not ready, trying fallback...'); alert('Save function not ready yet. Please wait for page to fully load.'); }">Save Item</button>
-                <button id="cancel-renovation-item" class="button secondary" onclick="console.log('Cancel button clicked!'); if(typeof hideRenovationForm === 'function') { hideRenovationForm(); } else { console.log('hideRenovationForm not ready, trying fallback...'); document.getElementById('renovation-item-form').style.display = 'none'; }">Cancel</button>
+                <button id="save-renovation-item" class="button primary" onclick="console.log('Save button clicked!'); if(typeof window.saveRenovationItem === 'function') { window.saveRenovationItem(); } else { console.log('saveRenovationItem not ready, trying fallback...'); alert('Save function not ready yet. Please wait for page to fully load.'); }">Save Item</button>
+                <button id="cancel-renovation-item" class="button secondary" onclick="console.log('Cancel button clicked!'); if(typeof window.hideRenovationForm === 'function') { window.hideRenovationForm(); } else { console.log('hideRenovationForm not ready, trying fallback...'); document.getElementById('renovation-item-form').style.display = 'none'; }">Cancel</button>
               </div>
             </div>
 
@@ -3124,7 +3124,7 @@
             <div class="renovation-visualizations">
               <div class="visualizations-header">
                 <h3>Financial Analysis & Projections</h3>
-                <button id="refresh-charts" class="button secondary" onclick="refreshRenovationCharts()">
+                <button id="refresh-charts" class="button secondary" onclick="if(typeof refreshRenovationCharts === 'function') { refreshRenovationCharts(); } else { console.log('refreshRenovationCharts not ready'); }">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 8px;">
                     <path d="M1 4V10H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     <path d="M23 20V14H17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
