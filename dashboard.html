@@ -263,7 +263,7 @@
                   <button onclick="window.deleteSupabaseFile('${fileName}')" class="button" style="background: #ef4444; border-color: #ef4444; font-size: 12px; padding: 8px 16px;">
                     🗑️ Delete
                   </button>
-                  <button onclick="window.downloadSupabaseFile('${fileName}')" class="button secondary" style="background: #10b981; border-color: #10b981; font-size: 12px; padding: 8px 16px;">
+                  <button onclick="window.downloadSupabaseFile('${fileName}')" class="button secondary" style="background: #4a9eff; border-color: #4a9eff; font-size: 12px; padding: 8px 16px;">
                     📥 Download
                   </button>
                 </div>
@@ -5316,25 +5316,48 @@
           const uploadDate = new Date(report.lastModified || Date.now()).toLocaleDateString();
           
           return `
-            <div class="report-item" data-index="${index}">
-              <div class="report-header">
-                <h4>${report.name}</h4>
-                <div class="report-actions">
-                  <button class="btn btn-sm btn-primary" onclick="viewReport(${index})">View</button>
-                  <button class="btn btn-sm btn-danger" onclick="deleteReport(${index})">Delete</button>
-                </div>
+            <div class="info-card" style="margin-bottom: 15px;">
+              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                <h5 style="margin: 0; color: #4a9eff;">📄 ${report.name}</h5>
+                <span class="badge" style="background: #4a9eff; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">☁️ Local</span>
               </div>
-              <div class="report-details">
-                <span class="report-period">${monthKey}</span>
-                <span class="report-size">${sizeKB} KB</span>
-                <span class="report-date">${uploadDate}</span>
+              
+              <div style="margin-bottom: 12px;">
+                <p style="color: #888; font-size: 13px; margin: 4px 0;">📅 Uploaded: ${uploadDate}</p>
+                <p style="color: #888; font-size: 13px; margin: 4px 0;">📊 Size: ${sizeKB} KB</p>
+                <p style="color: #888; font-size: 13px; margin: 4px 0;">📋 Period: ${monthKey}</p>
+              </div>
+              
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button onclick="viewReport(${index})" class="button secondary" style="font-size: 12px; padding: 8px 16px;">
+                  📖 View Report
+                </button>
+                <button onclick="deleteReport(${index})" class="button" style="background: #ef4444; border-color: #ef4444; font-size: 12px; padding: 8px 16px;">
+                  🗑️ Delete
+                </button>
+                <button onclick="downloadReport(${index})" class="button secondary" style="background: #4a9eff; border-color: #4a9eff; font-size: 12px; padding: 8px 16px;">
+                  📥 Download
+                </button>
+              </div>
+              
+              <div style="color: #666; font-size: 11px; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
+                Report #${index + 1} • Period: ${monthKey}
               </div>
             </div>
           `;
         }).join('');
         
-        console.log('📋 Generated HTML for reports:', reportsHTML);
-        reportsList.innerHTML = reportsHTML;
+        // Wrap in form-section structure to match the main showReportsNow function
+        const wrappedHTML = `
+          <div class="form-section">
+            <h4>All Reports (${window.uploadedReports.length})</h4>
+            <p class="form-hint">View and manage your uploaded reports from local storage</p>
+            ${reportsHTML}
+          </div>
+        `;
+        
+        console.log('📋 Generated HTML for reports:', wrappedHTML);
+        reportsList.innerHTML = wrappedHTML;
         
         console.log('✅ REPORTS HISTORY RENDERED SUCCESSFULLY');
         console.log('📊 Total reports displayed:', uploadedReports.length);
