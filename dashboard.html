@@ -2953,6 +2953,113 @@
         }
       };
 
+      // Test function for renovation buttons
+      window.testRenovationButtons = function() {
+        console.log('🧪 Testing renovation buttons...');
+        
+        // Test 1: Check if elements exist
+        const addButton = document.getElementById('add-renovation-item');
+        const saveButton = document.getElementById('save-renovation-item');
+        const cancelButton = document.getElementById('cancel-renovation-item');
+        
+        console.log('Add button exists:', !!addButton);
+        console.log('Save button exists:', !!saveButton);
+        console.log('Cancel button exists:', !!cancelButton);
+        
+        // Test 2: Check if functions exist
+        console.log('showRenovationForm exists:', typeof showRenovationForm === 'function');
+        console.log('saveRenovationItem exists:', typeof saveRenovationItem === 'function');
+        console.log('hideRenovationForm exists:', typeof hideRenovationForm === 'function');
+        
+        // Test 3: Check renovation state
+        console.log('Renovation state exists:', !!window.renovationState);
+        console.log('Renovation state items:', window.renovationState?.items?.length || 0);
+        
+        // Test 4: Try to trigger the add button
+        if (addButton) {
+          console.log('🔘 Triggering add button click...');
+          addButton.click();
+        }
+        
+        return {
+          elementsExist: { addButton: !!addButton, saveButton: !!saveButton, cancelButton: !!cancelButton },
+          functionsExist: { showRenovationForm: typeof showRenovationForm === 'function', saveRenovationItem: typeof saveRenovationItem === 'function', hideRenovationForm: typeof hideRenovationForm === 'function' },
+          renovationState: !!window.renovationState
+        };
+      };
+
+      // Test function for PDF upload
+      window.testPDFUpload = function() {
+        console.log('🧪 Testing PDF upload functionality...');
+        
+        // Check if upload elements exist
+        const uploadInput = document.getElementById('report-input');
+        const uploadButton = document.getElementById('upload-report-btn');
+        
+        console.log('Upload input exists:', !!uploadInput);
+        console.log('Upload button exists:', !!uploadButton);
+        
+        // Check if upload functions exist
+        console.log('handleFileUpload exists:', typeof handleFileUpload === 'function');
+        console.log('processReportFile exists:', typeof processReportFile === 'function');
+        
+        // Check if Supabase is available
+        console.log('Supabase client exists:', !!window.supabaseClient);
+        console.log('Database client exists:', !!window.fuelAnalyticsDB);
+        
+        return {
+          elementsExist: { uploadInput: !!uploadInput, uploadButton: !!uploadButton },
+          functionsExist: { handleFileUpload: typeof handleFileUpload === 'function', processReportFile: typeof processReportFile === 'function' },
+          servicesAvailable: { supabaseClient: !!window.supabaseClient, databaseClient: !!window.fuelAnalyticsDB }
+        };
+      };
+
+      // Test function for reports viewing
+      window.testReportsViewing = function() {
+        console.log('🧪 Testing reports viewing functionality...');
+        
+        // Check if report elements exist
+        const reportsList = document.getElementById('reports-list');
+        const viewHistoryBtn = document.getElementById('view-history-btn');
+        
+        console.log('Reports list exists:', !!reportsList);
+        console.log('View history button exists:', !!viewHistoryBtn);
+        
+        // Check if report functions exist
+        console.log('renderReportsHistory exists:', typeof window.renderReportsHistory === 'function');
+        console.log('loadReportsFromStorage exists:', typeof loadReportsFromStorage === 'function');
+        console.log('viewReportHistory exists:', typeof viewReportHistory === 'function');
+        
+        // Check if reports data exists
+        console.log('Uploaded reports count:', window.uploadedReports?.length || 0);
+        
+        return {
+          elementsExist: { reportsList: !!reportsList, viewHistoryBtn: !!viewHistoryBtn },
+          functionsExist: { renderReportsHistory: typeof window.renderReportsHistory === 'function', loadReportsFromStorage: typeof loadReportsFromStorage === 'function', viewReportHistory: typeof viewReportHistory === 'function' },
+          dataAvailable: { reportsCount: window.uploadedReports?.length || 0 }
+        };
+      };
+
+      // Comprehensive test function
+      window.testAllButtons = function() {
+        console.log('🧪 Running comprehensive button tests...');
+        
+        const renovationTest = window.testRenovationButtons();
+        const pdfTest = window.testPDFUpload();
+        const reportsTest = window.testReportsViewing();
+        
+        console.log('📊 Test Results:');
+        console.log('Renovation buttons:', renovationTest);
+        console.log('PDF upload:', pdfTest);
+        console.log('Reports viewing:', reportsTest);
+        
+        return {
+          renovation: renovationTest,
+          pdfUpload: pdfTest,
+          reportsViewing: reportsTest
+        };
+      };
+
       async function createTestUser() {
         try {
           console.log('Attempting to create test user...');
@@ -8503,15 +8610,36 @@
 
       // Set up renovation event listeners
       function setupRenovationEventListeners() {
+        console.log('🔧 Setting up renovation event listeners...');
+        
         // Project settings
-        document.getElementById('project-currency').addEventListener('change', updateProjectSettings);
-        document.getElementById('discount-rate').addEventListener('change', updateProjectSettings);
-        document.getElementById('tax-rate').addEventListener('change', updateProjectSettings);
-        document.getElementById('vat-rate').addEventListener('change', updateProjectSettings);
-        document.getElementById('project-horizon').addEventListener('change', updateProjectSettings);
+        const currencyEl = document.getElementById('project-currency');
+        const discountEl = document.getElementById('discount-rate');
+        const taxEl = document.getElementById('tax-rate');
+        const vatEl = document.getElementById('vat-rate');
+        const horizonEl = document.getElementById('project-horizon');
+        
+        if (currencyEl) currencyEl.addEventListener('change', updateProjectSettings);
+        if (discountEl) discountEl.addEventListener('change', updateProjectSettings);
+        if (taxEl) taxEl.addEventListener('change', updateProjectSettings);
+        if (vatEl) vatEl.addEventListener('change', updateProjectSettings);
+        if (horizonEl) horizonEl.addEventListener('change', updateProjectSettings);
 
-        // Add renovation item button
-        document.getElementById('add-renovation-item').addEventListener('click', showRenovationForm);
+        // Add renovation item button - with multiple fallbacks
+        const addButton = document.getElementById('add-renovation-item');
+        if (addButton) {
+          console.log('✅ Add renovation item button found, adding event listener');
+          addButton.addEventListener('click', function(e) {
+            console.log('🔘 Add renovation item button clicked!');
+            e.preventDefault();
+            showRenovationForm();
+          });
+          
+          // Also add inline onclick as backup
+          addButton.setAttribute('onclick', 'console.log("Backup onclick triggered"); showRenovationForm();');
+        } else {
+          console.error('❌ Add renovation item button not found!');
+        }
 
         // Group selection
         document.querySelectorAll('.group-card').forEach(card => {
@@ -8528,9 +8656,31 @@
         // Spread type change
         document.getElementById('spread-type').addEventListener('change', handleSpreadTypeChange);
 
-        // Form actions
-        document.getElementById('save-renovation-item').addEventListener('click', saveRenovationItem);
-        document.getElementById('cancel-renovation-item').addEventListener('click', hideRenovationForm);
+        // Form actions - with error checking
+        const saveButton = document.getElementById('save-renovation-item');
+        const cancelButton = document.getElementById('cancel-renovation-item');
+        
+        if (saveButton) {
+          console.log('✅ Save renovation item button found, adding event listener');
+          saveButton.addEventListener('click', function(e) {
+            console.log('🔘 Save renovation item button clicked!');
+            e.preventDefault();
+            saveRenovationItem();
+          });
+        } else {
+          console.error('❌ Save renovation item button not found!');
+        }
+        
+        if (cancelButton) {
+          console.log('✅ Cancel renovation item button found, adding event listener');
+          cancelButton.addEventListener('click', function(e) {
+            console.log('🔘 Cancel renovation item button clicked!');
+            e.preventDefault();
+            hideRenovationForm();
+          });
+        } else {
+          console.error('❌ Cancel renovation item button not found!');
+        }
       }
 
       // Update project settings
@@ -9875,6 +10025,50 @@
           setupDataIntegration();
         }, 100);
       });
+      
+      // Fallback initialization when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+          console.log('🔄 DOM loaded, setting up renovation system as fallback...');
+          setTimeout(() => {
+            setupRenovationEventListeners();
+            if (typeof window.renovationState === 'undefined') {
+              window.renovationState = {
+                items: [],
+                selectedGroup: 'forecourt',
+                currentProject: null,
+                projectSettings: {
+                  currency: 'ZAR',
+                  discountRate: 12,
+                  taxRate: 28,
+                  vatRate: 15,
+                  horizon: 120
+                }
+              };
+            }
+          }, 500);
+        });
+      } else {
+        // DOM already loaded
+        console.log('🔄 DOM already loaded, setting up renovation system immediately...');
+        setTimeout(() => {
+          setupRenovationEventListeners();
+          if (typeof window.renovationState === 'undefined') {
+            window.renovationState = {
+              items: [],
+              selectedGroup: 'forecourt',
+              currentProject: null,
+              projectSettings: {
+                currency: 'ZAR',
+                discountRate: 12,
+                taxRate: 28,
+                vatRate: 15,
+                horizon: 120
+              }
+            };
+          }
+        }, 500);
+      }
       
       // ========================================
       // DATA INTEGRATION SYSTEM
