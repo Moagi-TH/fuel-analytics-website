@@ -255,32 +255,41 @@
               
               console.log('✅ Processed', window.uploadedReports.length, 'PDF reports');
               
-              // Update the reports list display
-              const reportsList = document.getElementById('reports-list');
-              if (reportsList && window.uploadedReports.length > 0) {
-                let html = '<h4>📋 Reports from Supabase (' + window.uploadedReports.length + ')</h4>';
-                
-                window.uploadedReports.forEach((report, index) => {
-                  html += `
-                    <div class="report-item" style="border: 1px solid #444; padding: 15px; margin: 10px 0; border-radius: 8px; background: #2a2a2a;">
-                      <h5 style="color: #4a9eff; margin: 0 0 8px 0;">📄 ${report.filename}</h5>
-                      <p style="color: #888; font-size: 12px; margin: 4px 0;">
-                        📅 Uploaded: ${new Date(report.uploadDate).toLocaleString()}
-                      </p>
-                      <p style="color: #4a9eff; font-size: 11px; margin: 4px 0;">☁️ Supabase Storage</p>
-                      <button onclick="window.openPDFFromStorage('${report.storagePath}', '${report.filename}')" 
-                              style="background: #4a9eff; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-top: 8px;">
-                        View PDF
-                      </button>
-                    </div>
-                  `;
-                });
-                
-                reportsList.innerHTML = html;
+              // Use the existing renderReportsHistory function to display reports
+              if (typeof window.renderReportsHistory === 'function') {
+                console.log('🔄 Using existing renderReportsHistory function...');
+                window.renderReportsHistory();
                 alert('✅ Successfully loaded ' + window.uploadedReports.length + ' reports from Supabase!');
-              } else if (reportsList) {
-                reportsList.innerHTML = '<p style="color: #888; text-align: center; padding: 20px;">No PDF reports found in Supabase storage.</p>';
-                alert('📋 No reports found in Supabase storage. Upload a PDF first.');
+              } else {
+                console.warn('⚠️ renderReportsHistory not available, using fallback display');
+                
+                // Fallback display
+                const reportsList = document.getElementById('reports-list');
+                if (reportsList && window.uploadedReports.length > 0) {
+                  let html = '<h4>📋 Reports from Supabase (' + window.uploadedReports.length + ')</h4>';
+                  
+                  window.uploadedReports.forEach((report, index) => {
+                    html += `
+                      <div class="report-item" style="border: 1px solid #444; padding: 15px; margin: 10px 0; border-radius: 8px; background: #2a2a2a;">
+                        <h5 style="color: #4a9eff; margin: 0 0 8px 0;">📄 ${report.filename}</h5>
+                        <p style="color: #888; font-size: 12px; margin: 4px 0;">
+                          📅 Uploaded: ${new Date(report.uploadDate).toLocaleString()}
+                        </p>
+                        <p style="color: #4a9eff; font-size: 11px; margin: 4px 0;">☁️ Supabase Storage</p>
+                        <button onclick="window.openPDFFromStorage('${report.storagePath}', '${report.filename}')" 
+                                style="background: #4a9eff; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-top: 8px;">
+                          View PDF
+                        </button>
+                      </div>
+                    `;
+                  });
+                  
+                  reportsList.innerHTML = html;
+                  alert('✅ Successfully loaded ' + window.uploadedReports.length + ' reports from Supabase!');
+                } else if (reportsList) {
+                  reportsList.innerHTML = '<p style="color: #888; text-align: center; padding: 20px;">No PDF reports found in Supabase storage.</p>';
+                  alert('📋 No reports found in Supabase storage. Upload a PDF first.');
+                }
               }
               
             } catch (error) {
@@ -749,10 +758,89 @@
       }
     };
     
+    // Debug function specifically for View Reports
+    window.debugViewReports = async function() {
+      console.log('🔍 DEBUG: Testing View Reports function step by step...');
+      
+      // Step 1: Check if reports-history section exists
+      const reportsHistory = document.getElementById('reports-history');
+      console.log('1. Reports history section exists:', !!reportsHistory);
+      
+      // Step 2: Check if reports-list exists
+      const reportsList = document.getElementById('reports-list');
+      console.log('2. Reports list element exists:', !!reportsList);
+      
+      // Step 3: Test Supabase client initialization
+      console.log('3. Testing Supabase client...');
+      const clientInit = window.initializeSupabaseClient();
+      console.log('   Client initialized:', clientInit);
+      
+      if (!clientInit) {
+        alert('❌ DEBUG: Supabase client failed to initialize');
+        return;
+      }
+      
+      // Step 4: Test bucket access
+      console.log('4. Testing bucket access...');
+      try {
+        const { data: files, error } = await window.supabaseClient.supabase.storage
+          .from('fuel-reports')
+          .list('', { limit: 5 });
+          
+        if (error) {
+          console.error('   Bucket error:', error);
+          alert('❌ DEBUG: Bucket access failed - ' + error.message);
+          return;
+        }
+        
+        console.log('   Files in bucket:', files.length);
+        console.log('   File details:', files);
+        
+        // Step 5: Test renderReportsHistory function
+        console.log('5. Testing renderReportsHistory function...');
+        const renderExists = typeof window.renderReportsHistory === 'function';
+        console.log('   renderReportsHistory exists:', renderExists);
+        
+        // Step 6: Run the actual showReportsNow function
+        console.log('6. Running showReportsNow function...');
+        await window.showReportsNow();
+        
+        const debugResults = {
+          reportsHistoryExists: !!reportsHistory,
+          reportsListExists: !!reportsList,
+          supabaseClientInit: clientInit,
+          bucketAccess: !error,
+          filesInBucket: files.length,
+          renderFunctionExists: renderExists,
+          uploadedReportsCount: window.uploadedReports ? window.uploadedReports.length : 0
+        };
+        
+        console.log('🎯 DEBUG RESULTS:', debugResults);
+        
+        const debugMsg = `🔍 View Reports Debug Results:\n` +
+                        `📋 Reports History Section: ${debugResults.reportsHistoryExists ? '✅' : '❌'}\n` +
+                        `📋 Reports List Element: ${debugResults.reportsListExists ? '✅' : '❌'}\n` +
+                        `☁️ Supabase Client: ${debugResults.supabaseClientInit ? '✅' : '❌'}\n` +
+                        `📦 Bucket Access: ${debugResults.bucketAccess ? '✅' : '❌'}\n` +
+                        `📄 Files in Bucket: ${debugResults.filesInBucket}\n` +
+                        `🔧 Render Function: ${debugResults.renderFunctionExists ? '✅' : '❌'}\n` +
+                        `📊 Reports Loaded: ${debugResults.uploadedReportsCount}`;
+        
+        alert(debugMsg);
+        return debugResults;
+        
+      } catch (error) {
+        console.error('❌ DEBUG: Error during testing:', error);
+        alert('❌ DEBUG: Error - ' + error.message);
+        return false;
+      }
+    };
+    
     console.log('✅ CRITICAL FUNCTIONS: All essential functions defined');
-    console.log('🔧 Available test functions: testAllButtonsNow(), testReportManagement(), testSupabaseIntegration(), testUploadAndRetrieval()');
+    console.log('🔧 Available test functions: testAllButtonsNow(), testReportManagement(), testSupabaseIntegration(), testUploadAndRetrieval(), debugViewReports()');
     console.log('🏗️ Available renovation functions: initializeRenovationForm(), loadRenovationItems()');
     console.log('📊 Available Supabase functions: initializeSupabaseClient(), testSupabaseConnection()');
+    console.log('🔍 Available debug functions: debugViewReports()');
     
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
