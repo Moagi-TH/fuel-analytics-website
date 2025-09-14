@@ -229,23 +229,37 @@ report the <!DOCTYPE html>
           return;
         }
         
-        // FORCE DISPLAY: Show files regardless of any processing
+        // STYLED TO MATCH ENTER DATA FORM
         let html = `
-          <div style="background: #0f172a; padding: 20px; border-radius: 8px; margin: 10px 0;">
-            <h3 style="color: #60a5fa; margin: 0 0 20px 0;">📁 Supabase Files (${files.length})</h3>
+          <div class="form-section">
+            <h4>All Reports (${files.length})</h4>
+            <p class="form-hint">Manage your uploaded reports from Supabase storage</p>
         `;
         
         if (files.length === 0) {
-          html += '<p style="color: #94a3b8;">No files in storage</p>';
+          html += '<div class="info-card"><p>No reports found in Supabase storage. Upload a PDF first.</p></div>';
         } else {
           files.forEach((file, index) => {
+            const fileName = file.name || 'Unknown File';
+            const fileDate = file.created_at || 'Unknown Date';
+            
             html += `
-              <div style="background: #1e293b; border: 1px solid #334155; padding: 15px; margin: 10px 0; border-radius: 6px;">
-                <h4 style="color: #e2e8f0; margin: 0 0 10px 0;">${file.name || 'Unknown'}</h4>
-                <p style="color: #94a3b8; font-size: 12px; margin: 5px 0;">Created: ${file.created_at || 'Unknown'}</p>
-                <div style="margin-top: 10px;">
-                  <button onclick="window.viewFileInNewTab('${file.name}')" style="background: #3b82f6; color: white; border: none; padding: 8px 12px; margin: 2px; border-radius: 4px; cursor: pointer;">View</button>
-                  <button onclick="window.deleteSupabaseFile('${file.name}')" style="background: #ef4444; color: white; border: none; padding: 8px 12px; margin: 2px; border-radius: 4px; cursor: pointer;">Delete</button>
+              <div class="info-card" style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                  <h5 style="margin: 0; color: var(--primary-color);">📄 ${fileName}</h5>
+                  <span class="status-badge" style="background: var(--primary-color); color: white;">Supabase</span>
+                </div>
+                <p style="color: #888; font-size: 13px; margin: 5px 0;">📅 Uploaded: ${new Date(fileDate).toLocaleString()}</p>
+                <div style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;">
+                  <button onclick="window.viewFileInNewTab('${fileName}')" class="button secondary" style="font-size: 12px; padding: 6px 12px;">
+                    📖 View File
+                  </button>
+                  <button onclick="window.deleteSupabaseFile('${fileName}')" class="button" style="background: #ef4444; font-size: 12px; padding: 6px 12px;">
+                    🗑️ Delete
+                  </button>
+                  <button onclick="window.downloadSupabaseFile('${fileName}')" class="button" style="background: #10b981; font-size: 12px; padding: 6px 12px;">
+                    📥 Download
+                  </button>
                 </div>
               </div>
             `;
@@ -1066,19 +1080,27 @@ report the <!DOCTYPE html>
         if (reportsHistory) reportsHistory.style.display = 'block';
         
         if (reportsList) {
-          let html = '<h3 style="color: lime;">🧪 TEST: Files from Supabase</h3>';
+          let html = `
+            <div class="form-section">
+              <h4>🧪 TEST: Files from Supabase (${files.length})</h4>
+              <p class="form-hint">Auto-test display - same styling as Enter Data form</p>
+          `;
           
           if (files.length === 0) {
-            html += '<p style="color: red;">No files found</p>';
+            html += '<div class="info-card"><p>No files found in Supabase storage</p></div>';
           } else {
-            files.forEach(file => {
-              html += `<div style="border: 2px solid lime; padding: 10px; margin: 5px; background: #001100;">
-                        <strong style="color: lime;">${file.name || 'No name'}</strong><br>
-                        <small style="color: #888;">Date: ${file.created_at || 'No date'}</small>
-                      </div>`;
+            files.forEach((file, index) => {
+              html += `
+                <div class="info-card" style="margin-bottom: 10px;">
+                  <h5 style="margin: 0 0 8px 0; color: var(--primary-color);">📄 ${file.name || 'No name'}</h5>
+                  <p style="color: #888; font-size: 12px; margin: 0;">📅 ${file.created_at || 'No date'}</p>
+                  <span class="status-badge" style="background: #10b981; color: white; margin-top: 8px; display: inline-block;">Test Display</span>
+                </div>
+              `;
             });
           }
           
+          html += '</div>';
           reportsList.innerHTML = html;
           
           if (reportsHistory) {
