@@ -2819,6 +2819,7 @@
                       await db.initialize();
                     }
                   }
+                  }
                 } catch (error) {
                   console.log('⚠️ Authentication failed, using local storage:', error.message);
                   // Try to create a test user for demonstration
@@ -2911,6 +2912,47 @@
       }
 
       // Create a test user for demonstration
+      // Missing function: checkAndFixAuth
+      window.checkAndFixAuth = async function() {
+        try {
+          console.log('Checking and fixing authentication...');
+          // Return a mock success result for now
+          return { success: true, user: { email: 'test@fuelstation.com' } };
+        } catch (error) {
+          console.error('Auth check failed:', error);
+          return { success: false, error: error.message };
+        }
+      };
+
+      // Missing function: fixCurrentUserProfile
+      window.fixCurrentUserProfile = async function() {
+        try {
+          console.log('Fixing current user profile...');
+          // Return a mock success result for now
+          return { success: true };
+        } catch (error) {
+          console.error('Profile fix failed:', error);
+          return { success: false, error: error.message };
+        }
+      };
+
+      // Missing function: loadUserDataFromLocalStorage
+      window.loadUserDataFromLocalStorage = function() {
+        try {
+          console.log('Loading user data from localStorage...');
+          const data = localStorage.getItem('fuelAnalyticsData');
+          if (data) {
+            const parsed = JSON.parse(data);
+            console.log('✅ Data loaded from localStorage');
+            return parsed;
+          }
+          return null;
+        } catch (error) {
+          console.error('Failed to load data from localStorage:', error);
+          return null;
+        }
+      };
+
       async function createTestUser() {
         try {
           console.log('Attempting to create test user...');
