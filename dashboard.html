@@ -249,15 +249,14 @@ report the <!DOCTYPE html>
                 console.log('File name:', file.name);
                 console.log('File type check:', file.name ? file.name.endsWith('.pdf') : 'No name');
                 
-                // More flexible file processing - accept any file that looks like a report
-                const isValidFile = file.name && (
-                  file.name.endsWith('.pdf') || 
-                  file.name.toLowerCase().includes('report') ||
-                  file.name.toLowerCase().includes('period') ||
-                  file.name.includes('2025') // Year indicator
-                );
+                // ULTRA FLEXIBLE: Accept ANY file that exists (for debugging)
+                console.log('File has name:', !!file.name);
+                console.log('File name type:', typeof file.name);
                 
-                console.log('Is valid file:', isValidFile);
+                // Accept ANY file with a name for now
+                const isValidFile = file.name && file.name.length > 0;
+                
+                console.log('Is valid file (any file with name):', isValidFile);
                 
                 if (isValidFile) {
                   const reportData = {
@@ -1003,6 +1002,18 @@ report the <!DOCTYPE html>
     console.log('🔍 Available debug functions: debugViewReports()');
     console.log('📋 Available render functions: renderReportsHistory()');
     console.log('🚨 EMERGENCY functions: forceDisplaySupabaseFiles()');
+    
+    // IMMEDIATE TEST: Run this automatically after page load
+    setTimeout(function() {
+      console.log('🔄 AUTO-TESTING: Running automatic View Reports test...');
+      if (typeof window.debugViewReports === 'function') {
+        window.debugViewReports().then(() => {
+          console.log('✅ Auto-test completed');
+        }).catch(error => {
+          console.error('❌ Auto-test failed:', error);
+        });
+      }
+    }, 3000); // Run after 3 seconds
     
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
