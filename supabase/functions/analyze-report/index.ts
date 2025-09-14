@@ -331,6 +331,67 @@ JSON Schema Requirements:
       data.shop_lines = [];
     }
 
+    // --- Derive UI-aligned metrics and optional KPIs for the dashboard ---
+    try {
+      const fuelKeys: FuelKey[] = ["diesel_ex", "vpower_95", "vpower_diesel"];
+      const fuelTotals = fuelKeys.reduce(
+        (acc, k) => {
+          const f = data.fuels?.[k] || { total_revenue_zar: 0, quantity_liters: 0, profit_zar: 0 };
+          acc.revenue += Number(f.total_revenue_zar) || 0;
+          acc.liters += Number(f.quantity_liters) || 0;
+          acc.profit += Number(f.profit_zar) || 0;
+          return acc;
+        },
+        { revenue: 0, liters: 0, profit: 0 }
+      );
+
+      const shopRevenue = Array.isArray(data.shop_lines)
+        ? data.shop_lines.reduce((s: number, l: any) => s + (Number(l.total_revenue_zar) || 0), 0)
+        : 0;
+
+      const totalRevenue = fuelTotals.revenue + shopRevenue;
+      const totalProfitApprox = fuelTotals.profit; // shop profit unknown → keep optional/null elsewhere
+      const totalVolume = fuelTotals.liters;
+      const shopFuelRatio = totalVolume > 0 ? shopRevenue / totalVolume : 0;
+
+      // Optional KPI placeholders (can be refined when historic data is available)
+      const revenueGrowthRate: number | null = null;
+      const shopProfitMargin: number | null = null;
+      const fuelMarginsRand: number = fuelTotals.profit;
+      const shopFuelRatioKpi: number = shopFuelRatio;
+
+      // Changes (month-over-month) not computable here without history → nulls
+      const changes = {
+        revenue_change: null as number | null,
+        profit_change: null as number | null,
+        volume_change: null as number | null,
+        margin_change: null as number | null,
+      };
+
+      // Attach a UI-friendly block
+      // Numbers are raw; format on the client (currency/percent)
+      data.ui_metrics = {
+        total_revenue: totalRevenue,
+        total_profit: totalProfitApprox,
+        total_volume: totalVolume,
+        shop_fuel_ratio: shopFuelRatio,
+        fuel_margin: fuelTotals.profit,
+        shop_profit: null as number | null,
+        changes,
+        kpis: {
+          revenue_growth_rate: revenueGrowthRate,
+          shop_profit_margin: shopProfitMargin,
+          fuel_margins_rand: fuelMarginsRand,
+          shop_fuel_ratio_kpi: shopFuelRatioKpi,
+        },
+      };
+
+      // Short textual summary for quick UI badges
+      data.summary = `Revenue R${totalRevenue.toFixed(0)}, Volume ${totalVolume.toFixed(0)} L, Shop/L R${shopFuelRatio.toFixed(2)}.`;
+    } catch (_) {
+      // Non-fatal; keep core payload
+    }
+
     return new Response(JSON.stringify(data), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" }

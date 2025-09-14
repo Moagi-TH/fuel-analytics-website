@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Test</title>
+</head>
+<body>
+    <h1>Debug Test - Fuel Flux Analytics</h1>
+    <div id="debug-output"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="./supabase-client.js"></script>
+    
+    <script>
+        function debugLog(message, data = null) {
+            const output = document.getElementById('debug-output');
+            const div = document.createElement('div');
+            div.style.margin = '5px 0';
+            div.style.padding = '10px';
+            div.style.border = '1px solid #ccc';
+            div.style.backgroundColor = '#f9f9f9';
+            div.innerHTML = `<strong>${message}</strong>${data ? '<br><pre>' + JSON.stringify(data, null, 2) + '</pre>' : ''}`;
+            output.appendChild(div);
+            console.log(message, data);
+        }
+        
+        function runDebugTests() {
+            debugLog('=== DEBUG TEST STARTED ===');
+            
+            // Test 1: Check Supabase CDN
+            debugLog('1. Supabase CDN loaded:', typeof window.supabase !== 'undefined');
+            
+            // Test 2: Check Chart.js CDN
+            debugLog('2. Chart.js CDN loaded:', typeof Chart !== 'undefined');
+            
+            // Test 3: Check our supabase-client.js
+            debugLog('3. Our supabase-client.js loaded:', typeof window.supabaseClient !== 'undefined');
+            
+            // Test 4: Check FuelAnalyticsDB
+            debugLog('4. FuelAnalyticsDB loaded:', typeof window.fuelAnalyticsDB !== 'undefined');
+            
+            // Test 5: Check if Supabase client is functional
+            if (window.supabase && typeof window.supabase.createClient === 'function') {
+                debugLog('5. Supabase createClient function available: YES');
+                try {
+                    const testClient = window.supabase.createClient('test', 'test');
+                    debugLog('5b. Supabase client creation test: SUCCESS');
+                } catch (e) {
+                    debugLog('5b. Supabase client creation test: FAILED', e.message);
+                }
+            } else {
+                debugLog('5. Supabase createClient function available: NO');
+            }
+            
+            // Test 6: Check our database client methods
+            if (window.supabaseClient) {
+                const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(window.supabaseClient));
+                debugLog('6. SupabaseClient methods available:', methods.filter(m => typeof window.supabaseClient[m] === 'function'));
+            } else {
+                debugLog('6. SupabaseClient methods available: NO CLIENT');
+            }
+            
+            // Test 7: Check for any errors in console
+            const originalError = console.error;
+            const errors = [];
+            console.error = function(...args) {
+                errors.push(args.join(' '));
+                originalError.apply(console, args);
+            };
+            
+            setTimeout(() => {
+                debugLog('7. Console errors captured:', errors);
+                console.error = originalError;
+            }, 1000);
+            
+            debugLog('=== DEBUG TEST COMPLETED ===');
+        }
+        
+        // Run tests when page loads
+        document.addEventListener('DOMContentLoaded', runDebugTests);
+    </script>
+</body>
+</html>
