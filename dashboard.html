@@ -24,7 +24,26 @@
       try {
         const file = event.target.files[0];
         if (file) {
-          console.log('File selected:', file.name);
+          console.log('✅ File selected:', file.name);
+          
+          // Check file type
+          if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+            alert('❌ Error: Please select a PDF file only. You selected: ' + file.name);
+            console.error('❌ Invalid file type:', file.type);
+            return;
+          }
+          
+          // Check file size (10MB limit)
+          const maxSize = 10 * 1024 * 1024; // 10MB
+          if (file.size > maxSize) {
+            alert('❌ Error: File too large. Maximum size is 10MB. Your file is: ' + (file.size / 1024 / 1024).toFixed(2) + 'MB');
+            console.error('❌ File too large:', file.size);
+            return;
+          }
+          
+          // Show loading message
+          alert('📤 Uploading file: ' + file.name + '\nPlease wait...');
+          
           // Basic file processing
           const reader = new FileReader();
           reader.onload = function(e) {
@@ -40,14 +59,29 @@
             if (!window.uploadedReports) window.uploadedReports = [];
             window.uploadedReports.push(reportData);
             
+            // Show success message
+            alert('✅ Upload successful!\nFile: ' + file.name + '\nAdded to reports list.');
+            
             // Update display
             if (typeof window.showReportsNow === 'function') {
               window.showReportsNow();
+            } else {
+              alert('⚠️ Warning: Reports display function not available. File uploaded but may not be visible.');
             }
           };
+          
+          reader.onerror = function() {
+            alert('❌ Error reading file. Please try again.');
+            console.error('❌ FileReader error');
+          };
+          
           reader.readAsText(file);
+        } else {
+          alert('❌ Error: No file selected. Please choose a PDF file to upload.');
+          console.error('❌ No file selected');
         }
       } catch (error) {
+        alert('❌ Upload failed: ' + error.message);
         console.error('❌ Error handling file upload:', error);
       }
     };
@@ -58,31 +92,47 @@
       try {
         const reportsList = document.getElementById('reports-list');
         if (!reportsList) {
-          console.error('❌ Reports list element not found');
+          const errorMsg = '❌ Error: Reports list element not found. Cannot display reports.';
+          alert(errorMsg);
+          console.error(errorMsg);
           return;
         }
         
         if (!window.uploadedReports || window.uploadedReports.length === 0) {
-          reportsList.innerHTML = '<div class="text-gray-500">No reports available</div>';
+          const noReportsMsg = '📋 No reports available to display. Upload a PDF file first.';
+          alert(noReportsMsg);
+          console.log(noReportsMsg);
+          reportsList.innerHTML = '<div class="text-gray-500 p-4 text-center">No reports available. Upload a PDF file to get started.</div>';
           return;
         }
         
+        console.log('✅ Found ' + window.uploadedReports.length + ' reports to display');
+        
         let html = '<div class="space-y-4">';
+        html += '<h3 class="text-lg font-semibold text-white mb-4">📋 Uploaded Reports (' + window.uploadedReports.length + ')</h3>';
+        
         window.uploadedReports.forEach((report, index) => {
           html += `
             <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
-              <h3 class="text-lg font-semibold text-white">${report.filename}</h3>
-              <p class="text-gray-400 text-sm">Uploaded: ${new Date(report.uploadDate).toLocaleString()}</p>
-              <div class="mt-2 text-gray-300 text-xs">${report.content || 'No preview available'}</div>
+              <h4 class="text-lg font-semibold text-white">📄 ${report.filename}</h4>
+              <p class="text-gray-400 text-sm">📅 Uploaded: ${new Date(report.uploadDate).toLocaleString()}</p>
+              <div class="mt-2 text-gray-300 text-xs max-h-20 overflow-y-auto">
+                ${report.content ? report.content.substring(0, 200) + '...' : 'No preview available'}
+              </div>
+              <div class="mt-2 text-xs text-blue-400">Report #${index + 1}</div>
             </div>
           `;
         });
         html += '</div>';
         
         reportsList.innerHTML = html;
-        console.log('✅ Reports displayed successfully');
+        const successMsg = '✅ Successfully displayed ' + window.uploadedReports.length + ' reports';
+        alert(successMsg);
+        console.log(successMsg);
       } catch (error) {
-        console.error('❌ Error showing reports:', error);
+        const errorMsg = '❌ Error displaying reports: ' + error.message;
+        alert(errorMsg);
+        console.error(errorMsg);
       }
     };
     
@@ -3470,7 +3520,6 @@
               // Try to load from storage anyway
               await loadReportsFromStorage();
             }
-          }
           };
           
           // Race between timeout and initialization
