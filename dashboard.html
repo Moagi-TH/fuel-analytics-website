@@ -193,98 +193,68 @@ report the <!DOCTYPE html>
       }
     };
     
-    // View Reports - Clean professional display
+    // View Reports - Using exact same logic as working function
     window.showReportsNow = async function() {
-      console.log('🚀 VIEW REPORTS FUNCTION CALLED!');
-      console.log('📊 Loading reports from Supabase storage...');
-      alert('🚀 View Reports function is running!');
+      console.log('📊 Loading reports from Supabase...');
       
       try {
-        // Initialize Supabase client
         window.initializeSupabaseClient();
         
-        if (!window.supabaseClient) {
-          alert('❌ Supabase client not available');
-          return;
-        }
-        
-        // Get files from bucket
         const { data: files, error } = await window.supabaseClient.supabase.storage
           .from('fuel-reports')
-          .list('', { limit: 100 });
+          .list('', { limit: 10 });
         
         if (error) {
-          alert('❌ Error loading reports: ' + error.message);
+          alert('❌ Cannot access Supabase: ' + error.message);
           return;
         }
         
-        console.log('✅ Loaded', files.length, 'files from Supabase');
+        console.log('Raw files from Supabase:', files);
         
-        // Show reports section
-        const reportsHistory = document.getElementById('reports-history');
         const reportsList = document.getElementById('reports-list');
-        
-        // Hide other sections
-        const uploadArea = document.getElementById('upload-area');
-        const manualForm = document.getElementById('manual-form');
-        const monthlyPerformance = document.getElementById('monthly-performance');
-        if (uploadArea) uploadArea.style.display = 'none';
-        if (manualForm) manualForm.style.display = 'none';
-        if (monthlyPerformance) monthlyPerformance.style.display = 'none';
+        const reportsHistory = document.getElementById('reports-history');
         
         if (reportsHistory) reportsHistory.style.display = 'block';
         
-        if (!reportsList) {
-          alert('❌ Reports list element not found');
-          return;
-        }
-        
-        // Professional display matching Enter Data styling
-        let html = `
-          <div class="form-section">
-            <h4>All Reports (${files.length})</h4>
-            <p class="form-hint">Manage your uploaded reports from Supabase storage</p>
-        `;
-        
-        if (files.length === 0) {
-          html += '<div class="info-card"><p>No reports found in Supabase storage. Upload a PDF first.</p></div>';
-        } else {
-          files.forEach((file, index) => {
-            const fileName = file.name || 'Unknown File';
-            const fileDate = file.created_at || 'Unknown Date';
-            
-            html += `
-              <div class="info-card" style="margin-bottom: 15px;">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                  <h5 style="margin: 0; color: var(--primary-color);">📄 ${fileName}</h5>
-                  <span class="status-badge" style="background: var(--primary-color); color: white;">Supabase</span>
+        if (reportsList) {
+          let html = `
+            <div class="form-section">
+              <h4>Files from Supabase (${files.length})</h4>
+              <p class="form-hint">Manage your uploaded reports from Supabase storage</p>
+          `;
+          
+          if (files.length === 0) {
+            html += '<div class="info-card"><p>No files found in Supabase storage</p></div>';
+          } else {
+            files.forEach((file, index) => {
+              html += `
+                <div class="info-card" style="margin-bottom: 10px;">
+                  <h5 style="margin: 0 0 8px 0; color: var(--primary-color);">📄 ${file.name || 'No name'}</h5>
+                  <p style="color: #888; font-size: 12px; margin: 0;">📅 ${file.created_at || 'No date'}</p>
+                  <div style="display: flex; gap: 8px; margin-top: 12px;">
+                    <button onclick="window.viewFileInNewTab('${file.name}')" class="button secondary" style="font-size: 12px; padding: 6px 12px;">
+                      📖 View Report
+                    </button>
+                    <button onclick="window.deleteSupabaseFile('${file.name}')" class="button" style="background: #ef4444; font-size: 12px; padding: 6px 12px;">
+                      🗑️ Delete Report
+                    </button>
+                  </div>
                 </div>
-                <p style="color: #888; font-size: 13px; margin: 5px 0;">📅 Uploaded: ${new Date(fileDate).toLocaleString()}</p>
-                <div style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;">
-                  <button onclick="window.viewFileInNewTab('${fileName}')" class="button secondary" style="font-size: 12px; padding: 6px 12px;">
-                    📖 View Report
-                  </button>
-                  <button onclick="window.deleteSupabaseFile('${fileName}')" class="button" style="background: #ef4444; font-size: 12px; padding: 6px 12px;">
-                    🗑️ Delete Report
-                  </button>
-                </div>
-              </div>
-            `;
-          });
+              `;
+            });
+          }
+          
+          html += '</div>';
+          reportsList.innerHTML = html;
+          
+          if (reportsHistory) {
+            reportsHistory.scrollIntoView({ behavior: 'smooth' });
+          }
+          
+          alert('📋 Showing ' + files.length + ' files from Supabase storage');
         }
-        
-        html += '</div>';
-        
-        reportsList.innerHTML = html;
-        
-        if (reportsHistory) {
-          reportsHistory.scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        console.log('✅ Reports displayed successfully');
         
       } catch (error) {
-        console.error('❌ Error displaying reports:', error);
         alert('❌ Error: ' + error.message);
       }
     };
