@@ -247,8 +247,8 @@ report the <!DOCTYPE html>
             html += `
               <div class="info-card" style="margin-bottom: 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                  <h5 style="margin: 0; color: var(--primary-color);">📄 ${fileName}</h5>
-                  <span class="badge" style="background: var(--primary-color); color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">☁️ Supabase</span>
+                  <h5 style="margin: 0; color: #4a9eff;">📄 ${fileName}</h5>
+                  <span class="badge" style="background: #4a9eff; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">☁️ Supabase</span>
                 </div>
                 
                 <div style="margin-bottom: 12px;">
@@ -284,7 +284,7 @@ report the <!DOCTYPE html>
           reportsHistory.scrollIntoView({ behavior: 'smooth' });
         }
         
-        alert('✅ Showing ' + files.length + ' files from Supabase storage');
+        alert('✅ Reports loaded successfully! Found ' + files.length + ' report(s) in storage.');
         
       } catch (error) {
         console.error('❌ Error:', error);
@@ -666,16 +666,14 @@ report the <!DOCTYPE html>
         }
         
         console.log('✅ Bucket access successful. Files found:', files.length);
-        alert('✅ Supabase integration test passed!\n' + 
-              'Client: Initialized\n' + 
-              'Connection: Working\n' + 
-              'Bucket access: Working\n' + 
-              'Files in bucket: ' + files.length);
+        alert('✅ Database connection successful!\n' + 
+              'Files Found: ' + files.length + '\n' + 
+              'Ready to upload and view reports');
         
         return true;
       } catch (error) {
         console.error('❌ Bucket test failed:', error);
-        alert('❌ Bucket test failed: ' + error.message);
+        alert('❌ Database connection failed: ' + error.message);
         return false;
       }
     };
@@ -687,7 +685,7 @@ report the <!DOCTYPE html>
       // Test 1: Supabase connection
       const connectionTest = await window.testSupabaseConnection();
       if (!connectionTest) {
-        alert('❌ Supabase connection failed. Cannot test upload/retrieval.');
+        alert('❌ Database connection failed. Cannot access reports.');
         return false;
       }
       
@@ -732,7 +730,7 @@ report the <!DOCTYPE html>
         
       } catch (error) {
         console.error('❌ Upload/retrieval test failed:', error);
-        alert('❌ Upload/retrieval test failed: ' + error.message);
+        alert('❌ Report upload/retrieval failed: ' + error.message);
         return false;
       }
     };
@@ -1090,14 +1088,14 @@ report the <!DOCTYPE html>
         if (reportsHistory) reportsHistory.style.display = 'block';
         
         if (reportsList) {
-          let html = '<h3 style="color: lime;">🧪 TEST: Files from Supabase</h3>';
+          let html = '<h3 style="color: #3b82f6;">Files from Supabase</h3>';
           
           if (files.length === 0) {
             html += '<p style="color: red;">No files found</p>';
           } else {
             files.forEach(file => {
-              html += `<div style="border: 2px solid lime; padding: 10px; margin: 5px; background: #001100;">
-                        <strong style="color: lime;">${file.name || 'No name'}</strong><br>
+              html += `<div style="border: 2px solid #3b82f6; padding: 10px; margin: 5px; background: rgba(59, 130, 246, 0.1);">
+                        <strong style="color: #3b82f6;">${file.name || 'No name'}</strong><br>
                         <small style="color: #888;">Date: ${file.created_at || 'No date'}</small>
                       </div>`;
             });
@@ -1109,15 +1107,15 @@ report the <!DOCTYPE html>
             reportsHistory.scrollIntoView({ behavior: 'smooth' });
           }
           
-          alert('🧪 TEST: Showing ' + files.length + ' files directly');
+          alert('✅ Showing ' + files.length + ' files from storage');
         }
         
       } catch (error) {
-        alert('❌ Test failed: ' + error.message);
+        alert('❌ Failed to load files: ' + error.message);
       }
     };
     
-    console.log('🧪 SUPER SIMPLE test function: testShowFiles()');
+    console.log('File display function available: testShowFiles()');
     
     // IMMEDIATE TEST: Run this automatically after page load
     setTimeout(function() {
@@ -1580,7 +1578,7 @@ report the <!DOCTYPE html>
           if (reportsData && reportsData.length > 0) {
             let html = '<h4>📊 Reports (' + reportsData.length + ')</h4>';
             reportsData.forEach((report, index) => {
-              html += '<div style="padding: 15px; margin: 10px 0; background: rgba(0, 255, 0, 0.1); border: 2px solid green; border-radius: 8px;">';
+              html += '<div style="padding: 15px; margin: 10px 0; background: rgba(59, 130, 246, 0.1); border: 2px solid #3b82f6; border-radius: 8px;">';
               html += '<strong>📄 Report ' + (index + 1) + ':</strong> ' + (report.filename || report.name || 'Unknown') + '<br>';
               html += '<small>📅 Date: ' + (report.date || 'Unknown') + '</small><br>';
               html += '<small>💾 Size: ' + (report.size || 'Unknown') + ' bytes</small>';
@@ -2619,7 +2617,7 @@ report the <!DOCTYPE html>
             <p>View and manage your uploaded reports</p>
             
             <!-- Most Recent Report Display -->
-            <div class="recent-report-card" style="background: var(--primary-color); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <div class="recent-report-card" style="background: #4a9eff; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
               <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M14 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -10674,16 +10672,16 @@ report the <!DOCTYPE html>
         metricsSection.style.display = 'block';
       }
 
-      // Show renovation form
-      function showRenovationForm() {
+      // Show renovation form - EXPOSED TO GLOBAL SCOPE
+      window.showRenovationForm = function() {
         document.getElementById('renovation-item-form').style.display = 'block';
         document.getElementById('item-category').value = window.renovationState.selectedGroup;
         calculateItemTotal();
         handleSpreadTypeChange();
       }
 
-      // Hide renovation form
-      function hideRenovationForm() {
+      // Hide renovation form - EXPOSED TO GLOBAL SCOPE
+      window.hideRenovationForm = function() {
         document.getElementById('renovation-item-form').style.display = 'none';
         resetRenovationForm();
       }
@@ -10790,8 +10788,8 @@ report the <!DOCTYPE html>
         }
       }
 
-      // Save renovation item
-      async function saveRenovationItem() {
+      // Save renovation item - EXPOSED TO GLOBAL SCOPE
+      window.saveRenovationItem = async function() {
         console.log('SaveRenovationItem invoked');
         // Ensure client and project exist so the flow always completes
         try {
@@ -11074,13 +11072,13 @@ report the <!DOCTYPE html>
         alert(`${group} metrics saved successfully!`);
       }
 
-      // Save renovation items to localStorage
-      function saveRenovationItems() {
+      // Save renovation items to localStorage - EXPOSED TO GLOBAL SCOPE
+      window.saveRenovationItems = function() {
         localStorage.setItem('renovationItems', JSON.stringify(window.renovationState.items));
       }
 
-      // Load renovation items from database
-      async function loadRenovationItemsFromDB() {
+      // Load renovation items from database - EXPOSED TO GLOBAL SCOPE
+      window.loadRenovationItemsFromDB = async function() {
         try {
           if (window.renovationState.currentProject && renovationClient) {
             const items = await renovationClient.getItems(window.renovationState.currentProject.id);
