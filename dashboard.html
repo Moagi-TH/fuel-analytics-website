@@ -195,7 +195,7 @@
     
     // ULTRA SIMPLE: Direct file display without any complex processing
     window.showReportsNow = async function() {
-      console.log('📊 ULTRA SIMPLE: Direct Supabase file display...');
+      console.log('📊 ULTRA SIMPLE: Direct Supabase file display... (v2.0 - Clean Emoji Version)');
       
       try {
         // Initialize Supabase client
@@ -1088,19 +1088,54 @@
         if (reportsHistory) reportsHistory.style.display = 'block';
         
         if (reportsList) {
-          let html = '<h3 style="color: #3b82f6;">Files from Supabase</h3>';
+          // Use same clean styling as main showReportsNow function
+          let html = `
+            <div class="form-section">
+              <h4>All Reports (${files.length})</h4>
+              <p class="form-hint">View and manage your uploaded reports from Supabase storage</p>
+          `;
           
           if (files.length === 0) {
-            html += '<p style="color: red;">No files found</p>';
+            html += '<div class="info-card"><p>No files found in Supabase storage. Upload a PDF report to get started.</p></div>';
           } else {
-            files.forEach(file => {
-              html += `<div style="border: 2px solid #3b82f6; padding: 10px; margin: 5px; background: rgba(59, 130, 246, 0.1);">
-                        <strong style="color: #3b82f6;">${file.name || 'No name'}</strong><br>
-                        <small style="color: #888;">Date: ${file.created_at || 'No date'}</small>
-                      </div>`;
+            files.forEach((file, index) => {
+              const fileName = file.name || 'Unknown File';
+              const fileDate = file.created_at || 'Unknown Date';
+              const fileSize = file.metadata?.size || 0;
+              
+              html += `
+                <div class="info-card" style="margin-bottom: 15px;">
+                  <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                    <h5 style="margin: 0; color: #4a9eff;">📄 ${fileName}</h5>
+                    <span class="badge" style="background: #4a9eff; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">☁️ Supabase</span>
+                  </div>
+                  
+                  <div style="margin-bottom: 12px;">
+                    <p style="color: #888; font-size: 13px; margin: 4px 0;">📅 Uploaded: ${new Date(fileDate).toLocaleString()}</p>
+                    ${fileSize > 0 ? `<p style="color: #888; font-size: 13px; margin: 4px 0;">📊 Size: ${(fileSize / 1024).toFixed(1)} KB</p>` : ''}
+                  </div>
+                  
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button onclick="window.viewFileInNewTab('${fileName}')" class="button secondary" style="font-size: 12px; padding: 8px 16px;">
+                      📖 View Report
+                    </button>
+                    <button onclick="window.deleteSupabaseFile('${fileName}')" class="button" style="background: #ef4444; border-color: #ef4444; font-size: 12px; padding: 8px 16px;">
+                      🗑️ Delete
+                    </button>
+                    <button onclick="window.downloadSupabaseFile('${fileName}')" class="button secondary" style="background: #4a9eff; border-color: #4a9eff; font-size: 12px; padding: 8px 16px;">
+                      📥 Download
+                    </button>
+                  </div>
+                  
+                  <div style="color: #666; font-size: 11px; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    Report #${index + 1} • Storage: ${fileName}
+                  </div>
+                </div>
+              `;
             });
           }
           
+          html += '</div>';
           reportsList.innerHTML = html;
           
           if (reportsHistory) {
