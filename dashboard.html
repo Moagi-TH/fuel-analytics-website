@@ -56,7 +56,93 @@
       };
     };
     
-    console.log('✅ quickTest function loaded and ready!');
+    // Force refresh reports display
+    window.forceRefreshReports = function() {
+      console.log('🔄 Force refreshing reports display...');
+      try {
+        // Call the existing loadReportsFromStorage function
+        if (typeof loadReportsFromStorage === 'function') {
+          loadReportsFromStorage().then(() => {
+            console.log('✅ Reports loaded, now rendering...');
+            if (typeof window.renderReportsHistory === 'function') {
+              window.renderReportsHistory();
+            } else {
+              console.error('❌ renderReportsHistory still not available');
+            }
+          });
+        } else {
+          console.error('❌ loadReportsFromStorage function not available');
+        }
+      } catch (error) {
+        console.error('Error force refreshing reports:', error);
+      }
+    };
+
+    // Manual trigger to display reports immediately
+    window.showReportsNow = function() {
+      console.log('📋 Manually triggering reports display...');
+      try {
+        // First check if we have reports data
+        if (window.uploadedReports && window.uploadedReports.length > 0) {
+          console.log('✅ Found reports data:', window.uploadedReports.length, 'reports');
+          
+          // Try to render them
+          if (typeof window.renderReportsHistory === 'function') {
+            window.renderReportsHistory();
+            console.log('✅ renderReportsHistory called successfully');
+          } else {
+            console.log('⚠️ renderReportsHistory not available, creating simple display...');
+            // Create a simple display as fallback
+            const reportsList = document.getElementById('reports-list');
+            if (reportsList) {
+              let html = '<h4>Reports Found (' + window.uploadedReports.length + ')</h4>';
+              window.uploadedReports.forEach((report, index) => {
+                html += '<div class="report-item" style="padding: 10px; margin: 5px 0; background: rgba(15, 23, 42, 0.5); border-radius: 8px;">';
+                html += '<strong>Report ' + (index + 1) + ':</strong> ' + (report.filename || report.name || 'Unknown') + '<br>';
+                html += '<small>Size: ' + (report.size || 'Unknown') + ' bytes</small>';
+                html += '</div>';
+              });
+              reportsList.innerHTML = html;
+              console.log('✅ Simple reports display created');
+            }
+          }
+        } else {
+          console.log('⚠️ No reports data available');
+          // Try to load reports first
+          window.forceRefreshReports();
+        }
+      } catch (error) {
+        console.error('Error showing reports:', error);
+      }
+    };
+    
+    // Test upload functionality
+    window.testUpload = function() {
+      console.log('📁 Testing upload functionality...');
+      try {
+        const uploadButton = document.getElementById('upload-trigger');
+        const fileInput = document.getElementById('report-file-main');
+        
+        console.log('✅ Upload button exists:', !!uploadButton);
+        console.log('✅ File input exists:', !!fileInput);
+        
+        if (uploadButton) {
+          console.log('🔘 Clicking upload button...');
+          uploadButton.click();
+        }
+        
+        return {
+          uploadButton: !!uploadButton,
+          fileInput: !!fileInput,
+          testCompleted: true
+        };
+      } catch (error) {
+        console.error('Error testing upload:', error);
+        return { error: error.message };
+      }
+    };
+    
+    console.log('✅ quickTest, forceRefreshReports, and testUpload functions loaded and ready!');
   </script>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -818,7 +904,7 @@
           <div class="action-card">
             <h3>Upload New Report</h3>
             <p>Upload your monthly PDF report for analysis</p>
-            <button id="upload-trigger" class="button primary">Upload PDF</button>
+            <button id="upload-trigger" class="button primary" onclick="console.log('Upload button clicked!'); if(typeof window.testUpload === 'function') { window.testUpload(); } else { console.log('testUpload not ready, trying fallback...'); document.getElementById('report-file-main').click(); }">Upload PDF</button>
           </div>
           <div class="action-card">
             <h3>Manual Entry</h3>
@@ -3125,6 +3211,45 @@
           reader.readAsText(file);
         } catch (error) {
           console.error('Error processing file:', error);
+        }
+      };
+
+      // Missing function: updateMostRecentReportDisplay
+      window.updateMostRecentReportDisplay = function() {
+        console.log('🔄 Updating most recent report display...');
+        try {
+          if (window.uploadedReports && window.uploadedReports.length > 0) {
+            const mostRecent = window.uploadedReports[window.uploadedReports.length - 1];
+            console.log('📊 Most recent report:', mostRecent);
+            
+            // Update any display elements that show the most recent report
+            const recentReportElement = document.getElementById('most-recent-report');
+            if (recentReportElement) {
+              recentReportElement.textContent = mostRecent.filename || mostRecent.name || 'Unknown Report';
+            }
+          } else {
+            console.log('⚠️ No reports available for display');
+          }
+        } catch (error) {
+          console.error('Error updating most recent report display:', error);
+        }
+      };
+
+      // Missing function: loadLatestReportData
+      window.loadLatestReportData = function() {
+        console.log('🔄 Loading latest report data...');
+        try {
+          if (window.uploadedReports && window.uploadedReports.length > 0) {
+            const latest = window.uploadedReports[window.uploadedReports.length - 1];
+            console.log('📊 Latest report data:', latest);
+            return latest;
+          } else {
+            console.log('⚠️ No reports available to load');
+            return null;
+          }
+        } catch (error) {
+          console.error('Error loading latest report data:', error);
+          return null;
         }
       };
 
