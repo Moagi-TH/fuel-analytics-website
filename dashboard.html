@@ -241,17 +241,30 @@ report the <!DOCTYPE html>
               window.uploadedReports.length = 0; // Clear existing
               
               // Process files and add to reports array
-              files.forEach(file => {
+              console.log('🔍 Processing files:', files);
+              
+              files.forEach((file, index) => {
+                console.log(`Processing file ${index + 1}:`, file);
+                console.log('File name:', file.name);
+                console.log('File type check:', file.name ? file.name.endsWith('.pdf') : 'No name');
+                
                 if (file.name && file.name.endsWith('.pdf')) {
-                  window.uploadedReports.push({
+                  const reportData = {
                     filename: file.name,
                     storagePath: file.name,
-                    uploadDate: file.created_at,
+                    uploadDate: file.created_at || new Date().toISOString(),
                     fileSize: file.metadata?.size || 0,
                     id: file.id || file.name
-                  });
+                  };
+                  
+                  console.log('✅ Adding report:', reportData);
+                  window.uploadedReports.push(reportData);
+                } else {
+                  console.log('❌ Skipping non-PDF file or file without name:', file.name);
                 }
               });
+              
+              console.log('📊 Final uploadedReports array:', window.uploadedReports);
               
               console.log('✅ Processed', window.uploadedReports.length, 'PDF reports');
               
