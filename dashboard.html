@@ -195,7 +195,9 @@ report the <!DOCTYPE html>
     
     // View Reports - Clean professional display
     window.showReportsNow = async function() {
+      console.log('🚀 VIEW REPORTS FUNCTION CALLED!');
       console.log('📊 Loading reports from Supabase storage...');
+      alert('🚀 View Reports function is running!');
       
       try {
         // Initialize Supabase client
@@ -1017,10 +1019,28 @@ report the <!DOCTYPE html>
     };
     
     
+    // Simple test to verify View Reports works
+    window.testViewReports = function() {
+      console.log('🧪 Testing View Reports function...');
+      
+      if (typeof window.showReportsNow === 'function') {
+        console.log('✅ showReportsNow function exists');
+        try {
+          window.showReportsNow();
+          console.log('✅ showReportsNow called successfully');
+        } catch (error) {
+          console.error('❌ Error calling showReportsNow:', error);
+        }
+      } else {
+        console.error('❌ showReportsNow function not found');
+      }
+    };
+    
     console.log('✅ CRITICAL FUNCTIONS: All essential functions defined');
     console.log('📊 Report Management: Upload PDF, View Reports, Enter Data, View Performance');
     console.log('🏗️ Renovation System: Enter Data opens manual fuel price form');
     console.log('📋 File Actions: View Report, Delete Report functions available');
+    console.log('🧪 Test function: testViewReports() - call this to test View Reports');
     
     
     // Service Worker Registration
