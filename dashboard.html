@@ -245,22 +245,34 @@ report the <!DOCTYPE html>
               
               files.forEach((file, index) => {
                 console.log(`Processing file ${index + 1}:`, file);
+                console.log('File object structure:', Object.keys(file));
                 console.log('File name:', file.name);
                 console.log('File type check:', file.name ? file.name.endsWith('.pdf') : 'No name');
                 
-                if (file.name && file.name.endsWith('.pdf')) {
+                // More flexible file processing - accept any file that looks like a report
+                const isValidFile = file.name && (
+                  file.name.endsWith('.pdf') || 
+                  file.name.toLowerCase().includes('report') ||
+                  file.name.toLowerCase().includes('period') ||
+                  file.name.includes('2025') // Year indicator
+                );
+                
+                console.log('Is valid file:', isValidFile);
+                
+                if (isValidFile) {
                   const reportData = {
                     filename: file.name,
                     storagePath: file.name,
-                    uploadDate: file.created_at || new Date().toISOString(),
-                    fileSize: file.metadata?.size || 0,
-                    id: file.id || file.name
+                    uploadDate: file.created_at || file.updated_at || new Date().toISOString(),
+                    fileSize: file.metadata?.size || file.size || 0,
+                    id: file.id || file.name,
+                    source: 'supabase'
                   };
                   
                   console.log('✅ Adding report:', reportData);
                   window.uploadedReports.push(reportData);
                 } else {
-                  console.log('❌ Skipping non-PDF file or file without name:', file.name);
+                  console.log('❌ Skipping file:', file.name, '- Not a valid report file');
                 }
               });
               
@@ -268,40 +280,49 @@ report the <!DOCTYPE html>
               
               console.log('✅ Processed', window.uploadedReports.length, 'PDF reports');
               
-              // Use the existing renderReportsHistory function to display reports
-              if (typeof window.renderReportsHistory === 'function') {
-                console.log('🔄 Using existing renderReportsHistory function...');
-                window.renderReportsHistory();
-                alert('✅ Successfully loaded ' + window.uploadedReports.length + ' reports from Supabase!');
-              } else {
-                console.warn('⚠️ renderReportsHistory not available, using fallback display');
-                
-                // Fallback display
-                const reportsList = document.getElementById('reports-list');
-                if (reportsList && window.uploadedReports.length > 0) {
-                  let html = '<h4>📋 Reports from Supabase (' + window.uploadedReports.length + ')</h4>';
+              // FORCE DISPLAY: Even if no reports were processed, show the raw files
+              const reportsList = document.getElementById('reports-list');
+              if (reportsList) {
+                if (window.uploadedReports.length > 0) {
+                  // Use renderReportsHistory if available
+                  if (typeof window.renderReportsHistory === 'function') {
+                    console.log('🔄 Using renderReportsHistory function...');
+                    window.renderReportsHistory();
+                  } else {
+                    console.log('🔄 Using fallback display...');
+                    // Fallback display for processed reports
+                    let html = '<h4>📋 Reports from Supabase (' + window.uploadedReports.length + ')</h4>';
+                    window.uploadedReports.forEach((report, index) => {
+                      html += `
+                        <div class="report-item" style="border: 1px solid #444; padding: 15px; margin: 10px 0; border-radius: 8px; background: #2a2a2a;">
+                          <h5 style="color: #4a9eff; margin: 0 0 8px 0;">📄 ${report.filename}</h5>
+                          <p style="color: #888; font-size: 12px; margin: 4px 0;">📅 ${new Date(report.uploadDate).toLocaleString()}</p>
+                          <p style="color: #4a9eff; font-size: 11px; margin: 4px 0;">☁️ Supabase Storage</p>
+                        </div>
+                      `;
+                    });
+                    reportsList.innerHTML = html;
+                  }
+                  alert('✅ Successfully loaded ' + window.uploadedReports.length + ' reports from Supabase!');
+                } else {
+                  // EMERGENCY: Show raw files if processing failed
+                  console.log('🚨 EMERGENCY: No processed reports, showing raw files');
+                  let html = '<h4>📋 Raw Files from Supabase (' + files.length + ')</h4>';
+                  html += '<p style="color: #ff6b6b; font-size: 12px;">Note: Files found but not processed correctly</p>';
                   
-                  window.uploadedReports.forEach((report, index) => {
+                  files.forEach((file, index) => {
                     html += `
-                      <div class="report-item" style="border: 1px solid #444; padding: 15px; margin: 10px 0; border-radius: 8px; background: #2a2a2a;">
-                        <h5 style="color: #4a9eff; margin: 0 0 8px 0;">📄 ${report.filename}</h5>
-                        <p style="color: #888; font-size: 12px; margin: 4px 0;">
-                          📅 Uploaded: ${new Date(report.uploadDate).toLocaleString()}
-                        </p>
-                        <p style="color: #4a9eff; font-size: 11px; margin: 4px 0;">☁️ Supabase Storage</p>
-                        <button onclick="window.openPDFFromStorage('${report.storagePath}', '${report.filename}')" 
-                                style="background: #4a9eff; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-top: 8px;">
-                          View PDF
-                        </button>
+                      <div class="report-item" style="border: 1px solid #ff6b6b; padding: 15px; margin: 10px 0; border-radius: 8px; background: #2a1a1a;">
+                        <h5 style="color: #ff6b6b; margin: 0 0 8px 0;">📄 ${file.name || 'Unknown File'}</h5>
+                        <p style="color: #888; font-size: 12px; margin: 4px 0;">📅 ${file.created_at || 'Unknown Date'}</p>
+                        <p style="color: #ff6b6b; font-size: 11px; margin: 4px 0;">🚨 Raw File (Processing Failed)</p>
+                        <div style="color: #666; font-size: 10px; margin-top: 8px;">File #${index + 1}</div>
                       </div>
                     `;
                   });
                   
                   reportsList.innerHTML = html;
-                  alert('✅ Successfully loaded ' + window.uploadedReports.length + ' reports from Supabase!');
-                } else if (reportsList) {
-                  reportsList.innerHTML = '<p style="color: #888; text-align: center; padding: 20px;">No PDF reports found in Supabase storage.</p>';
-                  alert('📋 No reports found in Supabase storage. Upload a PDF first.');
+                  alert('🚨 Found ' + files.length + ' files in Supabase but processing failed. Files shown as raw data.');
                 }
               }
               
@@ -910,12 +931,78 @@ report the <!DOCTYPE html>
       }
     };
     
+    // EMERGENCY: Force display any files from Supabase
+    window.forceDisplaySupabaseFiles = async function() {
+      console.log('🚨 EMERGENCY: Force displaying any files from Supabase...');
+      
+      try {
+        window.initializeSupabaseClient();
+        
+        if (!window.supabaseClient) {
+          alert('❌ Supabase client not available');
+          return;
+        }
+        
+        const { data: files, error } = await window.supabaseClient.supabase.storage
+          .from('fuel-reports')
+          .list('', { limit: 100 });
+        
+        if (error) {
+          alert('❌ Error accessing bucket: ' + error.message);
+          return;
+        }
+        
+        console.log('🔍 ALL FILES FROM BUCKET:', files);
+        
+        const reportsList = document.getElementById('reports-list');
+        const reportsHistory = document.getElementById('reports-history');
+        
+        if (reportsHistory) reportsHistory.style.display = 'block';
+        
+        if (reportsList) {
+          let html = '<h4 style="color: #fff;">🚨 EMERGENCY DISPLAY - All Files from Supabase (' + files.length + ')</h4>';
+          
+          if (files.length === 0) {
+            html += '<p style="color: #ff6b6b;">No files found in fuel-reports bucket</p>';
+          } else {
+            files.forEach((file, index) => {
+              html += `
+                <div style="border: 2px solid #ff6b6b; padding: 15px; margin: 10px 0; border-radius: 8px; background: #1a0a0a;">
+                  <h5 style="color: #ff6b6b; margin: 0 0 8px 0;">🚨 FILE #${index + 1}</h5>
+                  <p style="color: #fff; font-size: 14px;"><strong>Name:</strong> ${file.name || 'No name'}</p>
+                  <p style="color: #fff; font-size: 12px;"><strong>Created:</strong> ${file.created_at || 'Unknown'}</p>
+                  <p style="color: #fff; font-size: 12px;"><strong>Size:</strong> ${file.metadata?.size || file.size || 'Unknown'}</p>
+                  <p style="color: #fff; font-size: 12px;"><strong>ID:</strong> ${file.id || 'No ID'}</p>
+                  <div style="color: #888; font-size: 10px; margin-top: 8px; background: #333; padding: 5px; border-radius: 3px;">
+                    Raw object: ${JSON.stringify(file, null, 2)}
+                  </div>
+                </div>
+              `;
+            });
+          }
+          
+          reportsList.innerHTML = html;
+          
+          if (reportsHistory) {
+            reportsHistory.scrollIntoView({ behavior: 'smooth' });
+          }
+          
+          alert('🚨 EMERGENCY DISPLAY: Showing ' + files.length + ' raw files from Supabase bucket');
+        }
+        
+      } catch (error) {
+        console.error('❌ Emergency display failed:', error);
+        alert('❌ Emergency display failed: ' + error.message);
+      }
+    };
+    
     console.log('✅ CRITICAL FUNCTIONS: All essential functions defined');
     console.log('🔧 Available test functions: testAllButtonsNow(), testReportManagement(), testSupabaseIntegration(), testUploadAndRetrieval(), debugViewReports()');
     console.log('🏗️ Available renovation functions: initializeRenovationForm(), loadRenovationItems()');
     console.log('📊 Available Supabase functions: initializeSupabaseClient(), testSupabaseConnection()');
     console.log('🔍 Available debug functions: debugViewReports()');
     console.log('📋 Available render functions: renderReportsHistory()');
+    console.log('🚨 EMERGENCY functions: forceDisplaySupabaseFiles()');
     
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
