@@ -241,6 +241,213 @@
     
     console.log('✅ IMMEDIATE FUNCTIONS READY');
   </script>
+
+  <!-- COMPREHENSIVE ERROR TESTING SCRIPT -->
+  <script>
+    console.log('🔍 ERROR TESTING: Starting comprehensive diagnostics...');
+    
+    // Test 1: Basic JavaScript execution
+    window.testBasicExecution = function() {
+      console.log('✅ Test 1: Basic JavaScript execution - PASSED');
+      return true;
+    };
+    
+    // Test 2: DOM element access
+    window.testDOMAccess = function() {
+      try {
+        const reportsList = document.getElementById('reports-list');
+        const uploadButton = document.getElementById('upload-trigger');
+        const fileInput = document.getElementById('report-file-main');
+        
+        console.log('🔍 DOM Elements Check:');
+        console.log('  - reports-list exists:', !!reportsList);
+        console.log('  - upload-trigger exists:', !!uploadButton);
+        console.log('  - report-file-main exists:', !!fileInput);
+        
+        return {
+          reportsList: !!reportsList,
+          uploadButton: !!uploadButton,
+          fileInput: !!fileInput
+        };
+      } catch (error) {
+        console.error('❌ DOM Access Test Failed:', error);
+        return false;
+      }
+    };
+    
+    // Test 3: Global variables
+    window.testGlobalVariables = function() {
+      console.log('🔍 Global Variables Check:');
+      console.log('  - window.uploadedReports:', typeof window.uploadedReports, window.uploadedReports?.length);
+      console.log('  - uploadedReports (direct):', typeof uploadedReports, uploadedReports?.length);
+      
+      return {
+        windowUploadedReports: typeof window.uploadedReports,
+        directUploadedReports: typeof uploadedReports,
+        reportsCount: window.uploadedReports?.length || 0
+      };
+    };
+    
+    // Test 4: Function availability
+    window.testFunctionAvailability = function() {
+      console.log('🔍 Function Availability Check:');
+      const functions = [
+        'showReportsNow',
+        'forceRefreshReports', 
+        'testUpload',
+        'renderReportsHistory',
+        'loadReportsFromStorage',
+        'updateMostRecentReportDisplay'
+      ];
+      
+      const results = {};
+      functions.forEach(func => {
+        results[func] = typeof window[func];
+        console.log(`  - ${func}:`, typeof window[func]);
+      });
+      
+      return results;
+    };
+    
+    // Test 5: Manual reports display (bypassing all functions)
+    window.testManualDisplay = function() {
+      console.log('🔍 Manual Display Test:');
+      try {
+        const reportsList = document.getElementById('reports-list');
+        if (!reportsList) {
+          console.error('❌ reports-list element not found');
+          return false;
+        }
+        
+        // Try to find reports data
+        let reportsData = null;
+        if (window.uploadedReports && window.uploadedReports.length > 0) {
+          reportsData = window.uploadedReports;
+        } else if (typeof uploadedReports !== 'undefined' && uploadedReports.length > 0) {
+          reportsData = uploadedReports;
+        }
+        
+        if (reportsData) {
+          console.log('✅ Found reports data:', reportsData.length);
+          let html = '<h4>🔍 MANUAL TEST: Reports Found (' + reportsData.length + ')</h4>';
+          reportsData.forEach((report, index) => {
+            html += '<div style="padding: 10px; margin: 5px 0; background: rgba(255, 0, 0, 0.1); border: 1px solid red; border-radius: 5px;">';
+            html += '<strong>📄 Report ' + (index + 1) + ':</strong> ' + (report.filename || report.name || 'Unknown');
+            html += '</div>';
+          });
+          reportsList.innerHTML = html;
+          console.log('✅ Manual display created successfully');
+          return true;
+        } else {
+          console.log('⚠️ No reports data found for manual display');
+          reportsList.innerHTML = '<p style="color: orange;">⚠️ MANUAL TEST: No reports data found</p>';
+          return false;
+        }
+      } catch (error) {
+        console.error('❌ Manual Display Test Failed:', error);
+        return false;
+      }
+    };
+    
+    // Test 6: Upload functionality
+    window.testUploadFunctionality = function() {
+      console.log('🔍 Upload Functionality Test:');
+      try {
+        const uploadButton = document.getElementById('upload-trigger');
+        const fileInput = document.getElementById('report-file-main');
+        
+        if (uploadButton) {
+          console.log('✅ Upload button found');
+          // Test clicking
+          uploadButton.click();
+          console.log('✅ Upload button clicked');
+        } else {
+          console.error('❌ Upload button not found');
+        }
+        
+        if (fileInput) {
+          console.log('✅ File input found');
+          fileInput.click();
+          console.log('✅ File input clicked');
+        } else {
+          console.error('❌ File input not found');
+        }
+        
+        return {
+          uploadButton: !!uploadButton,
+          fileInput: !!fileInput
+        };
+      } catch (error) {
+        console.error('❌ Upload Test Failed:', error);
+        return false;
+      }
+    };
+    
+    // Master test function
+    window.runAllTests = function() {
+      console.log('🚀 RUNNING ALL DIAGNOSTIC TESTS...');
+      console.log('=' .repeat(50));
+      
+      const results = {
+        basicExecution: window.testBasicExecution(),
+        domAccess: window.testDOMAccess(),
+        globalVariables: window.testGlobalVariables(),
+        functionAvailability: window.testFunctionAvailability(),
+        manualDisplay: window.testManualDisplay(),
+        uploadFunctionality: window.testUploadFunctionality()
+      };
+      
+      console.log('=' .repeat(50));
+      console.log('📊 TEST RESULTS SUMMARY:');
+      console.log(results);
+      
+      return results;
+    };
+    
+    console.log('✅ ERROR TESTING FUNCTIONS LOADED');
+    console.log('🔧 Available test functions: testBasicExecution, testDOMAccess, testGlobalVariables, testFunctionAvailability, testManualDisplay, testUploadFunctionality, runAllTests');
+    
+    // ULTIMATE FALLBACK - This will work no matter what
+    setTimeout(function() {
+      console.log('🚨 ULTIMATE FALLBACK: Attempting to display reports...');
+      try {
+        const reportsList = document.getElementById('reports-list');
+        if (reportsList) {
+          // Check for reports data in multiple ways
+          let reportsData = null;
+          
+          if (window.uploadedReports && window.uploadedReports.length > 0) {
+            reportsData = window.uploadedReports;
+            console.log('✅ Found reports in window.uploadedReports:', reportsData.length);
+          } else if (typeof uploadedReports !== 'undefined' && uploadedReports.length > 0) {
+            reportsData = uploadedReports;
+            console.log('✅ Found reports in uploadedReports:', reportsData.length);
+          }
+          
+          if (reportsData && reportsData.length > 0) {
+            let html = '<h4>📊 Reports (' + reportsData.length + ')</h4>';
+            reportsData.forEach((report, index) => {
+              html += '<div style="padding: 15px; margin: 10px 0; background: rgba(0, 255, 0, 0.1); border: 2px solid green; border-radius: 8px;">';
+              html += '<strong>📄 Report ' + (index + 1) + ':</strong> ' + (report.filename || report.name || 'Unknown') + '<br>';
+              html += '<small>📅 Date: ' + (report.date || 'Unknown') + '</small><br>';
+              html += '<small>💾 Size: ' + (report.size || 'Unknown') + ' bytes</small>';
+              html += '</div>';
+            });
+            reportsList.innerHTML = html;
+            console.log('✅ ULTIMATE FALLBACK: Reports displayed successfully');
+          } else {
+            console.log('⚠️ ULTIMATE FALLBACK: No reports data found');
+            reportsList.innerHTML = '<p style="color: #94a3b8; text-align: center; padding: 20px;">No reports found. The data might still be loading...</p>';
+          }
+        } else {
+          console.error('❌ ULTIMATE FALLBACK: reports-list element not found');
+        }
+      } catch (error) {
+        console.error('❌ ULTIMATE FALLBACK failed:', error);
+      }
+    }, 2000); // Wait 2 seconds for everything to load
+    
+  </script>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
