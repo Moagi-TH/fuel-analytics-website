@@ -18,9 +18,9 @@
   <script>
     console.log('🚀 CRITICAL FUNCTIONS: Defining essential functions immediately...');
     
-    // Essential upload functions
-    window.handleFileUpload = function(event) {
-      console.log('📁 CRITICAL: Handling file upload...');
+    // Essential upload functions - Supabase integrated
+    window.handleFileUpload = async function(event) {
+      console.log('📁 CRITICAL: Handling file upload with Supabase integration...');
       try {
         const file = event.target.files[0];
         if (file) {
@@ -42,40 +42,100 @@
           }
           
           // Show loading message
-          alert('📤 Uploading file: ' + file.name + '\nPlease wait...');
+          alert('📤 Uploading file to Supabase: ' + file.name + '\nPlease wait...');
           
-          // Basic file processing
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            console.log('✅ File processed successfully');
-            // Create a simple report object
-            const reportData = {
-              filename: file.name,
-              uploadDate: new Date().toISOString(),
-              content: e.target.result.substring(0, 1000) // First 1000 chars
-            };
-            
-            // Add to reports array
-            if (!window.uploadedReports) window.uploadedReports = [];
-            window.uploadedReports.push(reportData);
-            
-            // Show success message
-            alert('✅ Upload successful!\nFile: ' + file.name + '\nAdded to reports list.');
-            
-            // Update display
-            if (typeof window.showReportsNow === 'function') {
-              window.showReportsNow();
-            } else {
-              alert('⚠️ Warning: Reports display function not available. File uploaded but may not be visible.');
+          // Upload to Supabase storage
+          if (window.supabaseClient) {
+            try {
+              console.log('🔄 Uploading to Supabase storage...');
+              
+              // Create unique filename with timestamp
+              const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+              const uniqueFileName = `${timestamp}_${file.name}`;
+              
+              // Upload to fuel-reports bucket
+              const { data: uploadData, error: uploadError } = await window.supabaseClient.supabase.storage
+                .from('fuel-reports')
+                .upload(uniqueFileName, file);
+              
+              if (uploadError) {
+                throw new Error('Upload failed: ' + uploadError.message);
+              }
+              
+              console.log('✅ File uploaded to Supabase storage:', uploadData);
+              
+              // Create report record in database
+              const reportData = {
+                filename: file.name,
+                storagePath: uniqueFileName,
+                uploadDate: new Date().toISOString(),
+                fileSize: file.size,
+                userId: window.supabaseClient?.currentUser?.id || 'anonymous'
+              };
+              
+              // Add to local reports array
+              if (!window.uploadedReports) window.uploadedReports = [];
+              window.uploadedReports.push(reportData);
+              
+              // Show success message
+              alert('✅ Upload successful to Supabase!\nFile: ' + file.name + '\nStored in fuel-reports bucket.\nAdded to reports list.');
+              
+              // Update display
+              if (typeof window.showReportsNow === 'function') {
+                window.showReportsNow();
+              }
+              
+              // Refresh reports from storage
+              if (typeof window.loadReportsFromStorage === 'function') {
+                window.loadReportsFromStorage();
+              }
+              
+            } catch (supabaseError) {
+              console.error('❌ Supabase upload error:', supabaseError);
+              alert('❌ Supabase upload failed: ' + supabaseError.message + '\nFalling back to local storage.');
+              
+              // Fallback to local storage
+              const reader = new FileReader();
+              reader.onload = function(e) {
+                const reportData = {
+                  filename: file.name,
+                  uploadDate: new Date().toISOString(),
+                  content: e.target.result.substring(0, 1000)
+                };
+                
+                if (!window.uploadedReports) window.uploadedReports = [];
+                window.uploadedReports.push(reportData);
+                
+                alert('✅ File stored locally as fallback: ' + file.name);
+                if (typeof window.showReportsNow === 'function') {
+                  window.showReportsNow();
+                }
+              };
+              reader.readAsText(file);
             }
-          };
-          
-          reader.onerror = function() {
-            alert('❌ Error reading file. Please try again.');
-            console.error('❌ FileReader error');
-          };
-          
-          reader.readAsText(file);
+          } else {
+            alert('⚠️ Supabase not available. Storing locally.');
+            console.warn('⚠️ Supabase client not available, using local storage');
+            
+            // Fallback to local storage
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              const reportData = {
+                filename: file.name,
+                uploadDate: new Date().toISOString(),
+                content: e.target.result.substring(0, 1000)
+              };
+              
+              if (!window.uploadedReports) window.uploadedReports = [];
+              window.uploadedReports.push(reportData);
+              
+              alert('✅ File stored locally: ' + file.name);
+              if (typeof window.showReportsNow === 'function') {
+                window.showReportsNow();
+              }
+            };
+            reader.readAsText(file);
+          }
         } else {
           alert('❌ Error: No file selected. Please choose a PDF file to upload.');
           console.error('❌ No file selected');
@@ -86,9 +146,9 @@
       }
     };
     
-    // Essential reports display function
-    window.showReportsNow = function() {
-      console.log('📊 CRITICAL: Showing reports now...');
+    // Essential reports display function - Supabase integrated
+    window.showReportsNow = async function() {
+      console.log('📊 CRITICAL: Showing reports with Supabase integration...');
       try {
         // First, show the reports history section
         const reportsHistory = document.getElementById('reports-history');
@@ -107,8 +167,45 @@
           return;
         }
         
+        // Load reports from Supabase first
+        if (window.supabaseClient) {
+          try {
+            console.log('🔄 Loading reports from Supabase...');
+            alert('📊 Loading reports from Supabase...');
+            
+            // Load from storage
+            if (typeof window.loadReportsFromStorage === 'function') {
+              await window.loadReportsFromStorage();
+            }
+            
+            // Also try to load from database
+            const result = await window.supabaseClient.getMonthlyReports();
+            if (result.success && result.reports && result.reports.length > 0) {
+              console.log('✅ Loaded', result.reports.length, 'reports from Supabase database');
+              
+              // Merge with existing reports
+              if (!window.uploadedReports) window.uploadedReports = [];
+              result.reports.forEach(report => {
+                // Check if report already exists
+                const exists = window.uploadedReports.find(r => r.filename === report.file_name);
+                if (!exists) {
+                  window.uploadedReports.push({
+                    filename: report.file_name,
+                    uploadDate: report.created_at,
+                    id: report.id,
+                    storagePath: report.storage_path
+                  });
+                }
+              });
+            }
+          } catch (supabaseError) {
+            console.error('❌ Error loading from Supabase:', supabaseError);
+            alert('⚠️ Could not load from Supabase: ' + supabaseError.message + '. Showing local reports.');
+          }
+        }
+        
         if (!window.uploadedReports || window.uploadedReports.length === 0) {
-          const noReportsMsg = '📋 No reports available to display. Upload a PDF file first.';
+          const noReportsMsg = '📋 No reports available. Upload a PDF file first or check Supabase connection.';
           alert(noReportsMsg);
           console.log(noReportsMsg);
           reportsList.innerHTML = '<div class="text-gray-500 p-4 text-center">No reports available. Upload a PDF file to get started.</div>';
@@ -118,24 +215,27 @@
         console.log('✅ Found ' + window.uploadedReports.length + ' reports to display');
         
         let html = '<div class="space-y-4">';
-        html += '<h3 class="text-lg font-semibold text-white mb-4">📋 Uploaded Reports (' + window.uploadedReports.length + ')</h3>';
+        html += '<h3 class="text-lg font-semibold text-white mb-4">📋 Reports from Supabase (' + window.uploadedReports.length + ')</h3>';
         
         window.uploadedReports.forEach((report, index) => {
+          const isFromSupabase = report.storagePath ? '☁️ Supabase' : '💾 Local';
           html += `
             <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
               <h4 class="text-lg font-semibold text-white">📄 ${report.filename}</h4>
               <p class="text-gray-400 text-sm">📅 Uploaded: ${new Date(report.uploadDate).toLocaleString()}</p>
+              <p class="text-blue-400 text-xs">${isFromSupabase}</p>
               <div class="mt-2 text-gray-300 text-xs max-h-20 overflow-y-auto">
-                ${report.content ? report.content.substring(0, 200) + '...' : 'No preview available'}
+                ${report.content ? report.content.substring(0, 200) + '...' : 'PDF file - click to view'}
               </div>
               <div class="mt-2 text-xs text-blue-400">Report #${index + 1}</div>
+              ${report.storagePath ? `<button onclick="window.openPDFFromStorage('${report.storagePath}', '${report.filename}')" class="mt-2 text-xs bg-blue-600 text-white px-2 py-1 rounded">View PDF</button>` : ''}
             </div>
           `;
         });
         html += '</div>';
         
         reportsList.innerHTML = html;
-        const successMsg = '✅ Successfully displayed ' + window.uploadedReports.length + ' reports';
+        const successMsg = '✅ Successfully displayed ' + window.uploadedReports.length + ' reports from Supabase';
         alert(successMsg);
         console.log(successMsg);
         
@@ -150,37 +250,79 @@
       }
     };
     
-    // Essential view performance function
-    window.viewPerformance = function() {
-      console.log('📈 CRITICAL: Viewing performance...');
+    // Essential view performance function - Supabase integrated
+    window.viewPerformance = async function() {
+      console.log('📈 CRITICAL: Viewing performance with Supabase integration...');
       try {
         // Navigate to analytics section
-        const analyticsSection = document.getElementById('analytics-section');
+        const analyticsSection = document.getElementById('analytics');
         if (analyticsSection) {
           analyticsSection.scrollIntoView({ behavior: 'smooth' });
+          
+          // Load performance data from Supabase
+          if (window.supabaseClient) {
+            console.log('📊 Loading performance data from Supabase...');
+            alert('📊 Loading performance metrics from Supabase...');
+            
+            try {
+              // Load reports from Supabase to calculate performance
+              const result = await window.supabaseClient.getMonthlyReports();
+              if (result.success && result.reports && result.reports.length > 0) {
+                console.log('✅ Performance data loaded from', result.reports.length, 'reports');
+                
+                // Update dashboard with performance data
+                if (typeof window.updateDashboardMetrics === 'function') {
+                  window.updateDashboardMetrics();
+                }
+                
+                alert('✅ Performance metrics loaded from Supabase! ' + result.reports.length + ' reports analyzed.');
+              } else {
+                alert('⚠️ No performance data available. Upload reports first to see performance metrics.');
+              }
+            } catch (error) {
+              console.error('❌ Error loading performance data:', error);
+              alert('❌ Error loading performance data: ' + error.message);
+            }
+          } else {
+            alert('⚠️ Supabase not connected. Performance data may not be current.');
+          }
         } else {
-          console.log('📊 Performance data would be displayed here');
-          alert('Performance data would be displayed here. This is a placeholder function.');
+          console.error('❌ Analytics section not found');
+          alert('❌ Error: Analytics section not found. Cannot display performance metrics.');
         }
       } catch (error) {
-        console.error('❌ Error viewing performance:', error);
+        const errorMsg = '❌ Error viewing performance: ' + error.message;
+        console.error(errorMsg);
+        alert(errorMsg);
       }
     };
     
-    // Essential enter data function
+    // Essential enter data function - Supabase integrated
     window.enterData = function() {
-      console.log('📝 CRITICAL: Entering data...');
+      console.log('📝 CRITICAL: Entering data with Supabase integration...');
       try {
-        // Navigate to renovation section or show data entry form
+        // Navigate to renovation section
         const renovationSection = document.getElementById('renovation-section');
         if (renovationSection) {
+          // Show the renovation section
+          renovationSection.style.display = 'block';
           renovationSection.scrollIntoView({ behavior: 'smooth' });
+          
+          // Initialize renovation form if not already done
+          if (typeof window.initializeRenovationForm === 'function') {
+            window.initializeRenovationForm();
+          }
+          
+          alert('✅ Data entry section opened! You can now add renovation items that will be saved to Supabase.');
+          console.log('✅ Renovation section opened for data entry');
         } else {
-          console.log('📝 Data entry form would be displayed here');
-          alert('Data entry form would be displayed here. This is a placeholder function.');
+          console.error('❌ Renovation section not found');
+          alert('❌ Error: Renovation section not found. Cannot open data entry form.');
         }
       } catch (error) {
-        console.error('❌ Error entering data:', error);
+        const errorMsg = '❌ Error opening data entry: ' + error.message;
+        console.error(errorMsg);
+        alert(errorMsg);
       }
     };
     
@@ -279,8 +421,140 @@
       };
     };
     
+    // Initialize renovation form with Supabase integration
+    window.initializeRenovationForm = function() {
+      console.log('🏗️ Initializing renovation form with Supabase integration...');
+      
+      // Show renovation item form
+      const renovationForm = document.getElementById('renovation-item-form');
+      if (renovationForm) {
+        renovationForm.style.display = 'block';
+        console.log('✅ Renovation form shown');
+      }
+      
+      // Set up form submission to save to Supabase
+      const saveButton = document.getElementById('save-renovation-item');
+      if (saveButton) {
+        saveButton.onclick = async function() {
+          try {
+            console.log('💾 Saving renovation item to Supabase...');
+            
+            // Get form data
+            const itemName = document.getElementById('item-name')?.value || '';
+            const itemDescription = document.getElementById('item-description')?.value || '';
+            const itemQty = document.getElementById('item-qty')?.value || 0;
+            const itemUnitCost = document.getElementById('item-unit-cost')?.value || 0;
+            const itemTotal = document.getElementById('item-total')?.value || 0;
+            
+            if (!itemName) {
+              alert('❌ Please enter an item name');
+              return;
+            }
+            
+            const renovationData = {
+              name: itemName,
+              description: itemDescription,
+              quantity: parseInt(itemQty),
+              unit_cost: parseFloat(itemUnitCost),
+              total_cost: parseFloat(itemTotal),
+              created_at: new Date().toISOString(),
+              user_id: window.supabaseClient?.currentUser?.id || 'anonymous'
+            };
+            
+            // Save to Supabase if available
+            if (window.supabaseClient && window.supabaseClient.supabase) {
+              try {
+                const { data, error } = await window.supabaseClient.supabase
+                  .from('renovation_items')
+                  .insert([renovationData]);
+                
+                if (error) {
+                  throw new Error('Database save failed: ' + error.message);
+                }
+                
+                alert('✅ Renovation item saved to Supabase!\nName: ' + itemName + '\nCost: R' + itemTotal);
+                console.log('✅ Renovation item saved to Supabase:', data);
+                
+                // Clear form
+                document.getElementById('item-name').value = '';
+                document.getElementById('item-description').value = '';
+                document.getElementById('item-qty').value = '';
+                document.getElementById('item-unit-cost').value = '';
+                document.getElementById('item-total').value = '';
+                
+              } catch (supabaseError) {
+                console.error('❌ Supabase save error:', supabaseError);
+                alert('❌ Failed to save to Supabase: ' + supabaseError.message + '\nData saved locally as fallback.');
+                
+                // Fallback to local storage
+                const localRenovations = JSON.parse(localStorage.getItem('renovationItems') || '[]');
+                localRenovations.push(renovationData);
+                localStorage.setItem('renovationItems', JSON.stringify(localRenovations));
+              }
+            } else {
+              alert('⚠️ Supabase not available. Saving locally.');
+              const localRenovations = JSON.parse(localStorage.getItem('renovationItems') || '[]');
+              localRenovations.push(renovationData);
+              localStorage.setItem('renovationItems', JSON.stringify(localRenovations));
+              alert('✅ Renovation item saved locally: ' + itemName);
+            }
+            
+          } catch (error) {
+            console.error('❌ Error saving renovation item:', error);
+            alert('❌ Error saving renovation item: ' + error.message);
+          }
+        };
+      }
+    };
+    
+    // Add function to load and display renovation items from Supabase
+    window.loadRenovationItems = async function() {
+      console.log('📋 Loading renovation items from Supabase...');
+      
+      try {
+        if (window.supabaseClient && window.supabaseClient.supabase) {
+          const { data, error } = await window.supabaseClient.supabase
+            .from('renovation_items')
+            .select('*')
+            .order('created_at', { ascending: false });
+          
+          if (error) {
+            throw new Error('Failed to load from database: ' + error.message);
+          }
+          
+          console.log('✅ Loaded', data.length, 'renovation items from Supabase');
+          
+          const itemsContainer = document.getElementById('items-container');
+          if (itemsContainer && data.length > 0) {
+            let html = '';
+            data.forEach(item => {
+              html += `
+                <div class="item-card">
+                  <h5>${item.name}</h5>
+                  <p>${item.description || 'No description'}</p>
+                  <p>Quantity: ${item.quantity} | Unit Cost: R${item.unit_cost} | Total: R${item.total_cost}</p>
+                  <small>Added: ${new Date(item.created_at).toLocaleString()}</small>
+                </div>
+              `;
+            });
+            itemsContainer.innerHTML = html;
+            alert('✅ Loaded ' + data.length + ' renovation items from Supabase');
+          }
+        } else {
+          // Load from local storage as fallback
+          const localItems = JSON.parse(localStorage.getItem('renovationItems') || '[]');
+          console.log('📋 Loaded', localItems.length, 'items from local storage');
+          alert('⚠️ Supabase not available. Loaded ' + localItems.length + ' items from local storage.');
+        }
+      } catch (error) {
+        console.error('❌ Error loading renovation items:', error);
+        alert('❌ Error loading renovation items: ' + error.message);
+      }
+    };
+    
     console.log('✅ CRITICAL FUNCTIONS: All essential functions defined');
     console.log('🔧 Available test functions: testAllButtonsNow(), testReportManagement()');
+    console.log('🏗️ Available renovation functions: initializeRenovationForm(), loadRenovationItems()');
     
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
