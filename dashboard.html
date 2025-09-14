@@ -10678,6 +10678,78 @@
           `;
         }
         
+        // Add comprehensive financial analysis for all groups
+        const groupItems = window.renovationState.items.filter(item => item.category === group);
+        const totalInvestment = groupItems.reduce((sum, item) => sum + (item.total || 0), 0);
+        const itemCount = groupItems.length;
+        
+        if (itemCount > 0) {
+          // Calculate group-level financial metrics
+          const groupCashFlows = [];
+          let totalRevenue = 0;
+          
+          // Generate combined cash flows for all items in the group
+          groupItems.forEach(item => {
+            const metrics = window.calculateRenovationMetrics ? window.calculateRenovationMetrics(item) : null;
+            if (metrics && metrics.cashFlows) {
+              // Add cash flows (combine with existing)
+              for (let i = 0; i < metrics.cashFlows.length; i++) {
+                if (groupCashFlows[i] === undefined) {
+                  groupCashFlows[i] = 0;
+                }
+                groupCashFlows[i] += metrics.cashFlows[i];
+              }
+              totalRevenue += metrics.monthlyRevenue * metrics.horizon;
+            }
+          });
+          
+          // Calculate group-level metrics if we have financial calculation functions
+          if (window.calculateNPV && window.calculateIRR && window.calculatePaybackPeriod && groupCashFlows.length > 0) {
+            const discountRate = (window.renovationState?.projectSettings?.discountRate || 0.12) / 12;
+            const groupNPV = window.calculateNPV(groupCashFlows, discountRate);
+            const groupIRR = window.calculateIRR(groupCashFlows);
+            const groupPayback = window.calculatePaybackPeriod(groupCashFlows);
+            
+            content += `
+              <div class="financial-analysis-section" style="margin-top: 20px; padding: 20px; background: rgba(59, 130, 246, 0.1); border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3);">
+                <h5 style="color: #4a9eff; margin: 0 0 15px 0;">📊 Financial Analysis Summary</h5>
+                
+                <div class="metrics-grid">
+                  <div class="metric-card ${groupNPV >= 0 ? 'metric-positive' : 'metric-negative'}" style="background: ${groupNPV >= 0 ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; border: 1px solid ${groupNPV >= 0 ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'};">
+                    <div class="metric-value" style="color: ${groupNPV >= 0 ? '#22c55e' : '#ef4444'};">R${groupNPV.toLocaleString()}</div>
+                    <div class="metric-label">Net Present Value (NPV)</div>
+                    <div class="metric-description" style="font-size: 12px; color: #666;">${groupNPV >= 0 ? '✅ Profitable investment' : '❌ Loss-making investment'}</div>
+                  </div>
+                  
+                  <div class="metric-card ${groupIRR >= 12 ? 'metric-positive' : 'metric-neutral'}" style="background: ${groupIRR >= 12 ? 'rgba(34, 197, 94, 0.1)' : 'rgba(156, 163, 175, 0.1)'}; border: 1px solid ${groupIRR >= 12 ? 'rgba(34, 197, 94, 0.3)' : 'rgba(156, 163, 175, 0.3)'};">
+                    <div class="metric-value" style="color: ${groupIRR >= 12 ? '#22c55e' : '#9ca3af'};">${groupIRR.toFixed(1)}%</div>
+                    <div class="metric-label">Internal Rate of Return (IRR)</div>
+                    <div class="metric-description" style="font-size: 12px; color: #666;">${groupIRR >= 12 ? '✅ Above 12% target' : '⚠️ Below 12% target'}</div>
+                  </div>
+                  
+                  <div class="metric-card ${groupPayback <= 36 ? 'metric-positive' : 'metric-warning'}" style="background: ${groupPayback <= 36 ? 'rgba(34, 197, 94, 0.1)' : 'rgba(245, 158, 11, 0.1)'}; border: 1px solid ${groupPayback <= 36 ? 'rgba(34, 197, 94, 0.3)' : 'rgba(245, 158, 11, 0.3)'};">
+                    <div class="metric-value" style="color: ${groupPayback <= 36 ? '#22c55e' : '#f59e0b'};">${groupPayback.toFixed(1)}</div>
+                    <div class="metric-label">Payback Period (Months)</div>
+                    <div class="metric-description" style="font-size: 12px; color: #666;">${groupPayback <= 36 ? '✅ Quick payback' : '⚠️ Long payback period'}</div>
+                  </div>
+                </div>
+                
+                <div class="metrics-grid" style="margin-top: 15px;">
+                  <div class="metric-card" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3);">
+                    <div class="metric-value" style="color: #3b82f6;">R${totalRevenue.toLocaleString()}</div>
+                    <div class="metric-label">Total Revenue (${window.renovationState?.projectSettings?.horizon || 120} months)</div>
+                  </div>
+                  
+                  <div class="metric-card" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3);">
+                    <div class="metric-value" style="color: #3b82f6;">${((totalRevenue / totalInvestment) * 100).toFixed(1)}%</div>
+                    <div class="metric-label">Return on Investment (ROI)</div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+        }
+        
         metricsContent.innerHTML = content;
         metricsSection.style.display = 'block';
       }
@@ -12952,6 +13024,209 @@
         console.log('Window load fired - re-initializing...');
         initializePage();
       });
+
+      // Ensure renovation functions are ready - COMPREHENSIVE INITIALIZATION
+      window.ensureRenovationFunctionsReady = function() {
+        console.log('🔧 Ensuring renovation functions are ready...');
+        
+        // Check if all required functions exist
+        const requiredFunctions = [
+          'showRenovationForm',
+          'hideRenovationForm', 
+          'saveRenovationItem',
+          'selectRenovationGroup',
+          'showGroupFinancialMetrics',
+          'renderRenovationItems',
+          'refreshRenovationCharts',
+          'calculateIRR',
+          'calculateNPV',
+          'calculatePaybackPeriod'
+        ];
+        
+        const missingFunctions = [];
+        requiredFunctions.forEach(funcName => {
+          if (typeof window[funcName] !== 'function') {
+            missingFunctions.push(funcName);
+          }
+        });
+        
+        if (missingFunctions.length > 0) {
+          console.warn('⚠️ Missing renovation functions:', missingFunctions);
+          return false;
+        }
+        
+        console.log('✅ All renovation functions are ready!');
+        return true;
+      };
+
+      // Financial Metrics Calculation Functions
+      
+      // IRR (Internal Rate of Return) Calculation
+      window.calculateIRR = function(cashFlows, initialGuess = 0.1) {
+        console.log('📊 Calculating IRR for cash flows:', cashFlows);
+        
+        if (!cashFlows || cashFlows.length < 2) {
+          console.warn('⚠️ IRR calculation requires at least 2 cash flow periods');
+          return 0;
+        }
+        
+        // Newton-Raphson method for IRR calculation
+        let rate = initialGuess;
+        const maxIterations = 100;
+        const tolerance = 1e-6;
+        
+        for (let i = 0; i < maxIterations; i++) {
+          let npv = 0;
+          let derivative = 0;
+          
+          for (let j = 0; j < cashFlows.length; j++) {
+            const discountFactor = Math.pow(1 + rate, j);
+            npv += cashFlows[j] / discountFactor;
+            
+            if (j > 0) {
+              derivative -= (j * cashFlows[j]) / (discountFactor * (1 + rate));
+            }
+          }
+          
+          if (Math.abs(npv) < tolerance) {
+            break;
+          }
+          
+          if (Math.abs(derivative) < tolerance) {
+            break;
+          }
+          
+          rate = rate - npv / derivative;
+          
+          // Prevent negative rates or rates that are too high
+          rate = Math.max(-0.99, Math.min(rate, 10));
+        }
+        
+        const irrPercentage = (rate * 100).toFixed(2);
+        console.log('✅ IRR calculated:', irrPercentage + '%');
+        return parseFloat(irrPercentage);
+      };
+
+      // NPV (Net Present Value) Calculation
+      window.calculateNPV = function(cashFlows, discountRate = 0.12) {
+        console.log('💰 Calculating NPV with discount rate:', discountRate);
+        
+        if (!cashFlows || cashFlows.length === 0) {
+          console.warn('⚠️ NPV calculation requires cash flow data');
+          return 0;
+        }
+        
+        let npv = 0;
+        
+        for (let i = 0; i < cashFlows.length; i++) {
+          const discountFactor = Math.pow(1 + discountRate, i);
+          npv += cashFlows[i] / discountFactor;
+        }
+        
+        const npvRounded = parseFloat(npv.toFixed(2));
+        console.log('✅ NPV calculated: R' + npvRounded);
+        return npvRounded;
+      };
+
+      // Payback Period Calculation
+      window.calculatePaybackPeriod = function(cashFlows) {
+        console.log('⏱️ Calculating payback period for cash flows:', cashFlows);
+        
+        if (!cashFlows || cashFlows.length === 0) {
+          console.warn('⚠️ Payback period calculation requires cash flow data');
+          return 0;
+        }
+        
+        let cumulativeCashFlow = 0;
+        let paybackPeriod = 0;
+        
+        for (let i = 0; i < cashFlows.length; i++) {
+          cumulativeCashFlow += cashFlows[i];
+          
+          if (cumulativeCashFlow >= 0) {
+            if (i === 0) {
+              paybackPeriod = 0;
+            } else {
+              // Interpolate between periods
+              const prevCumulative = cumulativeCashFlow - cashFlows[i];
+              const fraction = Math.abs(prevCumulative) / Math.abs(cashFlows[i]);
+              paybackPeriod = i - 1 + fraction;
+            }
+            break;
+          }
+        }
+        
+        // If never reaches payback
+        if (cumulativeCashFlow < 0) {
+          paybackPeriod = cashFlows.length; // Never pays back
+        }
+        
+        const paybackRounded = parseFloat(paybackPeriod.toFixed(2));
+        console.log('✅ Payback period calculated:', paybackRounded + ' months');
+        return paybackRounded;
+      };
+
+      // Enhanced renovation item calculation with financial metrics
+      window.calculateRenovationMetrics = function(item) {
+        console.log('📈 Calculating comprehensive renovation metrics for:', item.name);
+        
+        if (!item) {
+          console.warn('⚠️ No item provided for metrics calculation');
+          return null;
+        }
+        
+        // Generate cash flow array (120 months default)
+        const horizon = window.renovationState?.projectSettings?.horizon || 120;
+        const cashFlows = [];
+        
+        // Initial investment (negative)
+        cashFlows.push(-item.total);
+        
+        // Monthly cash flows (assuming some revenue generation)
+        const monthlyRevenue = item.total * 0.02; // 2% of investment as monthly revenue
+        for (let i = 1; i < horizon; i++) {
+          cashFlows.push(monthlyRevenue);
+        }
+        
+        // Salvage value at the end
+        if (item.salvage > 0) {
+          cashFlows[horizon - 1] += item.salvage;
+        }
+        
+        // Calculate metrics
+        const discountRate = (window.renovationState?.projectSettings?.discountRate || 0.12) / 12; // Monthly rate
+        const npv = window.calculateNPV(cashFlows, discountRate);
+        const irr = window.calculateIRR(cashFlows);
+        const paybackPeriod = window.calculatePaybackPeriod(cashFlows);
+        
+        const metrics = {
+          npv: npv,
+          irr: irr,
+          paybackPeriod: paybackPeriod,
+          cashFlows: cashFlows,
+          totalInvestment: item.total,
+          monthlyRevenue: monthlyRevenue,
+          horizon: horizon
+        };
+        
+        console.log('✅ Renovation metrics calculated:', metrics);
+        return metrics;
+      };
+
+      // Initialize renovation functions when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+          console.log('📋 DOM loaded - initializing renovation functions...');
+          setTimeout(() => {
+            window.ensureRenovationFunctionsReady();
+          }, 1000);
+        });
+      } else {
+        console.log('📋 DOM already loaded - initializing renovation functions...');
+        setTimeout(() => {
+          window.ensureRenovationFunctionsReady();
+        }, 1000);
+      }
 
       // Add CSS for role and status badges
       const badgeStyle = document.createElement('style');
