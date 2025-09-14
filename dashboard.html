@@ -33,6 +33,31 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./dashboard.css?v=999999999999" />
+  <style>
+    /* Renovation form visibility (matches current dark theme) */
+    #renovation .form-input,
+    #renovation .form-select {
+      color: #e5e7eb;
+      background-color: #0f172a;
+      border-color: #1f2937;
+    }
+    /* Make field titles (labels) clearly visible */
+    #renovation label {
+      color: #cbd5e1;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 6px;
+    }
+    #renovation .form-input:focus,
+    #renovation .form-select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+    }
+    #renovation .form-input::placeholder { color: #9aa3b2; }
+    #renovation .button.primary { font-weight: 600; }
+    #renovation .renovation-form h4 { font-weight: 600; }
+  </style>
   <!-- Critical external libraries (load first, no defer) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1160,14 +1185,14 @@
           <div class="renovation-planning">
             <div class="planning-header">
               <h3>Renovation Planning</h3>
-              <button id="add-renovation-item" class="button primary">+ Add Renovation Item</button>
+              <button id="add-renovation-item" class="button primary" onclick="try{showRenovationForm&&showRenovationForm()}catch(e){console.error('showRenovationForm failed',e)}">+ Add Renovation Item</button>
             </div>
 
             <!-- Renovation Groups -->
             <div class="renovation-groups">
               <h4>Renovation Groups</h4>
               <div class="groups-grid">
-                <div class="group-card active" data-group="forecourt">
+                <div class="group-card active" data-group="forecourt" onclick="try{selectRenovationGroup&&selectRenovationGroup('forecourt')}catch(e){console.error(e)}">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="currentColor"/>
@@ -1176,7 +1201,7 @@
                   </div>
                   <div class="group-name">Forecourt</div>
                 </div>
-                <div class="group-card" data-group="pumps">
+                <div class="group-card" data-group="pumps" onclick="try{selectRenovationGroup&&selectRenovationGroup('pumps')}catch(e){console.error(e)}">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1184,16 +1209,16 @@
                   </div>
                   <div class="group-name">Pumps & Nozzles</div>
                 </div>
-                <div class="group-card" data-group="canopy">
+                <div class="group-card" data-group="deli" onclick="try{selectRenovationGroup&&selectRenovationGroup('deli')}catch(e){console.error(e)}">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="currentColor"/>
                       <rect x="6" y="18" width="12" height="4" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
                     </svg>
                   </div>
-                  <div class="group-name">Canopy</div>
+                  <div class="group-name">Deli</div>
                 </div>
-                <div class="group-card" data-group="shop">
+                <div class="group-card" data-group="shop" onclick="try{selectRenovationGroup&&selectRenovationGroup('shop')}catch(e){console.error(e)}">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
@@ -1201,9 +1226,9 @@
                       <path d="M9 12H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                     </svg>
                   </div>
-                  <div class="group-name">Shop Fit-out</div>
+                  <div class="group-name">Shop</div>
                 </div>
-                <div class="group-card" data-group="security">
+                <div class="group-card" data-group="security" onclick="try{selectRenovationGroup&&selectRenovationGroup('security')}catch(e){console.error(e)}">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
@@ -1213,7 +1238,7 @@
                   </div>
                   <div class="group-name">IT & Security</div>
                 </div>
-                <div class="group-card" data-group="compliance">
+                <div class="group-card" data-group="compliance" onclick="try{selectRenovationGroup&&selectRenovationGroup('compliance')}catch(e){console.error(e)}">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1225,7 +1250,7 @@
                   </div>
                   <div class="group-name">Compliance</div>
                 </div>
-                <div class="group-card" data-group="other">
+                <div class="group-card" data-group="other" onclick="try{selectRenovationGroup&&selectRenovationGroup('other')}catch(e){console.error(e)}">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1250,8 +1275,8 @@
                   <select id="item-category" class="form-select" required>
                     <option value="forecourt">Forecourt</option>
                     <option value="pumps">Pumps & Nozzles</option>
-                    <option value="canopy">Canopy</option>
-                    <option value="shop">Shop Fit-out</option>
+                    <option value="deli">Deli</option>
+                    <option value="shop">Shop</option>
                     <option value="security">IT & Security</option>
                     <option value="compliance">Compliance</option>
                     <option value="other">Other</option>
@@ -8368,10 +8393,12 @@
           card.addEventListener('click', () => selectRenovationGroup(card.dataset.group));
         });
 
-        // Form inputs
-        document.getElementById('item-qty').addEventListener('input', calculateItemTotal);
-        document.getElementById('item-unit-cost').addEventListener('input', calculateItemTotal);
-        document.getElementById('item-contingency').addEventListener('input', calculateItemTotal);
+        // Form inputs (robust listeners for all common events)
+        ['input','change','keyup','blur'].forEach(evt => {
+          document.getElementById('item-qty').addEventListener(evt, calculateItemTotal);
+          document.getElementById('item-unit-cost').addEventListener(evt, calculateItemTotal);
+          document.getElementById('item-contingency').addEventListener(evt, calculateItemTotal);
+        });
 
         // Spread type change
         document.getElementById('spread-type').addEventListener('change', handleSpreadTypeChange);
@@ -8547,6 +8574,26 @@
 
       // Save renovation item
       async function saveRenovationItem() {
+        console.log('SaveRenovationItem invoked');
+        // Ensure client and project exist so the flow always completes
+        try {
+          if (!window.renovationClient) {
+            const supabaseClient = (window.supabaseClient && window.supabaseClient.supabase)
+              || (typeof supabase !== 'undefined' ? supabase : null);
+            window.renovationClient = new RenovationClient(supabaseClient);
+          }
+          if (!window.renovationState.currentProject) {
+            console.log('No project found, creating a default project before saving item...');
+            const proj = await window.renovationClient.createProject({
+              name: 'My Fuel Business Renovation', currency: 'ZAR', horizon: 120,
+              discountRate: 0.12, taxRate: 0.28, vatRate: 0.15
+            });
+            window.renovationState.currentProject = proj;
+            console.log('Project ensured:', proj.id);
+          }
+        } catch (ensureErr) {
+          console.warn('Could not ensure client/project prior to save:', ensureErr);
+        }
         const item = {
           name: document.getElementById('item-name').value,
           category: document.getElementById('item-category').value,
@@ -8565,6 +8612,16 @@
         // Validate required fields
         if (!item.name.trim()) {
           alert('Please enter an item name');
+          return;
+        }
+        // If total hasn't auto-updated, compute server-side equivalent as fallback
+        if (item.total <= 0) {
+          const computed = (item.qty * item.unitCost) * (1 + (item.contingency || 0) / 100);
+          document.getElementById('item-total').value = computed.toFixed(2);
+          item.total = computed;
+        }
+        if (item.total <= 0) {
+          alert('Please enter a valid Quantity and Unit Cost');
           return;
         }
         
@@ -8597,6 +8654,25 @@
             await renovationClient.calculateCashFlows(window.renovationState.currentProject.id);
             
             console.log('Saved renovation item to database:', savedItem);
+            // Also update local state for immediate UX and offline resilience
+            const localCopy = {
+              id: savedItem.id,
+              name: savedItem.name,
+              category: savedItem.category,
+              qty: savedItem.qty,
+              unitCost: savedItem.unit_cost_zar ?? item.unitCost,
+              total: (savedItem.qty * (savedItem.unit_cost_zar ?? item.unitCost)) * (1 + (savedItem.contingency_pct ?? item.contingency) / 100),
+              contingency: savedItem.contingency_pct ?? item.contingency,
+              vatApplicable: savedItem.vat_applicable ?? item.vatApplicable,
+              salvage: savedItem.salvage_value_zar ?? item.salvage,
+              startMonth: savedItem.start_month ?? item.startMonth,
+              spreadType: savedItem.spread_type ?? item.spreadType,
+              spreadMonths: savedItem.spread_months ?? item.spreadMonths,
+              customSchedule: savedItem.custom_schedule ?? item.customSchedule,
+              createdAt: savedItem.created_at
+            };
+            window.renovationState.items.push(localCopy);
+            saveRenovationItems();
           } else {
             // Fallback to localStorage
             item.id = Date.now().toString();
@@ -8607,7 +8683,7 @@
           }
           
           // Update UI
-          await loadRenovationItemsFromDB();
+          try { await loadRenovationItemsFromDB(); } catch(e) { console.warn('DB load after save failed, rendering local', e); renderRenovationItems(); }
           await updateRenovationMetrics();
           hideRenovationForm();
           
@@ -8618,8 +8694,20 @@
           }, 1000);
           
         } catch (error) {
-          console.error('Error saving renovation item:', error);
-          alert('Error saving renovation item. Please try again.');
+          console.error('Error saving renovation item (DB path):', error);
+          // Fallback: ensure item is not lost
+          try {
+            const fallback = { ...item, id: Date.now().toString(), createdAt: new Date().toISOString() };
+            window.renovationState.items.push(fallback);
+            saveRenovationItems();
+            renderRenovationItems();
+            updateLocalMetrics();
+            hideRenovationForm();
+            // Non-blocking notice
+            console.log('Saved locally due to DB error. Your item will persist in this browser.');
+          } catch (e2) {
+            alert('Could not save the item locally. Please check required fields and try again.');
+          }
         }
       }
 
