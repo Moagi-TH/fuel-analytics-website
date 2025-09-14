@@ -2824,14 +2824,14 @@
           <div class="renovation-planning">
             <div class="planning-header">
               <h3>Renovation Planning</h3>
-              <button id="add-renovation-item" class="button primary" onclick="console.log('Add button clicked!'); if(typeof window.showRenovationForm === 'function') { window.showRenovationForm(); } else { console.log('showRenovationForm not ready, trying fallback...'); document.getElementById('renovation-item-form').style.display = 'block'; }">+ Add Renovation Item</button>
+              <button id="add-renovation-item" class="button primary">+ Add Renovation Item</button>
             </div>
 
             <!-- Renovation Groups -->
             <div class="renovation-groups">
               <h4>Renovation Groups</h4>
               <div class="groups-grid">
-                <div class="group-card active" data-group="forecourt" onclick="try{if(typeof window.selectRenovationGroup === 'function'){window.selectRenovationGroup('forecourt')}else{console.log('selectRenovationGroup not ready')}}catch(e){console.error(e)}">
+                <div class="group-card active" data-group="forecourt">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="currentColor"/>
@@ -2840,7 +2840,7 @@
                   </div>
                   <div class="group-name">Forecourt</div>
                 </div>
-                <div class="group-card" data-group="pumps" onclick="try{if(typeof window.selectRenovationGroup === 'function'){window.selectRenovationGroup('pumps')}else{console.log('selectRenovationGroup not ready')}}catch(e){console.error(e)}">
+                <div class="group-card" data-group="pumps">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -2848,7 +2848,7 @@
                   </div>
                   <div class="group-name">Pumps & Nozzles</div>
                 </div>
-                <div class="group-card" data-group="deli" onclick="try{if(typeof window.selectRenovationGroup === 'function'){window.selectRenovationGroup('deli')}else{console.log('selectRenovationGroup not ready')}}catch(e){console.error(e)}">
+                <div class="group-card" data-group="deli">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="currentColor"/>
@@ -2857,7 +2857,7 @@
                   </div>
                   <div class="group-name">Deli</div>
                 </div>
-                <div class="group-card" data-group="shop" onclick="try{if(typeof window.selectRenovationGroup === 'function'){window.selectRenovationGroup('shop')}else{console.log('selectRenovationGroup not ready')}}catch(e){console.error(e)}">
+                <div class="group-card" data-group="shop">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
@@ -2867,7 +2867,7 @@
                   </div>
                   <div class="group-name">Shop</div>
                 </div>
-                <div class="group-card" data-group="security" onclick="try{if(typeof window.selectRenovationGroup === 'function'){window.selectRenovationGroup('security')}else{console.log('selectRenovationGroup not ready')}}catch(e){console.error(e)}">
+                <div class="group-card" data-group="security">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
@@ -2877,7 +2877,7 @@
                   </div>
                   <div class="group-name">IT & Security</div>
                 </div>
-                <div class="group-card" data-group="compliance" onclick="try{if(typeof window.selectRenovationGroup === 'function'){window.selectRenovationGroup('compliance')}else{console.log('selectRenovationGroup not ready')}}catch(e){console.error(e)}">
+                <div class="group-card" data-group="compliance">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -2889,7 +2889,7 @@
                   </div>
                   <div class="group-name">Compliance</div>
                 </div>
-                <div class="group-card" data-group="other" onclick="try{if(typeof window.selectRenovationGroup === 'function'){window.selectRenovationGroup('other')}else{console.log('selectRenovationGroup not ready')}}catch(e){console.error(e)}">
+                <div class="group-card" data-group="other">
                   <div class="group-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -3035,8 +3035,8 @@
 
               <!-- Form Actions -->
               <div class="form-actions">
-                <button id="save-renovation-item" class="button primary" onclick="console.log('Save button clicked!'); if(typeof window.saveRenovationItem === 'function') { window.saveRenovationItem(); } else { console.log('saveRenovationItem not ready, trying fallback...'); alert('Save function not ready yet. Please wait for page to fully load.'); }">Save Item</button>
-                <button id="cancel-renovation-item" class="button secondary" onclick="console.log('Cancel button clicked!'); if(typeof window.hideRenovationForm === 'function') { window.hideRenovationForm(); } else { console.log('hideRenovationForm not ready, trying fallback...'); document.getElementById('renovation-item-form').style.display = 'none'; }">Cancel</button>
+                <button id="save-renovation-item" class="button primary">Save Item</button>
+                <button id="cancel-renovation-item" class="button secondary">Cancel</button>
               </div>
             </div>
 
@@ -13241,14 +13241,10 @@
         if (window.ensureRenovationFunctionsReady && window.ensureRenovationFunctionsReady()) {
           console.log('✅ IMMEDIATE: Renovation system ready immediately!');
           
-          // Update onclick handlers immediately if DOM is ready
+          // Update event listeners immediately if DOM is ready
           if (document.readyState !== 'loading') {
-            const groupCards = document.querySelectorAll('.group-card[data-group]');
-            groupCards.forEach(card => {
-              const group = card.getAttribute('data-group');
-              card.setAttribute('onclick', `window.selectRenovationGroup('${group}')`);
-            });
-            console.log('🔄 IMMEDIATE: Updated', groupCards.length, 'onclick handlers');
+            console.log('🔄 IMMEDIATE: Setting up event listeners...');
+            updateOnclickHandlers();
           }
         }
       }, 50);
@@ -13265,7 +13261,7 @@
           if (window.ensureRenovationFunctionsReady && window.ensureRenovationFunctionsReady()) {
             console.log('✅ Renovation system fully initialized!');
             
-            // Update all onclick handlers to use direct function calls
+            // Update all event listeners to use direct function calls
             updateOnclickHandlers();
           } else {
             console.log('⏳ Renovation functions not ready, retrying in 500ms...');
@@ -13276,13 +13272,73 @@
 
       // Update onclick handlers to use direct function calls once ready
       function updateOnclickHandlers() {
+        console.log('🔄 Setting up all renovation button event listeners...');
+        
+        // Set up group card click handlers
         const groupCards = document.querySelectorAll('.group-card[data-group]');
         groupCards.forEach(card => {
           const group = card.getAttribute('data-group');
-          card.setAttribute('onclick', `window.selectRenovationGroup('${group}')`);
+          card.addEventListener('click', function() {
+            console.log('🎯 Group card clicked:', group);
+            if (window.selectRenovationGroup) {
+              window.selectRenovationGroup(group);
+            } else {
+              console.warn('⚠️ selectRenovationGroup function not available');
+            }
+          });
         });
         
-        console.log('🔄 Updated onclick handlers for', groupCards.length, 'group cards');
+        // Set up Add Renovation Item button
+        const addButton = document.getElementById('add-renovation-item');
+        if (addButton) {
+          addButton.addEventListener('click', function() {
+            console.log('➕ Add renovation item button clicked');
+            if (window.showRenovationForm) {
+              window.showRenovationForm();
+            } else {
+              console.warn('⚠️ showRenovationForm function not available');
+              // Fallback
+              const form = document.getElementById('renovation-item-form');
+              if (form) form.style.display = 'block';
+            }
+          });
+        }
+        
+        // Set up Save Item button
+        const saveButton = document.getElementById('save-renovation-item');
+        if (saveButton) {
+          saveButton.addEventListener('click', function() {
+            console.log('💾 Save renovation item button clicked');
+            if (window.saveRenovationItem) {
+              window.saveRenovationItem();
+            } else {
+              console.warn('⚠️ saveRenovationItem function not available');
+              alert('Save function not ready yet. Please wait for page to fully load.');
+            }
+          });
+        }
+        
+        // Set up Cancel button
+        const cancelButton = document.getElementById('cancel-renovation-item');
+        if (cancelButton) {
+          cancelButton.addEventListener('click', function() {
+            console.log('❌ Cancel renovation item button clicked');
+            if (window.hideRenovationForm) {
+              window.hideRenovationForm();
+            } else {
+              console.warn('⚠️ hideRenovationForm function not available');
+              // Fallback
+              const form = document.getElementById('renovation-item-form');
+              if (form) form.style.display = 'none';
+            }
+          });
+        }
+        
+        console.log('✅ Set up event listeners for:');
+        console.log('  -', groupCards.length, 'group cards');
+        console.log('  - Add button:', !!addButton);
+        console.log('  - Save button:', !!saveButton);
+        console.log('  - Cancel button:', !!cancelButton);
       }
 
       // Multiple initialization triggers to ensure it works
