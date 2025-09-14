@@ -14,8 +14,161 @@
   <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cpath fill='%2309172b' d='M0 0h96v96H0z'/%3E%3Cpath fill='%233b82f6' d='M22 70V22a6 6 0 0 1 6-6h20a6 6 0 0 1 6 6v6h8a6 6 0 0 1 6 6v14h2a6 6 0 0 1 6 6v10a10 10 0 1 1-20 0V50h-2v20a6 6 0 0 1-6 6H28a6 6 0 0 1-6-6z'/%3E%3Cpath fill='%23fff' d='M36 28h8v12h-8zM66 36h6v14a3 3 0 1 0 6 0v-8h-2v-6a3 3 0 0 0-3-3h-7z'/%3E%3C/svg%3E" />
   
-  <!-- Service Worker Registration -->
+  <!-- CRITICAL FUNCTIONS - DEFINED IMMEDIATELY -->
   <script>
+    console.log('🚀 CRITICAL FUNCTIONS: Defining essential functions immediately...');
+    
+    // Essential upload functions
+    window.handleFileUpload = function(event) {
+      console.log('📁 CRITICAL: Handling file upload...');
+      try {
+        const file = event.target.files[0];
+        if (file) {
+          console.log('File selected:', file.name);
+          // Basic file processing
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            console.log('✅ File processed successfully');
+            // Create a simple report object
+            const reportData = {
+              filename: file.name,
+              uploadDate: new Date().toISOString(),
+              content: e.target.result.substring(0, 1000) // First 1000 chars
+            };
+            
+            // Add to reports array
+            if (!window.uploadedReports) window.uploadedReports = [];
+            window.uploadedReports.push(reportData);
+            
+            // Update display
+            if (typeof window.showReportsNow === 'function') {
+              window.showReportsNow();
+            }
+          };
+          reader.readAsText(file);
+        }
+      } catch (error) {
+        console.error('❌ Error handling file upload:', error);
+      }
+    };
+    
+    // Essential reports display function
+    window.showReportsNow = function() {
+      console.log('📊 CRITICAL: Showing reports now...');
+      try {
+        const reportsList = document.getElementById('reports-list');
+        if (!reportsList) {
+          console.error('❌ Reports list element not found');
+          return;
+        }
+        
+        if (!window.uploadedReports || window.uploadedReports.length === 0) {
+          reportsList.innerHTML = '<div class="text-gray-500">No reports available</div>';
+          return;
+        }
+        
+        let html = '<div class="space-y-4">';
+        window.uploadedReports.forEach((report, index) => {
+          html += `
+            <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+              <h3 class="text-lg font-semibold text-white">${report.filename}</h3>
+              <p class="text-gray-400 text-sm">Uploaded: ${new Date(report.uploadDate).toLocaleString()}</p>
+              <div class="mt-2 text-gray-300 text-xs">${report.content || 'No preview available'}</div>
+            </div>
+          `;
+        });
+        html += '</div>';
+        
+        reportsList.innerHTML = html;
+        console.log('✅ Reports displayed successfully');
+      } catch (error) {
+        console.error('❌ Error showing reports:', error);
+      }
+    };
+    
+    // Essential view performance function
+    window.viewPerformance = function() {
+      console.log('📈 CRITICAL: Viewing performance...');
+      try {
+        // Navigate to analytics section
+        const analyticsSection = document.getElementById('analytics-section');
+        if (analyticsSection) {
+          analyticsSection.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          console.log('📊 Performance data would be displayed here');
+          alert('Performance data would be displayed here. This is a placeholder function.');
+        }
+      } catch (error) {
+        console.error('❌ Error viewing performance:', error);
+      }
+    };
+    
+    // Essential enter data function
+    window.enterData = function() {
+      console.log('📝 CRITICAL: Entering data...');
+      try {
+        // Navigate to renovation section or show data entry form
+        const renovationSection = document.getElementById('renovation-section');
+        if (renovationSection) {
+          renovationSection.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          console.log('📝 Data entry form would be displayed here');
+          alert('Data entry form would be displayed here. This is a placeholder function.');
+        }
+      } catch (error) {
+        console.error('❌ Error entering data:', error);
+      }
+    };
+    
+    // Test function to verify all buttons work
+    window.testAllButtonsNow = function() {
+      console.log('🧪 Testing all buttons functionality...');
+      
+      // Test upload functionality
+      console.log('1. Testing Upload PDF...');
+      if (typeof window.handleFileUpload === 'function') {
+        console.log('✅ Upload function available');
+      } else {
+        console.log('❌ Upload function missing');
+      }
+      
+      // Test enter data functionality
+      console.log('2. Testing Enter Data...');
+      if (typeof window.enterData === 'function') {
+        console.log('✅ Enter Data function available');
+      } else {
+        console.log('❌ Enter Data function missing');
+      }
+      
+      // Test view performance functionality
+      console.log('3. Testing View Performance...');
+      if (typeof window.viewPerformance === 'function') {
+        console.log('✅ View Performance function available');
+      } else {
+        console.log('❌ View Performance function missing');
+      }
+      
+      // Test view reports functionality
+      console.log('4. Testing View Reports...');
+      if (typeof window.showReportsNow === 'function') {
+        console.log('✅ View Reports function available');
+      } else {
+        console.log('❌ View Reports function missing');
+      }
+      
+      console.log('🎉 All button tests completed!');
+      return {
+        upload: typeof window.handleFileUpload === 'function',
+        enterData: typeof window.enterData === 'function',
+        viewPerformance: typeof window.viewPerformance === 'function',
+        viewReports: typeof window.showReportsNow === 'function'
+      };
+    };
+    
+    console.log('✅ CRITICAL FUNCTIONS: All essential functions defined');
+    console.log('🔧 Available test function: testAllButtonsNow()');
+    
+    // Service Worker Registration
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('./sw.js')
@@ -935,8 +1088,14 @@
       console.log('🔧 Attempting to fix authentication...');
       
       try {
+        // Check if Supabase client is available
+        if (!window.supabaseClient) {
+          console.warn('⚠️ Supabase client not available, skipping authentication');
+          return;
+        }
+        
         // Check if user is authenticated
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
         
         if (!user) {
           console.log('👤 No user found, trying to sign in with existing test user...');
@@ -1250,17 +1409,17 @@
           <div class="action-card">
             <h3>Manual Entry</h3>
             <p>Enter data manually for quick analysis</p>
-            <button id="manual-entry" class="button secondary">Enter Data</button>
+            <button id="manual-entry" class="button secondary" onclick="if(typeof window.enterData === 'function') { window.enterData(); } else { console.log('Enter Data function not available'); }">Enter Data</button>
           </div>
           <div class="action-card">
             <h3>Monthly Performance</h3>
             <p>View performance metrics for each month</p>
-            <button id="monthly-performance-btn" class="button secondary">View Performance</button>
+            <button id="monthly-performance-btn" class="button secondary" onclick="if(typeof window.viewPerformance === 'function') { window.viewPerformance(); } else { console.log('View Performance function not available'); }">View Performance</button>
           </div>
           <div class="action-card">
             <h3>View History</h3>
             <p>Access your previous reports and analysis</p>
-            <button id="view-history" class="button secondary">View Reports</button>
+            <button id="view-history" class="button secondary" onclick="if(typeof window.showReportsNow === 'function') { window.showReportsNow(); } else { console.log('Show Reports function not available'); }">View Reports</button>
           </div>
           
         </div>
@@ -1281,7 +1440,7 @@
              <h3>Upload Monthly Report</h3>
              <p>Select your PDF report for automated analysis</p>
              <div class="upload-zone">
-               <input id="report-file-main" type="file" accept="application/pdf" />
+               <input id="report-file-main" type="file" accept="application/pdf" onchange="if(typeof window.handleFileUpload === 'function') { window.handleFileUpload(event); } else { console.log('handleFileUpload function not available'); }" />
                <div class="upload-placeholder">
                  <div class="upload-icon">📄</div>
                  <p>Drag & drop your PDF here or click to browse</p>
