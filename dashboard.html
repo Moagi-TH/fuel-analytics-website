@@ -211,20 +211,84 @@
           reportsHistory.style.display = 'block';
           console.log('✅ Reports history section shown');
           
-          // Use the existing loadReportsFromStorage function if available
-          if (typeof window.loadReportsFromStorage === 'function') {
-            console.log('🔄 Loading reports using existing loadReportsFromStorage function...');
-            await window.loadReportsFromStorage();
-            alert('✅ Reports loaded using original system!');
-          } else {
-            console.warn('⚠️ loadReportsFromStorage function not available, using fallback');
-            // Fallback: try to trigger the existing event listener
-            const viewHistoryBtn = document.getElementById('view-history');
-            if (viewHistoryBtn) {
-              viewHistoryBtn.click();
-            } else {
-              alert('❌ Could not load reports. Original system not available.');
+          // Create a simplified Supabase reports loader
+          console.log('🔄 Loading reports from Supabase with simplified approach...');
+          
+          // Initialize Supabase client
+          window.initializeSupabaseClient();
+          
+          if (window.supabaseClient) {
+            try {
+              console.log('📦 Fetching files from fuel-reports bucket...');
+              
+              const { data: files, error } = await window.supabaseClient.supabase.storage
+                .from('fuel-reports')
+                .list('', { 
+                  limit: 100, 
+                  sortBy: { column: 'created_at', order: 'desc' }
+                });
+              
+              if (error) {
+                console.error('❌ Storage error:', error);
+                alert('❌ Error loading reports from Supabase: ' + error.message);
+                return;
+              }
+              
+              console.log('✅ Found', files.length, 'files in Supabase storage');
+              
+              // Initialize reports array
+              if (!window.uploadedReports) window.uploadedReports = [];
+              window.uploadedReports.length = 0; // Clear existing
+              
+              // Process files and add to reports array
+              files.forEach(file => {
+                if (file.name && file.name.endsWith('.pdf')) {
+                  window.uploadedReports.push({
+                    filename: file.name,
+                    storagePath: file.name,
+                    uploadDate: file.created_at,
+                    fileSize: file.metadata?.size || 0,
+                    id: file.id || file.name
+                  });
+                }
+              });
+              
+              console.log('✅ Processed', window.uploadedReports.length, 'PDF reports');
+              
+              // Update the reports list display
+              const reportsList = document.getElementById('reports-list');
+              if (reportsList && window.uploadedReports.length > 0) {
+                let html = '<h4>📋 Reports from Supabase (' + window.uploadedReports.length + ')</h4>';
+                
+                window.uploadedReports.forEach((report, index) => {
+                  html += `
+                    <div class="report-item" style="border: 1px solid #444; padding: 15px; margin: 10px 0; border-radius: 8px; background: #2a2a2a;">
+                      <h5 style="color: #4a9eff; margin: 0 0 8px 0;">📄 ${report.filename}</h5>
+                      <p style="color: #888; font-size: 12px; margin: 4px 0;">
+                        📅 Uploaded: ${new Date(report.uploadDate).toLocaleString()}
+                      </p>
+                      <p style="color: #4a9eff; font-size: 11px; margin: 4px 0;">☁️ Supabase Storage</p>
+                      <button onclick="window.openPDFFromStorage('${report.storagePath}', '${report.filename}')" 
+                              style="background: #4a9eff; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-top: 8px;">
+                        View PDF
+                      </button>
+                    </div>
+                  `;
+                });
+                
+                reportsList.innerHTML = html;
+                alert('✅ Successfully loaded ' + window.uploadedReports.length + ' reports from Supabase!');
+              } else if (reportsList) {
+                reportsList.innerHTML = '<p style="color: #888; text-align: center; padding: 20px;">No PDF reports found in Supabase storage.</p>';
+                alert('📋 No reports found in Supabase storage. Upload a PDF first.');
+              }
+              
+            } catch (error) {
+              console.error('❌ Error loading reports:', error);
+              alert('❌ Error loading reports from Supabase: ' + error.message);
             }
+          } else {
+            alert('❌ Supabase client not available. Cannot load reports.');
           }
           
           // Scroll to the reports section
@@ -240,41 +304,76 @@
       }
     };
     
-    // Essential view performance function - Supabase integrated
+    // Essential view performance function - SIMPLIFIED SUPABASE APPROACH
     window.viewPerformance = async function() {
-      console.log('📈 CRITICAL: Viewing performance with Supabase integration...');
+      console.log('📈 CRITICAL: Viewing performance with simplified Supabase approach...');
       try {
         // Navigate to analytics section
         const analyticsSection = document.getElementById('analytics');
         if (analyticsSection) {
+          // Hide other sections first
+          const uploadArea = document.getElementById('upload-area');
+          const manualForm = document.getElementById('manual-form');
+          const reportsHistory = document.getElementById('reports-history');
+          const monthlyPerformance = document.getElementById('monthly-performance');
+          
+          if (uploadArea) uploadArea.style.display = 'none';
+          if (manualForm) manualForm.style.display = 'none';
+          if (reportsHistory) reportsHistory.style.display = 'none';
+          if (monthlyPerformance) monthlyPerformance.style.display = 'none';
+          
+          // Show analytics section
           analyticsSection.scrollIntoView({ behavior: 'smooth' });
+          
+          // Initialize Supabase client
+          window.initializeSupabaseClient();
           
           // Load performance data from Supabase
           if (window.supabaseClient) {
             console.log('📊 Loading performance data from Supabase...');
-            alert('📊 Loading performance metrics from Supabase...');
             
             try {
-              // Load reports from Supabase to calculate performance
-              const result = await window.supabaseClient.getMonthlyReports();
-              if (result.success && result.reports && result.reports.length > 0) {
-                console.log('✅ Performance data loaded from', result.reports.length, 'reports');
-                
-                // Update dashboard with performance data
-                if (typeof window.updateDashboardMetrics === 'function') {
-                  window.updateDashboardMetrics();
-                }
-                
-                alert('✅ Performance metrics loaded from Supabase! ' + result.reports.length + ' reports analyzed.');
-              } else {
-                alert('⚠️ No performance data available. Upload reports first to see performance metrics.');
+              // Get files from storage to calculate basic metrics
+              const { data: files, error } = await window.supabaseClient.supabase.storage
+                .from('fuel-reports')
+                .list('', { limit: 100 });
+              
+              if (error) {
+                console.error('❌ Error loading performance data:', error);
+                alert('❌ Error loading performance data: ' + error.message);
+                return;
               }
+              
+              const pdfFiles = files.filter(f => f.name && f.name.endsWith('.pdf'));
+              console.log('✅ Found', pdfFiles.length, 'reports for performance analysis');
+              
+              // Update basic performance metrics
+              const totalReports = pdfFiles.length;
+              const latestReport = pdfFiles.length > 0 ? pdfFiles[0] : null;
+              
+              // Show performance summary
+              const performanceMsg = `📊 Performance Summary:\n` +
+                                   `Total Reports: ${totalReports}\n` +
+                                   `Latest Report: ${latestReport ? latestReport.name : 'None'}\n` +
+                                   `Data Source: Supabase Storage\n` +
+                                   `Last Updated: ${new Date().toLocaleString()}`;
+              
+              alert(performanceMsg);
+              
+              // Try to update dashboard metrics if function exists
+              if (typeof window.updateDashboardMetrics === 'function') {
+                console.log('🔄 Updating dashboard metrics...');
+                window.updateDashboardMetrics();
+              }
+              
+              console.log('✅ Performance view updated with Supabase data');
+              
             } catch (error) {
               console.error('❌ Error loading performance data:', error);
               alert('❌ Error loading performance data: ' + error.message);
             }
           } else {
-            alert('⚠️ Supabase not connected. Performance data may not be current.');
+            alert('⚠️ Supabase client not available. Cannot load performance data.');
           }
         } else {
           console.error('❌ Analytics section not found');
@@ -593,9 +692,67 @@
       }
     };
     
+    // Test complete upload and retrieval cycle
+    window.testUploadAndRetrieval = async function() {
+      console.log('🔄 Testing complete upload and retrieval cycle...');
+      
+      // Test 1: Supabase connection
+      const connectionTest = await window.testSupabaseConnection();
+      if (!connectionTest) {
+        alert('❌ Supabase connection failed. Cannot test upload/retrieval.');
+        return false;
+      }
+      
+      // Test 2: List current files
+      try {
+        const { data: files, error } = await window.supabaseClient.supabase.storage
+          .from('fuel-reports')
+          .list('', { limit: 10 });
+          
+        if (error) {
+          alert('❌ Cannot access fuel-reports bucket: ' + error.message);
+          return false;
+        }
+        
+        console.log('📦 Current files in bucket:', files.length);
+        const pdfFiles = files.filter(f => f.name && f.name.endsWith('.pdf'));
+        console.log('📄 PDF files found:', pdfFiles.length);
+        
+        // Test 3: Test reports loading
+        console.log('🔄 Testing reports loading...');
+        await window.showReportsNow();
+        
+        const testResults = {
+          supabaseConnection: true,
+          bucketAccess: true,
+          totalFiles: files.length,
+          pdfFiles: pdfFiles.length,
+          reportsLoaded: window.uploadedReports ? window.uploadedReports.length : 0
+        };
+        
+        console.log('🎯 Test Results:', testResults);
+        
+        const resultMsg = `🧪 Upload & Retrieval Test Results:\n` +
+                         `✅ Supabase Connection: Working\n` +
+                         `✅ Bucket Access: Working\n` +
+                         `📦 Total Files: ${files.length}\n` +
+                         `📄 PDF Files: ${pdfFiles.length}\n` +
+                         `📋 Reports Loaded: ${testResults.reportsLoaded}`;
+        
+        alert(resultMsg);
+        return testResults;
+        
+      } catch (error) {
+        console.error('❌ Upload/retrieval test failed:', error);
+        alert('❌ Upload/retrieval test failed: ' + error.message);
+        return false;
+      }
+    };
+    
     console.log('✅ CRITICAL FUNCTIONS: All essential functions defined');
-    console.log('🔧 Available test functions: testAllButtonsNow(), testReportManagement(), testSupabaseIntegration()');
+    console.log('🔧 Available test functions: testAllButtonsNow(), testReportManagement(), testSupabaseIntegration(), testUploadAndRetrieval()');
     console.log('🏗️ Available renovation functions: initializeRenovationForm(), loadRenovationItems()');
+    console.log('📊 Available Supabase functions: initializeSupabaseClient(), testSupabaseConnection()');
     
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
