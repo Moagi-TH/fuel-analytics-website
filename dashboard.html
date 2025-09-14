@@ -193,71 +193,82 @@ report the <!DOCTYPE html>
       }
     };
     
-    // View Reports - Using exact same logic as working function
-    window.showReportsNow = async function() {
-      console.log('📊 Loading reports from Supabase...');
+    // View Reports - EXACT WORKING LOGIC RESTORED
+    window.showReportsNow = function() {
+      console.log('📊 View Reports: Using proven working logic...');
       
-      try {
-        window.initializeSupabaseClient();
-        
-        const { data: files, error } = await window.supabaseClient.supabase.storage
+      // Use the exact same approach that was working
+      if (window.initializeSupabaseClient && window.initializeSupabaseClient()) {
+        window.supabaseClient.supabase.storage
           .from('fuel-reports')
-          .list('', { limit: 10 });
-        
-        if (error) {
-          alert('❌ Cannot access Supabase: ' + error.message);
-          return;
-        }
-        
-        console.log('Raw files from Supabase:', files);
-        
-        const reportsList = document.getElementById('reports-list');
-        const reportsHistory = document.getElementById('reports-history');
-        
-        if (reportsHistory) reportsHistory.style.display = 'block';
-        
-        if (reportsList) {
-          let html = `
-            <div class="form-section">
-              <h4>Files from Supabase (${files.length})</h4>
-              <p class="form-hint">Manage your uploaded reports from Supabase storage</p>
-          `;
-          
-          if (files.length === 0) {
-            html += '<div class="info-card"><p>No files found in Supabase storage</p></div>';
-          } else {
-            files.forEach((file, index) => {
-              html += `
-                <div class="info-card" style="margin-bottom: 10px;">
-                  <h5 style="margin: 0 0 8px 0; color: var(--primary-color);">📄 ${file.name || 'No name'}</h5>
-                  <p style="color: #888; font-size: 12px; margin: 0;">📅 ${file.created_at || 'No date'}</p>
-                  <div style="display: flex; gap: 8px; margin-top: 12px;">
-                    <button onclick="window.viewFileInNewTab('${file.name}')" class="button secondary" style="font-size: 12px; padding: 6px 12px;">
-                      📖 View Report
-                    </button>
-                    <button onclick="window.deleteSupabaseFile('${file.name}')" class="button" style="background: #ef4444; font-size: 12px; padding: 6px 12px;">
-                      🗑️ Delete Report
-                    </button>
-                  </div>
-                </div>
+          .list('', { limit: 10 })
+          .then(({ data: files, error }) => {
+            if (error) {
+              console.error('View Reports error:', error);
+              alert('❌ Error loading reports: ' + error.message);
+              return;
+            }
+            
+            console.log('View Reports loaded files:', files);
+            
+            const reportsList = document.getElementById('reports-list');
+            const reportsHistory = document.getElementById('reports-history');
+            
+            // Hide other sections
+            const uploadArea = document.getElementById('upload-area');
+            const manualForm = document.getElementById('manual-form');
+            const monthlyPerformance = document.getElementById('monthly-performance');
+            if (uploadArea) uploadArea.style.display = 'none';
+            if (manualForm) manualForm.style.display = 'none';
+            if (monthlyPerformance) monthlyPerformance.style.display = 'none';
+            
+            if (reportsHistory) reportsHistory.style.display = 'block';
+            
+            if (reportsList) {
+              let html = `
+                <div class="form-section">
+                  <h4>All Reports (${files.length})</h4>
+                  <p class="form-hint">Manage your uploaded reports from Supabase storage</p>
               `;
-            });
-          }
-          
-          html += '</div>';
-          reportsList.innerHTML = html;
-          
-          if (reportsHistory) {
-            reportsHistory.scrollIntoView({ behavior: 'smooth' });
-          }
-          
-          alert('📋 Showing ' + files.length + ' files from Supabase storage');
-        }
-        
-      } catch (error) {
-        alert('❌ Error: ' + error.message);
+              
+              if (files.length === 0) {
+                html += '<div class="info-card"><p>No files found in Supabase storage</p></div>';
+              } else {
+                files.forEach((file, index) => {
+                  html += `
+                    <div class="info-card" style="margin-bottom: 10px;">
+                      <h5 style="margin: 0 0 8px 0; color: var(--primary-color);">📄 ${file.name || 'No name'}</h5>
+                      <p style="color: #888; font-size: 12px; margin: 0;">📅 ${file.created_at || 'No date'}</p>
+                      <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <button onclick="window.viewFileInNewTab('${file.name}')" class="button secondary" style="font-size: 12px; padding: 6px 12px;">
+                          📖 View Report
+                        </button>
+                        <button onclick="window.deleteSupabaseFile('${file.name}')" class="button" style="background: #ef4444; font-size: 12px; padding: 6px 12px;">
+                          🗑️ Delete Report
+                        </button>
+                      </div>
+                    </div>
+                  `;
+                });
+              }
+              
+              html += '</div>';
+              reportsList.innerHTML = html;
+              
+              if (reportsHistory) {
+                reportsHistory.scrollIntoView({ behavior: 'smooth' });
+              }
+              
+              console.log('✅ Auto-loaded and displayed', files.length, 'files');
+            }
+          })
+          .catch(error => {
+            console.error('Auto-load failed:', error);
+          });
       }
-    };
+    }, 2000); // Auto-load after 2 seconds
+
+    // Service Worker Registration
     
     // Essential view performance function - SIMPLIFIED SUPABASE APPROACH
     window.viewPerformance = async function() {
@@ -1012,7 +1023,68 @@ report the <!DOCTYPE html>
     console.log('📋 File Actions: View Report, Delete Report functions available');
     console.log('🧪 Test function: testViewReports() - call this to test View Reports');
     
-    
+    // AUTO-RUNNING REPORTS DISPLAY - USING WORKING LOGIC
+    setTimeout(function() {
+      console.log('🔄 AUTO-LOADING: Loading reports automatically...');
+      
+      // Use the exact same logic that was working
+      if (window.initializeSupabaseClient && window.initializeSupabaseClient()) {
+        window.supabaseClient.supabase.storage
+          .from('fuel-reports')
+          .list('', { limit: 10 })
+          .then(({ data: files, error }) => {
+            if (error) {
+              console.error('Auto-load error:', error);
+              return;
+            }
+            
+            console.log('Auto-loaded files:', files);
+            
+            const reportsList = document.getElementById('reports-list');
+            const reportsHistory = document.getElementById('reports-history');
+            
+            if (reportsHistory) reportsHistory.style.display = 'block';
+            
+            if (reportsList && files.length > 0) {
+              let html = `
+                <div class="form-section">
+                  <h4>Files from Supabase (${files.length})</h4>
+                  <p class="form-hint">Auto-loaded reports from Supabase storage</p>
+              `;
+              
+              files.forEach((file, index) => {
+                html += `
+                  <div class="info-card" style="margin-bottom: 10px;">
+                    <h5 style="margin: 0 0 8px 0; color: var(--primary-color);">📄 ${file.name || 'No name'}</h5>
+                    <p style="color: #888; font-size: 12px; margin: 0;">📅 ${file.created_at || 'No date'}</p>
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                      <button onclick="window.viewFileInNewTab('${file.name}')" class="button secondary" style="font-size: 12px; padding: 6px 12px;">
+                        📖 View Report
+                      </button>
+                      <button onclick="window.deleteSupabaseFile('${file.name}')" class="button" style="background: #ef4444; font-size: 12px; padding: 6px 12px;">
+                        🗑️ Delete Report
+                      </button>
+                    </div>
+                  </div>
+                `;
+              });
+              
+              html += '</div>';
+              reportsList.innerHTML = html;
+              
+              if (reportsHistory) {
+                reportsHistory.scrollIntoView({ behavior: 'smooth' });
+              }
+              
+              console.log('✅ Auto-loaded and displayed', files.length, 'files');
+            }
+          })
+          .catch(error => {
+            console.error('Auto-load failed:', error);
+          });
+      }
+    }, 2000); // Auto-load after 2 seconds
+
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
