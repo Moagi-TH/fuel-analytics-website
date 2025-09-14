@@ -57,6 +57,81 @@
     #renovation .form-input::placeholder { color: #9aa3b2; }
     #renovation .button.primary { font-weight: 600; }
     #renovation .renovation-form h4 { font-weight: 600; }
+    
+    /* Financial metrics styling */
+    .financial-metrics-section {
+      margin-top: 24px;
+      padding: 20px;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 12px;
+      border: 1px solid rgba(31, 41, 55, 0.3);
+    }
+    
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-bottom: 20px;
+    }
+    
+    .metric-input-group {
+      background: rgba(15, 23, 42, 0.3);
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(31, 41, 55, 0.2);
+    }
+    
+    .metric-input-group h5 {
+      color: #e5e7eb;
+      font-weight: 600;
+      margin-bottom: 16px;
+      font-size: 16px;
+    }
+    
+    .metric-input-group .input-row {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 12px;
+    }
+    
+    .metric-input-group .input-row label {
+      color: #cbd5e1;
+      font-weight: 500;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+    
+    .metric-input-group .input-row input {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(31, 41, 55, 0.5);
+      color: #e5e7eb;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    
+    .metric-input-group .input-row input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    }
+    
+    .metric-input-group .input-row input[readonly] {
+      background: rgba(15, 23, 42, 0.4);
+      color: #94a3b8;
+    }
+    
+    .metrics-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    
+    .metrics-actions .button {
+      padding: 10px 20px;
+      font-size: 14px;
+    }
   </style>
   <!-- Critical external libraries (load first, no defer) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1374,6 +1449,14 @@
               <div class="form-actions">
                 <button id="save-renovation-item" class="button primary">Save Item</button>
                 <button id="cancel-renovation-item" class="button secondary">Cancel</button>
+              </div>
+            </div>
+
+            <!-- Group-Specific Financial Metrics -->
+            <div id="group-financial-metrics" class="financial-metrics-section" style="display: none;">
+              <h4 id="metrics-title">Financial Metrics</h4>
+              <div id="metrics-content">
+                <!-- Content populated dynamically based on selected group -->
               </div>
             </div>
 
@@ -8454,6 +8537,229 @@
         
         // Update form category
         document.getElementById('item-category').value = group;
+        
+        // Show group-specific financial metrics
+        showGroupFinancialMetrics(group);
+        
+        // Re-render items to show only this group's items
+        renderRenovationItems();
+
+        // Restore previous UX: open the form pre-filled for the selected group
+        try {
+          showRenovationForm();
+        } catch (e) {
+          console.warn('Could not auto-open renovation form:', e);
+        }
+      }
+
+      // Show group-specific financial metrics
+      function showGroupFinancialMetrics(group) {
+        const metricsSection = document.getElementById('group-financial-metrics');
+        const metricsTitle = document.getElementById('metrics-title');
+        const metricsContent = document.getElementById('metrics-content');
+        
+        if (!metricsSection || !metricsContent) return;
+        
+        // Update title
+        const groupNames = {
+          'forecourt': 'Forecourt',
+          'pumps': 'Pumps & Nozzles', 
+          'deli': 'Deli',
+          'shop': 'Shop',
+          'security': 'IT & Security',
+          'compliance': 'Compliance',
+          'other': 'Other'
+        };
+        
+        metricsTitle.textContent = `${groupNames[group]} - Financial Metrics`;
+        
+        // Generate group-specific content
+        let content = '';
+        
+        if (group === 'deli') {
+          content = `
+            <div class="metrics-grid">
+              <div class="metric-input-group">
+                <h5>Revenue Metrics</h5>
+                <div class="input-row">
+                  <label>Average Daily Revenue (R)</label>
+                  <input type="number" id="deli-daily-revenue" placeholder="0.00" step="0.01">
+                </div>
+                <div class="input-row">
+                  <label>Monthly Revenue Target (R)</label>
+                  <input type="number" id="deli-monthly-target" placeholder="0.00" step="0.01">
+                </div>
+                <div class="input-row">
+                  <label>Customer Count (Daily)</label>
+                  <input type="number" id="deli-customer-count" placeholder="0" step="1">
+                </div>
+                <div class="input-row">
+                  <label>Average Transaction Value (R)</label>
+                  <input type="number" id="deli-avg-transaction" placeholder="0.00" step="0.01">
+                </div>
+              </div>
+              
+              <div class="metric-input-group">
+                <h5>Cost Metrics</h5>
+                <div class="input-row">
+                  <label>Food Cost %</label>
+                  <input type="number" id="deli-food-cost-pct" placeholder="0" step="0.1" min="0" max="100">
+                </div>
+                <div class="input-row">
+                  <label>Labor Cost (Monthly R)</label>
+                  <input type="number" id="deli-labor-cost" placeholder="0.00" step="0.01">
+                </div>
+                <div class="input-row">
+                  <label>Utilities Cost (Monthly R)</label>
+                  <input type="number" id="deli-utilities-cost" placeholder="0.00" step="0.01">
+                </div>
+                <div class="input-row">
+                  <label>Equipment Maintenance (Monthly R)</label>
+                  <input type="number" id="deli-maintenance-cost" placeholder="0.00" step="0.01">
+                </div>
+              </div>
+              
+              <div class="metric-input-group">
+                <h5>Performance KPIs</h5>
+                <div class="input-row">
+                  <label>Gross Profit Margin %</label>
+                  <input type="number" id="deli-gross-margin" placeholder="0" step="0.1" min="0" max="100" readonly>
+                </div>
+                <div class="input-row">
+                  <label>Net Profit Margin %</label>
+                  <input type="number" id="deli-net-margin" placeholder="0" step="0.1" min="0" max="100" readonly>
+                </div>
+                <div class="input-row">
+                  <label>Break-even Point (Daily R)</label>
+                  <input type="number" id="deli-break-even" placeholder="0.00" step="0.01" readonly>
+                </div>
+                <div class="input-row">
+                  <label>ROI %</label>
+                  <input type="number" id="deli-roi" placeholder="0" step="0.1" readonly>
+                </div>
+              </div>
+            </div>
+            <div class="metrics-actions">
+              <button class="button primary" onclick="calculateDeliMetrics()">Calculate Metrics</button>
+              <button class="button secondary" onclick="saveDeliMetrics()">Save Metrics</button>
+            </div>
+          `;
+        } else if (group === 'shop') {
+          content = `
+            <div class="metrics-grid">
+              <div class="metric-input-group">
+                <h5>Revenue Metrics</h5>
+                <div class="input-row">
+                  <label>Daily Sales Revenue (R)</label>
+                  <input type="number" id="shop-daily-revenue" placeholder="0.00" step="0.01">
+                </div>
+                <div class="input-row">
+                  <label>Monthly Revenue Target (R)</label>
+                  <input type="number" id="shop-monthly-target" placeholder="0.00" step="0.01">
+                </div>
+                <div class="input-row">
+                  <label>Foot Traffic (Daily)</label>
+                  <input type="number" id="shop-foot-traffic" placeholder="0" step="1">
+                </div>
+                <div class="input-row">
+                  <label>Conversion Rate %</label>
+                  <input type="number" id="shop-conversion-rate" placeholder="0" step="0.1" min="0" max="100">
+                </div>
+              </div>
+              
+              <div class="metric-input-group">
+                <h5>Inventory Metrics</h5>
+                <div class="input-row">
+                  <label>Inventory Turnover (Annual)</label>
+                  <input type="number" id="shop-inventory-turnover" placeholder="0" step="0.1">
+                </div>
+                <div class="input-row">
+                  <label>Average Inventory Value (R)</label>
+                  <input type="number" id="shop-avg-inventory" placeholder="0.00" step="0.01">
+                </div>
+                <div class="input-row">
+                  <label>Stock-out Rate %</label>
+                  <input type="number" id="shop-stockout-rate" placeholder="0" step="0.1" min="0" max="100">
+                </div>
+                <div class="input-row">
+                  <label>Waste/Shrinkage %</label>
+                  <input type="number" id="shop-waste-rate" placeholder="0" step="0.1" min="0" max="100">
+                </div>
+              </div>
+              
+              <div class="metric-input-group">
+                <h5>Cost Metrics</h5>
+                <div class="input-row">
+                  <label>Cost of Goods Sold %</label>
+                  <input type="number" id="shop-cogs-pct" placeholder="0" step="0.1" min="0" max="100">
+                </div>
+                <div class="input-row">
+                  <label>Staff Costs (Monthly R)</label>
+                  <input type="number" id="shop-staff-costs" placeholder="0.00" step="0.01">
+                </div>
+                <div class="input-row">
+                  <label>Rent/Lease (Monthly R)</label>
+                  <input type="number" id="shop-rent-cost" placeholder="0.00" step="0.01">
+                </div>
+                <div class="input-row">
+                  <label>Utilities & Operating (Monthly R)</label>
+                  <input type="number" id="shop-operating-costs" placeholder="0.00" step="0.01">
+                </div>
+              </div>
+              
+              <div class="metric-input-group">
+                <h5>Performance KPIs</h5>
+                <div class="input-row">
+                  <label>Gross Profit Margin %</label>
+                  <input type="number" id="shop-gross-margin" placeholder="0" step="0.1" min="0" max="100" readonly>
+                </div>
+                <div class="input-row">
+                  <label>Net Profit Margin %</label>
+                  <input type="number" id="shop-net-margin" placeholder="0" step="0.1" min="0" max="100" readonly>
+                </div>
+                <div class="input-row">
+                  <label>Sales per Square Meter (R)</label>
+                  <input type="number" id="shop-sales-per-sqm" placeholder="0.00" step="0.01" readonly>
+                </div>
+                <div class="input-row">
+                  <label>ROI %</label>
+                  <input type="number" id="shop-roi" placeholder="0" step="0.1" readonly>
+                </div>
+              </div>
+            </div>
+            <div class="metrics-actions">
+              <button class="button primary" onclick="calculateShopMetrics()">Calculate Metrics</button>
+              <button class="button secondary" onclick="saveShopMetrics()">Save Metrics</button>
+            </div>
+          `;
+        } else {
+          content = `
+            <div class="metrics-grid">
+              <div class="metric-input-group">
+                <h5>Basic Metrics</h5>
+                <div class="input-row">
+                  <label>Monthly Revenue (R)</label>
+                  <input type="number" id="${group}-monthly-revenue" placeholder="0.00" step="0.01">
+                </div>
+                <div class="input-row">
+                  <label>Monthly Costs (R)</label>
+                  <input type="number" id="${group}-monthly-costs" placeholder="0.00" step="0.01">
+                </div>
+                <div class="input-row">
+                  <label>Profit Margin %</label>
+                  <input type="number" id="${group}-profit-margin" placeholder="0" step="0.1" min="0" max="100" readonly>
+                </div>
+              </div>
+            </div>
+            <div class="metrics-actions">
+              <button class="button primary" onclick="calculateBasicMetrics('${group}')">Calculate Metrics</button>
+              <button class="button secondary" onclick="saveBasicMetrics('${group}')">Save Metrics</button>
+            </div>
+          `;
+        }
+        
+        metricsContent.innerHTML = content;
+        metricsSection.style.display = 'block';
       }
 
       // Show renovation form
@@ -8727,6 +9033,133 @@
         });
         
         return schedule;
+      }
+
+      // Calculate Deli metrics
+      function calculateDeliMetrics() {
+        const dailyRevenue = parseFloat(document.getElementById('deli-daily-revenue').value) || 0;
+        const foodCostPct = parseFloat(document.getElementById('deli-food-cost-pct').value) || 0;
+        const laborCost = parseFloat(document.getElementById('deli-labor-cost').value) || 0;
+        const utilitiesCost = parseFloat(document.getElementById('deli-utilities-cost').value) || 0;
+        const maintenanceCost = parseFloat(document.getElementById('deli-maintenance-cost').value) || 0;
+        
+        const monthlyRevenue = dailyRevenue * 30;
+        const foodCost = monthlyRevenue * (foodCostPct / 100);
+        const totalCosts = foodCost + laborCost + utilitiesCost + maintenanceCost;
+        
+        const grossProfit = monthlyRevenue - foodCost;
+        const netProfit = monthlyRevenue - totalCosts;
+        
+        const grossMargin = monthlyRevenue > 0 ? (grossProfit / monthlyRevenue) * 100 : 0;
+        const netMargin = monthlyRevenue > 0 ? (netProfit / monthlyRevenue) * 100 : 0;
+        const breakEvenDaily = totalCosts / 30;
+        const roi = totalCosts > 0 ? (netProfit / totalCosts) * 100 : 0;
+        
+        document.getElementById('deli-gross-margin').value = grossMargin.toFixed(1);
+        document.getElementById('deli-net-margin').value = netMargin.toFixed(1);
+        document.getElementById('deli-break-even').value = breakEvenDaily.toFixed(2);
+        document.getElementById('deli-roi').value = roi.toFixed(1);
+      }
+
+      // Calculate Shop metrics
+      function calculateShopMetrics() {
+        const dailyRevenue = parseFloat(document.getElementById('shop-daily-revenue').value) || 0;
+        const cogsPct = parseFloat(document.getElementById('shop-cogs-pct').value) || 0;
+        const staffCosts = parseFloat(document.getElementById('shop-staff-costs').value) || 0;
+        const rentCost = parseFloat(document.getElementById('shop-rent-cost').value) || 0;
+        const operatingCosts = parseFloat(document.getElementById('shop-operating-costs').value) || 0;
+        
+        const monthlyRevenue = dailyRevenue * 30;
+        const cogs = monthlyRevenue * (cogsPct / 100);
+        const totalCosts = cogs + staffCosts + rentCost + operatingCosts;
+        
+        const grossProfit = monthlyRevenue - cogs;
+        const netProfit = monthlyRevenue - totalCosts;
+        
+        const grossMargin = monthlyRevenue > 0 ? (grossProfit / monthlyRevenue) * 100 : 0;
+        const netMargin = monthlyRevenue > 0 ? (netProfit / monthlyRevenue) * 100 : 0;
+        const salesPerSqm = 100; // Assuming 100 sqm shop space
+        const roi = totalCosts > 0 ? (netProfit / totalCosts) * 100 : 0;
+        
+        document.getElementById('shop-gross-margin').value = grossMargin.toFixed(1);
+        document.getElementById('shop-net-margin').value = netMargin.toFixed(1);
+        document.getElementById('shop-sales-per-sqm').value = (monthlyRevenue / salesPerSqm).toFixed(2);
+        document.getElementById('shop-roi').value = roi.toFixed(1);
+      }
+
+      // Calculate basic metrics for other groups
+      function calculateBasicMetrics(group) {
+        const revenue = parseFloat(document.getElementById(`${group}-monthly-revenue`).value) || 0;
+        const costs = parseFloat(document.getElementById(`${group}-monthly-costs`).value) || 0;
+        
+        const profit = revenue - costs;
+        const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
+        
+        document.getElementById(`${group}-profit-margin`).value = margin.toFixed(1);
+      }
+
+      // Save Deli metrics
+      function saveDeliMetrics() {
+        const metrics = {
+          group: 'deli',
+          dailyRevenue: parseFloat(document.getElementById('deli-daily-revenue').value) || 0,
+          monthlyTarget: parseFloat(document.getElementById('deli-monthly-target').value) || 0,
+          customerCount: parseInt(document.getElementById('deli-customer-count').value) || 0,
+          avgTransaction: parseFloat(document.getElementById('deli-avg-transaction').value) || 0,
+          foodCostPct: parseFloat(document.getElementById('deli-food-cost-pct').value) || 0,
+          laborCost: parseFloat(document.getElementById('deli-labor-cost').value) || 0,
+          utilitiesCost: parseFloat(document.getElementById('deli-utilities-cost').value) || 0,
+          maintenanceCost: parseFloat(document.getElementById('deli-maintenance-cost').value) || 0,
+          grossMargin: parseFloat(document.getElementById('deli-gross-margin').value) || 0,
+          netMargin: parseFloat(document.getElementById('deli-net-margin').value) || 0,
+          breakEven: parseFloat(document.getElementById('deli-break-even').value) || 0,
+          roi: parseFloat(document.getElementById('deli-roi').value) || 0
+        };
+        
+        localStorage.setItem('deliMetrics', JSON.stringify(metrics));
+        console.log('Deli metrics saved:', metrics);
+        alert('Deli metrics saved successfully!');
+      }
+
+      // Save Shop metrics
+      function saveShopMetrics() {
+        const metrics = {
+          group: 'shop',
+          dailyRevenue: parseFloat(document.getElementById('shop-daily-revenue').value) || 0,
+          monthlyTarget: parseFloat(document.getElementById('shop-monthly-target').value) || 0,
+          footTraffic: parseInt(document.getElementById('shop-foot-traffic').value) || 0,
+          conversionRate: parseFloat(document.getElementById('shop-conversion-rate').value) || 0,
+          inventoryTurnover: parseFloat(document.getElementById('shop-inventory-turnover').value) || 0,
+          avgInventory: parseFloat(document.getElementById('shop-avg-inventory').value) || 0,
+          stockoutRate: parseFloat(document.getElementById('shop-stockout-rate').value) || 0,
+          wasteRate: parseFloat(document.getElementById('shop-waste-rate').value) || 0,
+          cogsPct: parseFloat(document.getElementById('shop-cogs-pct').value) || 0,
+          staffCosts: parseFloat(document.getElementById('shop-staff-costs').value) || 0,
+          rentCost: parseFloat(document.getElementById('shop-rent-cost').value) || 0,
+          operatingCosts: parseFloat(document.getElementById('shop-operating-costs').value) || 0,
+          grossMargin: parseFloat(document.getElementById('shop-gross-margin').value) || 0,
+          netMargin: parseFloat(document.getElementById('shop-net-margin').value) || 0,
+          salesPerSqm: parseFloat(document.getElementById('shop-sales-per-sqm').value) || 0,
+          roi: parseFloat(document.getElementById('shop-roi').value) || 0
+        };
+        
+        localStorage.setItem('shopMetrics', JSON.stringify(metrics));
+        console.log('Shop metrics saved:', metrics);
+        alert('Shop metrics saved successfully!');
+      }
+
+      // Save basic metrics
+      function saveBasicMetrics(group) {
+        const metrics = {
+          group: group,
+          monthlyRevenue: parseFloat(document.getElementById(`${group}-monthly-revenue`).value) || 0,
+          monthlyCosts: parseFloat(document.getElementById(`${group}-monthly-costs`).value) || 0,
+          profitMargin: parseFloat(document.getElementById(`${group}-profit-margin`).value) || 0
+        };
+        
+        localStorage.setItem(`${group}Metrics`, JSON.stringify(metrics));
+        console.log(`${group} metrics saved:`, metrics);
+        alert(`${group} metrics saved successfully!`);
       }
 
       // Save renovation items to localStorage
