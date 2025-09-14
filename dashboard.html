@@ -3300,7 +3300,6 @@
                       await db.initialize();
                     }
                   }
-                  }
                 } catch (error) {
                   console.log('⚠️ Authentication failed, using local storage:', error.message);
                   // Try to create a test user for demonstration
@@ -3312,6 +3311,7 @@
               // Try to load from storage anyway
               await loadReportsFromStorage();
             }
+          }
           };
           
           // Race between timeout and initialization
@@ -7603,8 +7603,8 @@
         console.error('PDF.js failed to load');
       } else {
         console.log('PDF.js loaded successfully');
-              }
-      });
+      }
+    });
       
       // Global functions for report actions
       window.viewReport = function(index) {
@@ -11859,6 +11859,7 @@
         }
       `;
       document.head.appendChild(badgeStyle);
+    })();
   </script>
 </body>
 </html>
