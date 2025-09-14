@@ -13040,7 +13040,8 @@
           'refreshRenovationCharts',
           'calculateIRR',
           'calculateNPV',
-          'calculatePaybackPeriod'
+          'calculatePaybackPeriod',
+          'calculateRenovationMetrics'
         ];
         
         const missingFunctions = [];
@@ -13055,7 +13056,23 @@
           return false;
         }
         
+        // Also check if renovationState is initialized
+        if (!window.renovationState) {
+          console.warn('⚠️ renovationState not initialized yet');
+          // Initialize it if missing
+          window.renovationState = {
+            items: [],
+            selectedGroup: 'forecourt',
+            projectSettings: {
+              horizon: 120,
+              discountRate: 0.12,
+              taxRate: 0.28
+            }
+          };
+        }
+        
         console.log('✅ All renovation functions are ready!');
+        console.log('📊 Renovation state:', window.renovationState);
         return true;
       };
 
@@ -13213,20 +13230,73 @@
         return metrics;
       };
 
-      // Initialize renovation functions when DOM is ready
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
-          console.log('📋 DOM loaded - initializing renovation functions...');
-          setTimeout(() => {
-            window.ensureRenovationFunctionsReady();
-          }, 1000);
-        });
-      } else {
-        console.log('📋 DOM already loaded - initializing renovation functions...');
+      // IMMEDIATE INITIALIZATION - Run right after function definitions
+      console.log('🔧 IMMEDIATE: All renovation functions defined, checking readiness...');
+      
+      // Set a flag that functions are ready
+      window.renovationFunctionsReady = true;
+      
+      // Try immediate initialization
+      setTimeout(() => {
+        if (window.ensureRenovationFunctionsReady && window.ensureRenovationFunctionsReady()) {
+          console.log('✅ IMMEDIATE: Renovation system ready immediately!');
+          
+          // Update onclick handlers immediately if DOM is ready
+          if (document.readyState !== 'loading') {
+            const groupCards = document.querySelectorAll('.group-card[data-group]');
+            groupCards.forEach(card => {
+              const group = card.getAttribute('data-group');
+              card.setAttribute('onclick', `window.selectRenovationGroup('${group}')`);
+            });
+            console.log('🔄 IMMEDIATE: Updated', groupCards.length, 'onclick handlers');
+          }
+        }
+      }, 50);
+
+      // Initialize renovation functions when DOM is ready - ENHANCED TIMING
+      function initializeRenovationSystem() {
+        console.log('🚀 Initializing renovation system...');
+        
+        // Wait for all scripts to load
         setTimeout(() => {
-          window.ensureRenovationFunctionsReady();
-        }, 1000);
+          console.log('⏰ Checking renovation functions availability...');
+          
+          // Check if functions are available
+          if (window.ensureRenovationFunctionsReady && window.ensureRenovationFunctionsReady()) {
+            console.log('✅ Renovation system fully initialized!');
+            
+            // Update all onclick handlers to use direct function calls
+            updateOnclickHandlers();
+          } else {
+            console.log('⏳ Renovation functions not ready, retrying in 500ms...');
+            setTimeout(initializeRenovationSystem, 500);
+          }
+        }, 100);
       }
+
+      // Update onclick handlers to use direct function calls once ready
+      function updateOnclickHandlers() {
+        const groupCards = document.querySelectorAll('.group-card[data-group]');
+        groupCards.forEach(card => {
+          const group = card.getAttribute('data-group');
+          card.setAttribute('onclick', `window.selectRenovationGroup('${group}')`);
+        });
+        
+        console.log('🔄 Updated onclick handlers for', groupCards.length, 'group cards');
+      }
+
+      // Multiple initialization triggers to ensure it works
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeRenovationSystem);
+      } else {
+        initializeRenovationSystem();
+      }
+      
+      // Also try on window load as backup
+      window.addEventListener('load', function() {
+        console.log('🔄 Window load - re-initializing renovation system...');
+        setTimeout(initializeRenovationSystem, 200);
+      });
 
       // Add CSS for role and status badges
       const badgeStyle = document.createElement('style');
