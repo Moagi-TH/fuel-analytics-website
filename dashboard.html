@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+report the <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -836,11 +836,73 @@
       }
     };
     
+    // Critical renderReportsHistory function - DEFINED EARLY
+    window.renderReportsHistory = function() {
+      console.log('📋 CRITICAL: Rendering reports history...');
+      
+      try {
+        const reportsList = document.getElementById('reports-list');
+        if (!reportsList) {
+          console.error('❌ Reports list element not found');
+          return;
+        }
+        
+        if (!window.uploadedReports || window.uploadedReports.length === 0) {
+          reportsList.innerHTML = '<p style="color: #888; text-align: center; padding: 20px;">No reports available. Upload a PDF file to get started.</p>';
+          console.log('📋 No reports to display');
+          return;
+        }
+        
+        console.log('📊 Rendering', window.uploadedReports.length, 'reports');
+        
+        let html = '<h4 style="color: #fff; margin-bottom: 15px;">📋 Report History (' + window.uploadedReports.length + ')</h4>';
+        
+        window.uploadedReports.forEach((report, index) => {
+          const displayName = report.filename || report.name || 'Unknown Report';
+          const uploadDate = report.uploadDate || report.created_at || 'Unknown Date';
+          const isFromSupabase = report.storagePath ? true : false;
+          
+          html += `
+            <div class="report-item" style="border: 1px solid #444; padding: 15px; margin: 10px 0; border-radius: 8px; background: #1a1a1a;">
+              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                <h5 style="color: #4a9eff; margin: 0; font-size: 16px;">📄 ${displayName}</h5>
+                <span style="color: ${isFromSupabase ? '#4a9eff' : '#888'}; font-size: 11px;">
+                  ${isFromSupabase ? '☁️ Supabase' : '💾 Local'}
+                </span>
+              </div>
+              <p style="color: #888; font-size: 12px; margin: 4px 0;">
+                📅 Uploaded: ${new Date(uploadDate).toLocaleString()}
+              </p>
+              ${report.fileSize ? `<p style="color: #666; font-size: 11px; margin: 4px 0;">📊 Size: ${(report.fileSize / 1024).toFixed(1)} KB</p>` : ''}
+              ${isFromSupabase ? `
+                <button onclick="window.openPDFFromStorage('${report.storagePath}', '${displayName}')" 
+                        style="background: #4a9eff; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-top: 8px;">
+                  📖 View PDF
+                </button>
+              ` : ''}
+              <div style="color: #666; font-size: 10px; margin-top: 8px;">Report #${index + 1}</div>
+            </div>
+          `;
+        });
+        
+        reportsList.innerHTML = html;
+        console.log('✅ Reports rendered successfully');
+        
+      } catch (error) {
+        console.error('❌ Error rendering reports:', error);
+        const reportsList = document.getElementById('reports-list');
+        if (reportsList) {
+          reportsList.innerHTML = `<p style="color: #f87171; text-align: center; padding: 20px;">❌ Error displaying reports: ${error.message}</p>`;
+        }
+      }
+    };
+    
     console.log('✅ CRITICAL FUNCTIONS: All essential functions defined');
     console.log('🔧 Available test functions: testAllButtonsNow(), testReportManagement(), testSupabaseIntegration(), testUploadAndRetrieval(), debugViewReports()');
     console.log('🏗️ Available renovation functions: initializeRenovationForm(), loadRenovationItems()');
     console.log('📊 Available Supabase functions: initializeSupabaseClient(), testSupabaseConnection()');
     console.log('🔍 Available debug functions: debugViewReports()');
+    console.log('📋 Available render functions: renderReportsHistory()');
     
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
