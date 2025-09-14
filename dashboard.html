@@ -404,8 +404,45 @@
       return results;
     };
     
+    // Test function to verify critical functions are working
+    window.testCriticalFunctions = function() {
+      console.log('🔧 Testing critical functions...');
+      try {
+        // Test renderReportsHistory
+        if (typeof window.renderReportsHistory === 'function') {
+          console.log('✅ renderReportsHistory is available');
+          window.renderReportsHistory();
+        } else {
+          console.error('❌ renderReportsHistory not available');
+        }
+        
+        // Test loadReportsFromStorage
+        if (typeof window.loadReportsFromStorage === 'function') {
+          console.log('✅ loadReportsFromStorage is available');
+        } else {
+          console.error('❌ loadReportsFromStorage not available');
+        }
+        
+        // Test updateMostRecentReportDisplay
+        if (typeof window.updateMostRecentReportDisplay === 'function') {
+          console.log('✅ updateMostRecentReportDisplay is available');
+        } else {
+          console.error('❌ updateMostRecentReportDisplay not available');
+        }
+        
+        return {
+          renderReportsHistory: typeof window.renderReportsHistory === 'function',
+          loadReportsFromStorage: typeof window.loadReportsFromStorage === 'function',
+          updateMostRecentReportDisplay: typeof window.updateMostRecentReportDisplay === 'function'
+        };
+      } catch (error) {
+        console.error('❌ Critical functions test failed:', error);
+        return false;
+      }
+    };
+    
     console.log('✅ ERROR TESTING FUNCTIONS LOADED');
-    console.log('🔧 Available test functions: testBasicExecution, testDOMAccess, testGlobalVariables, testFunctionAvailability, testManualDisplay, testUploadFunctionality, runAllTests');
+    console.log('🔧 Available test functions: testBasicExecution, testDOMAccess, testGlobalVariables, testFunctionAvailability, testManualDisplay, testUploadFunctionality, runAllTests, testCriticalFunctions');
     
     // ULTIMATE FALLBACK - This will work no matter what
     setTimeout(function() {
@@ -4172,7 +4209,7 @@
       window.uploadedReports = uploadedReports;
       window.monthlyData = monthlyData;
       // Define critical functions early to prevent scope issues
-      function renderReportsHistory() {
+      window.renderReportsHistory = function renderReportsHistory() {
         console.log('🔄 COMPLETELY RECODED: Rendering reports history...');
         
         // Ensure global variables are initialized
@@ -7260,7 +7297,7 @@
         });
       }
       // Load reports from Supabase Storage (fallback when database tables don't exist)
-      async function loadReportsFromStorage() {
+      window.loadReportsFromStorage = async function loadReportsFromStorage() {
         try {
           console.log('Loading reports from Supabase Storage...');
           
