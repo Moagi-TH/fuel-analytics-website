@@ -193,25 +193,11 @@ report the <!DOCTYPE html>
       }
     };
     
-    // SIMPLE DIRECT SUPABASE REPORTS DISPLAY - NO OPENAI DEPENDENCY
+    // ULTRA SIMPLE: Direct file display without any complex processing
     window.showReportsNow = async function() {
-      console.log('📊 DIRECT: Showing Supabase files directly (no OpenAI analysis needed)...');
+      console.log('📊 ULTRA SIMPLE: Direct Supabase file display...');
       
       try {
-        // Show reports section
-        const reportsHistory = document.getElementById('reports-history');
-        if (reportsHistory) {
-          reportsHistory.style.display = 'block';
-          
-          // Hide other sections
-          const uploadArea = document.getElementById('upload-area');
-          const manualForm = document.getElementById('manual-form');
-          const monthlyPerformance = document.getElementById('monthly-performance');
-          if (uploadArea) uploadArea.style.display = 'none';
-          if (manualForm) manualForm.style.display = 'none';
-          if (monthlyPerformance) monthlyPerformance.style.display = 'none';
-        }
-        
         // Initialize Supabase client
         window.initializeSupabaseClient();
         
@@ -220,73 +206,53 @@ report the <!DOCTYPE html>
           return;
         }
         
-        console.log('📦 Loading files directly from Supabase bucket...');
-        
+        // Get files from bucket
         const { data: files, error } = await window.supabaseClient.supabase.storage
           .from('fuel-reports')
           .list('', { limit: 100 });
         
         if (error) {
-          console.error('❌ Error loading files:', error);
-          alert('❌ Error loading files from Supabase: ' + error.message);
+          alert('❌ Error: ' + error.message);
           return;
         }
         
-        console.log('✅ Loaded', files.length, 'files from Supabase');
+        console.log('Files from Supabase:', files);
         
+        // Show reports section
+        const reportsHistory = document.getElementById('reports-history');
         const reportsList = document.getElementById('reports-list');
+        
+        if (reportsHistory) reportsHistory.style.display = 'block';
+        
         if (!reportsList) {
           alert('❌ Reports list element not found');
           return;
         }
         
+        // FORCE DISPLAY: Show files regardless of any processing
+        let html = `
+          <div style="background: #0f172a; padding: 20px; border-radius: 8px; margin: 10px 0;">
+            <h3 style="color: #60a5fa; margin: 0 0 20px 0;">📁 Supabase Files (${files.length})</h3>
+        `;
+        
         if (files.length === 0) {
-          reportsList.innerHTML = '<p style="color: #888; text-align: center; padding: 20px;">No files found in Supabase storage. Upload a PDF first.</p>';
-          alert('📋 No files found in Supabase storage');
-          return;
+          html += '<p style="color: #94a3b8;">No files in storage</p>';
+        } else {
+          files.forEach((file, index) => {
+            html += `
+              <div style="background: #1e293b; border: 1px solid #334155; padding: 15px; margin: 10px 0; border-radius: 6px;">
+                <h4 style="color: #e2e8f0; margin: 0 0 10px 0;">${file.name || 'Unknown'}</h4>
+                <p style="color: #94a3b8; font-size: 12px; margin: 5px 0;">Created: ${file.created_at || 'Unknown'}</p>
+                <div style="margin-top: 10px;">
+                  <button onclick="window.viewFileInNewTab('${file.name}')" style="background: #3b82f6; color: white; border: none; padding: 8px 12px; margin: 2px; border-radius: 4px; cursor: pointer;">View</button>
+                  <button onclick="window.deleteSupabaseFile('${file.name}')" style="background: #ef4444; color: white; border: none; padding: 8px 12px; margin: 2px; border-radius: 4px; cursor: pointer;">Delete</button>
+                </div>
+              </div>
+            `;
+          });
         }
         
-        // DIRECT DISPLAY: Show all files with actions
-        let html = '<h4 style="color: #fff; margin-bottom: 20px;">📋 Files in Supabase Storage (' + files.length + ')</h4>';
-        
-        files.forEach((file, index) => {
-          const fileName = file.name || 'Unknown File';
-          const fileDate = file.created_at || 'Unknown Date';
-          const fileSize = file.metadata?.size || 0;
-          
-          html += `
-            <div class="report-item" style="border: 1px solid #4a9eff; padding: 20px; margin: 15px 0; border-radius: 8px; background: #1a1a2e;">
-              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
-                <h5 style="color: #4a9eff; margin: 0; font-size: 18px;">📄 ${fileName}</h5>
-                <span style="color: #4a9eff; font-size: 12px;">☁️ Supabase</span>
-              </div>
-              
-              <div style="margin-bottom: 15px;">
-                <p style="color: #888; font-size: 13px; margin: 4px 0;">📅 Uploaded: ${new Date(fileDate).toLocaleString()}</p>
-                ${fileSize > 0 ? `<p style="color: #888; font-size: 13px; margin: 4px 0;">📊 Size: ${(fileSize / 1024).toFixed(1)} KB</p>` : ''}
-              </div>
-              
-              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button onclick="window.viewFileInNewTab('${fileName}')" 
-                        style="background: #4a9eff; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-size: 13px; cursor: pointer;">
-                  📖 View File
-                </button>
-                <button onclick="window.deleteSupabaseFile('${fileName}')" 
-                        style="background: #ef4444; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-size: 13px; cursor: pointer;">
-                  🗑️ Delete
-                </button>
-                <button onclick="window.downloadSupabaseFile('${fileName}')" 
-                        style="background: #10b981; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-size: 13px; cursor: pointer;">
-                  📥 Download
-                </button>
-              </div>
-              
-              <div style="color: #666; font-size: 11px; margin-top: 12px; padding-top: 8px; border-top: 1px solid #333;">
-                File #${index + 1} • Storage Path: ${fileName}
-              </div>
-            </div>
-          `;
-        });
+        html += '</div>';
         
         reportsList.innerHTML = html;
         
@@ -294,11 +260,10 @@ report the <!DOCTYPE html>
           reportsHistory.scrollIntoView({ behavior: 'smooth' });
         }
         
-        alert('✅ Loaded ' + files.length + ' files from Supabase!\nClick "View File" to open in new tab\nClick "Delete" to remove from storage');
-        console.log('✅ Direct Supabase files display complete');
+        alert('✅ Showing ' + files.length + ' files from Supabase storage');
         
       } catch (error) {
-        console.error('❌ Error displaying Supabase files:', error);
+        console.error('❌ Error:', error);
         alert('❌ Error: ' + error.message);
       }
     };
@@ -1077,11 +1042,64 @@ report the <!DOCTYPE html>
     console.log('📋 Available render functions: renderReportsHistory()');
     console.log('🚨 EMERGENCY functions: forceDisplaySupabaseFiles()');
     
+    // SUPER SIMPLE TEST: Just show files directly
+    window.testShowFiles = async function() {
+      console.log('🧪 SUPER SIMPLE: Testing file display...');
+      
+      try {
+        window.initializeSupabaseClient();
+        
+        const { data: files, error } = await window.supabaseClient.supabase.storage
+          .from('fuel-reports')
+          .list('', { limit: 10 });
+        
+        if (error) {
+          alert('❌ Cannot access Supabase: ' + error.message);
+          return;
+        }
+        
+        console.log('Raw files from Supabase:', files);
+        
+        const reportsList = document.getElementById('reports-list');
+        const reportsHistory = document.getElementById('reports-history');
+        
+        if (reportsHistory) reportsHistory.style.display = 'block';
+        
+        if (reportsList) {
+          let html = '<h3 style="color: lime;">🧪 TEST: Files from Supabase</h3>';
+          
+          if (files.length === 0) {
+            html += '<p style="color: red;">No files found</p>';
+          } else {
+            files.forEach(file => {
+              html += `<div style="border: 2px solid lime; padding: 10px; margin: 5px; background: #001100;">
+                        <strong style="color: lime;">${file.name || 'No name'}</strong><br>
+                        <small style="color: #888;">Date: ${file.created_at || 'No date'}</small>
+                      </div>`;
+            });
+          }
+          
+          reportsList.innerHTML = html;
+          
+          if (reportsHistory) {
+            reportsHistory.scrollIntoView({ behavior: 'smooth' });
+          }
+          
+          alert('🧪 TEST: Showing ' + files.length + ' files directly');
+        }
+        
+      } catch (error) {
+        alert('❌ Test failed: ' + error.message);
+      }
+    };
+    
+    console.log('🧪 SUPER SIMPLE test function: testShowFiles()');
+    
     // IMMEDIATE TEST: Run this automatically after page load
     setTimeout(function() {
-      console.log('🔄 AUTO-TESTING: Running automatic View Reports test...');
-      if (typeof window.debugViewReports === 'function') {
-        window.debugViewReports().then(() => {
+      console.log('🔄 AUTO-TESTING: Running automatic simple test...');
+      if (typeof window.testShowFiles === 'function') {
+        window.testShowFiles().then(() => {
           console.log('✅ Auto-test completed');
         }).catch(error => {
           console.error('❌ Auto-test failed:', error);
