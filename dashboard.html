@@ -193,156 +193,113 @@ report the <!DOCTYPE html>
       }
     };
     
-    // Essential reports display function - ORIGINAL FUNCTIONALITY RESTORED
+    // SIMPLE DIRECT SUPABASE REPORTS DISPLAY - NO OPENAI DEPENDENCY
     window.showReportsNow = async function() {
-      console.log('📊 CRITICAL: Showing reports using original functionality...');
+      console.log('📊 DIRECT: Showing Supabase files directly (no OpenAI analysis needed)...');
+      
       try {
-        // Use the existing system - hide other sections and show reports
-        const uploadArea = document.getElementById('upload-area');
-        const manualForm = document.getElementById('manual-form');
-        const monthlyPerformance = document.getElementById('monthly-performance');
+        // Show reports section
         const reportsHistory = document.getElementById('reports-history');
-        
-        if (uploadArea) uploadArea.style.display = 'none';
-        if (manualForm) manualForm.style.display = 'none';
-        if (monthlyPerformance) monthlyPerformance.style.display = 'none';
-        
         if (reportsHistory) {
           reportsHistory.style.display = 'block';
-          console.log('✅ Reports history section shown');
           
-          // Create a simplified Supabase reports loader
-          console.log('🔄 Loading reports from Supabase with simplified approach...');
-          
-          // Initialize Supabase client
-          window.initializeSupabaseClient();
-          
-          if (window.supabaseClient) {
-            try {
-              console.log('📦 Fetching files from fuel-reports bucket...');
-              
-              const { data: files, error } = await window.supabaseClient.supabase.storage
-                .from('fuel-reports')
-                .list('', { 
-                  limit: 100, 
-                  sortBy: { column: 'created_at', order: 'desc' }
-                });
-              
-              if (error) {
-                console.error('❌ Storage error:', error);
-                alert('❌ Error loading reports from Supabase: ' + error.message);
-                return;
-              }
-              
-              console.log('✅ Found', files.length, 'files in Supabase storage');
-              
-              // Initialize reports array
-              if (!window.uploadedReports) window.uploadedReports = [];
-              window.uploadedReports.length = 0; // Clear existing
-              
-              // Process files and add to reports array
-              console.log('🔍 Processing files:', files);
-              
-              files.forEach((file, index) => {
-                console.log(`Processing file ${index + 1}:`, file);
-                console.log('File object structure:', Object.keys(file));
-                console.log('File name:', file.name);
-                console.log('File type check:', file.name ? file.name.endsWith('.pdf') : 'No name');
-                
-                // ULTRA FLEXIBLE: Accept ANY file that exists (for debugging)
-                console.log('File has name:', !!file.name);
-                console.log('File name type:', typeof file.name);
-                
-                // Accept ANY file with a name for now
-                const isValidFile = file.name && file.name.length > 0;
-                
-                console.log('Is valid file (any file with name):', isValidFile);
-                
-                if (isValidFile) {
-                  const reportData = {
-                    filename: file.name,
-                    storagePath: file.name,
-                    uploadDate: file.created_at || file.updated_at || new Date().toISOString(),
-                    fileSize: file.metadata?.size || file.size || 0,
-                    id: file.id || file.name,
-                    source: 'supabase'
-                  };
-                  
-                  console.log('✅ Adding report:', reportData);
-                  window.uploadedReports.push(reportData);
-                } else {
-                  console.log('❌ Skipping file:', file.name, '- Not a valid report file');
-                }
-              });
-              
-              console.log('📊 Final uploadedReports array:', window.uploadedReports);
-              
-              console.log('✅ Processed', window.uploadedReports.length, 'PDF reports');
-              
-              // FORCE DISPLAY: Even if no reports were processed, show the raw files
-              const reportsList = document.getElementById('reports-list');
-              if (reportsList) {
-                if (window.uploadedReports.length > 0) {
-                  // Use renderReportsHistory if available
-                  if (typeof window.renderReportsHistory === 'function') {
-                    console.log('🔄 Using renderReportsHistory function...');
-                    window.renderReportsHistory();
-                  } else {
-                    console.log('🔄 Using fallback display...');
-                    // Fallback display for processed reports
-                    let html = '<h4>📋 Reports from Supabase (' + window.uploadedReports.length + ')</h4>';
-                    window.uploadedReports.forEach((report, index) => {
-                      html += `
-                        <div class="report-item" style="border: 1px solid #444; padding: 15px; margin: 10px 0; border-radius: 8px; background: #2a2a2a;">
-                          <h5 style="color: #4a9eff; margin: 0 0 8px 0;">📄 ${report.filename}</h5>
-                          <p style="color: #888; font-size: 12px; margin: 4px 0;">📅 ${new Date(report.uploadDate).toLocaleString()}</p>
-                          <p style="color: #4a9eff; font-size: 11px; margin: 4px 0;">☁️ Supabase Storage</p>
-                        </div>
-                      `;
-                    });
-                    reportsList.innerHTML = html;
-                  }
-                  alert('✅ Successfully loaded ' + window.uploadedReports.length + ' reports from Supabase!');
-                } else {
-                  // EMERGENCY: Show raw files if processing failed
-                  console.log('🚨 EMERGENCY: No processed reports, showing raw files');
-                  let html = '<h4>📋 Raw Files from Supabase (' + files.length + ')</h4>';
-                  html += '<p style="color: #ff6b6b; font-size: 12px;">Note: Files found but not processed correctly</p>';
-                  
-                  files.forEach((file, index) => {
-                    html += `
-                      <div class="report-item" style="border: 1px solid #ff6b6b; padding: 15px; margin: 10px 0; border-radius: 8px; background: #2a1a1a;">
-                        <h5 style="color: #ff6b6b; margin: 0 0 8px 0;">📄 ${file.name || 'Unknown File'}</h5>
-                        <p style="color: #888; font-size: 12px; margin: 4px 0;">📅 ${file.created_at || 'Unknown Date'}</p>
-                        <p style="color: #ff6b6b; font-size: 11px; margin: 4px 0;">🚨 Raw File (Processing Failed)</p>
-                        <div style="color: #666; font-size: 10px; margin-top: 8px;">File #${index + 1}</div>
-                      </div>
-                    `;
-                  });
-                  
-                  reportsList.innerHTML = html;
-                  alert('🚨 Found ' + files.length + ' files in Supabase but processing failed. Files shown as raw data.');
-                }
-              }
-              
-            } catch (error) {
-              console.error('❌ Error loading reports:', error);
-              alert('❌ Error loading reports from Supabase: ' + error.message);
-            }
-          } else {
-            alert('❌ Supabase client not available. Cannot load reports.');
-          }
-          
-          // Scroll to the reports section
-          reportsHistory.scrollIntoView({ behavior: 'smooth' });
-        } else {
-          console.error('❌ Reports history section not found');
-          alert('❌ Error: Reports section not found. Cannot display reports.');
+          // Hide other sections
+          const uploadArea = document.getElementById('upload-area');
+          const manualForm = document.getElementById('manual-form');
+          const monthlyPerformance = document.getElementById('monthly-performance');
+          if (uploadArea) uploadArea.style.display = 'none';
+          if (manualForm) manualForm.style.display = 'none';
+          if (monthlyPerformance) monthlyPerformance.style.display = 'none';
         }
+        
+        // Initialize Supabase client
+        window.initializeSupabaseClient();
+        
+        if (!window.supabaseClient) {
+          alert('❌ Supabase client not available');
+          return;
+        }
+        
+        console.log('📦 Loading files directly from Supabase bucket...');
+        
+        const { data: files, error } = await window.supabaseClient.supabase.storage
+          .from('fuel-reports')
+          .list('', { limit: 100 });
+        
+        if (error) {
+          console.error('❌ Error loading files:', error);
+          alert('❌ Error loading files from Supabase: ' + error.message);
+          return;
+        }
+        
+        console.log('✅ Loaded', files.length, 'files from Supabase');
+        
+        const reportsList = document.getElementById('reports-list');
+        if (!reportsList) {
+          alert('❌ Reports list element not found');
+          return;
+        }
+        
+        if (files.length === 0) {
+          reportsList.innerHTML = '<p style="color: #888; text-align: center; padding: 20px;">No files found in Supabase storage. Upload a PDF first.</p>';
+          alert('📋 No files found in Supabase storage');
+          return;
+        }
+        
+        // DIRECT DISPLAY: Show all files with actions
+        let html = '<h4 style="color: #fff; margin-bottom: 20px;">📋 Files in Supabase Storage (' + files.length + ')</h4>';
+        
+        files.forEach((file, index) => {
+          const fileName = file.name || 'Unknown File';
+          const fileDate = file.created_at || 'Unknown Date';
+          const fileSize = file.metadata?.size || 0;
+          
+          html += `
+            <div class="report-item" style="border: 1px solid #4a9eff; padding: 20px; margin: 15px 0; border-radius: 8px; background: #1a1a2e;">
+              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                <h5 style="color: #4a9eff; margin: 0; font-size: 18px;">📄 ${fileName}</h5>
+                <span style="color: #4a9eff; font-size: 12px;">☁️ Supabase</span>
+              </div>
+              
+              <div style="margin-bottom: 15px;">
+                <p style="color: #888; font-size: 13px; margin: 4px 0;">📅 Uploaded: ${new Date(fileDate).toLocaleString()}</p>
+                ${fileSize > 0 ? `<p style="color: #888; font-size: 13px; margin: 4px 0;">📊 Size: ${(fileSize / 1024).toFixed(1)} KB</p>` : ''}
+              </div>
+              
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="window.viewFileInNewTab('${fileName}')" 
+                        style="background: #4a9eff; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-size: 13px; cursor: pointer;">
+                  📖 View File
+                </button>
+                <button onclick="window.deleteSupabaseFile('${fileName}')" 
+                        style="background: #ef4444; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-size: 13px; cursor: pointer;">
+                  🗑️ Delete
+                </button>
+                <button onclick="window.downloadSupabaseFile('${fileName}')" 
+                        style="background: #10b981; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-size: 13px; cursor: pointer;">
+                  📥 Download
+                </button>
+              </div>
+              
+              <div style="color: #666; font-size: 11px; margin-top: 12px; padding-top: 8px; border-top: 1px solid #333;">
+                File #${index + 1} • Storage Path: ${fileName}
+              </div>
+            </div>
+          `;
+        });
+        
+        reportsList.innerHTML = html;
+        
+        if (reportsHistory) {
+          reportsHistory.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        alert('✅ Loaded ' + files.length + ' files from Supabase!\nClick "View File" to open in new tab\nClick "Delete" to remove from storage');
+        console.log('✅ Direct Supabase files display complete');
+        
       } catch (error) {
-        const errorMsg = '❌ Error displaying reports: ' + error.message;
-        alert(errorMsg);
-        console.error(errorMsg);
+        console.error('❌ Error displaying Supabase files:', error);
+        alert('❌ Error: ' + error.message);
       }
     };
     
@@ -992,6 +949,123 @@ report the <!DOCTYPE html>
       } catch (error) {
         console.error('❌ Emergency display failed:', error);
         alert('❌ Emergency display failed: ' + error.message);
+      }
+    };
+    
+    // File action functions for Supabase files
+    window.viewFileInNewTab = async function(fileName) {
+      console.log('📖 Opening file in new tab:', fileName);
+      
+      try {
+        window.initializeSupabaseClient();
+        
+        if (!window.supabaseClient) {
+          alert('❌ Supabase client not available');
+          return;
+        }
+        
+        // Get signed URL for the file
+        const { data: signedUrl, error } = await window.supabaseClient.supabase.storage
+          .from('fuel-reports')
+          .createSignedUrl(fileName, 3600); // 1 hour expiry
+        
+        if (error) {
+          console.error('❌ Error creating signed URL:', error);
+          alert('❌ Error opening file: ' + error.message);
+          return;
+        }
+        
+        if (signedUrl?.signedUrl) {
+          window.open(signedUrl.signedUrl, '_blank');
+          console.log('✅ File opened in new tab');
+        } else {
+          alert('❌ Could not get file URL');
+        }
+        
+      } catch (error) {
+        console.error('❌ Error viewing file:', error);
+        alert('❌ Error viewing file: ' + error.message);
+      }
+    };
+    
+    window.deleteSupabaseFile = async function(fileName) {
+      console.log('🗑️ Deleting file:', fileName);
+      
+      const confirmDelete = confirm('Are you sure you want to delete this file?\n\n' + fileName + '\n\nThis action cannot be undone.');
+      if (!confirmDelete) {
+        return;
+      }
+      
+      try {
+        window.initializeSupabaseClient();
+        
+        if (!window.supabaseClient) {
+          alert('❌ Supabase client not available');
+          return;
+        }
+        
+        const { error } = await window.supabaseClient.supabase.storage
+          .from('fuel-reports')
+          .remove([fileName]);
+        
+        if (error) {
+          console.error('❌ Error deleting file:', error);
+          alert('❌ Error deleting file: ' + error.message);
+          return;
+        }
+        
+        alert('✅ File deleted successfully: ' + fileName);
+        console.log('✅ File deleted from Supabase');
+        
+        // Refresh the reports display
+        window.showReportsNow();
+        
+      } catch (error) {
+        console.error('❌ Error deleting file:', error);
+        alert('❌ Error deleting file: ' + error.message);
+      }
+    };
+    
+    window.downloadSupabaseFile = async function(fileName) {
+      console.log('📥 Downloading file:', fileName);
+      
+      try {
+        window.initializeSupabaseClient();
+        
+        if (!window.supabaseClient) {
+          alert('❌ Supabase client not available');
+          return;
+        }
+        
+        // Get signed URL for download
+        const { data: signedUrl, error } = await window.supabaseClient.supabase.storage
+          .from('fuel-reports')
+          .createSignedUrl(fileName, 3600);
+        
+        if (error) {
+          console.error('❌ Error creating download URL:', error);
+          alert('❌ Error downloading file: ' + error.message);
+          return;
+        }
+        
+        if (signedUrl?.signedUrl) {
+          // Create download link
+          const link = document.createElement('a');
+          link.href = signedUrl.signedUrl;
+          link.download = fileName;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          console.log('✅ File download initiated');
+          alert('✅ Download started: ' + fileName);
+        } else {
+          alert('❌ Could not get download URL');
+        }
+        
+      } catch (error) {
+        console.error('❌ Error downloading file:', error);
+        alert('❌ Error downloading file: ' + error.message);
       }
     };
     
