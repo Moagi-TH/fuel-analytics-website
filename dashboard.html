@@ -193,9 +193,9 @@ report the <!DOCTYPE html>
       }
     };
     
-    // ULTRA SIMPLE: Direct file display without any complex processing
+    // View Reports - Clean professional display
     window.showReportsNow = async function() {
-      console.log('📊 ULTRA SIMPLE: Direct Supabase file display...');
+      console.log('📊 Loading reports from Supabase storage...');
       
       try {
         // Initialize Supabase client
@@ -212,15 +212,23 @@ report the <!DOCTYPE html>
           .list('', { limit: 100 });
         
         if (error) {
-          alert('❌ Error: ' + error.message);
+          alert('❌ Error loading reports: ' + error.message);
           return;
         }
         
-        console.log('Files from Supabase:', files);
+        console.log('✅ Loaded', files.length, 'files from Supabase');
         
         // Show reports section
         const reportsHistory = document.getElementById('reports-history');
         const reportsList = document.getElementById('reports-list');
+        
+        // Hide other sections
+        const uploadArea = document.getElementById('upload-area');
+        const manualForm = document.getElementById('manual-form');
+        const monthlyPerformance = document.getElementById('monthly-performance');
+        if (uploadArea) uploadArea.style.display = 'none';
+        if (manualForm) manualForm.style.display = 'none';
+        if (monthlyPerformance) monthlyPerformance.style.display = 'none';
         
         if (reportsHistory) reportsHistory.style.display = 'block';
         
@@ -229,7 +237,7 @@ report the <!DOCTYPE html>
           return;
         }
         
-        // STYLED TO MATCH ENTER DATA FORM
+        // Professional display matching Enter Data styling
         let html = `
           <div class="form-section">
             <h4>All Reports (${files.length})</h4>
@@ -252,13 +260,10 @@ report the <!DOCTYPE html>
                 <p style="color: #888; font-size: 13px; margin: 5px 0;">📅 Uploaded: ${new Date(fileDate).toLocaleString()}</p>
                 <div style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;">
                   <button onclick="window.viewFileInNewTab('${fileName}')" class="button secondary" style="font-size: 12px; padding: 6px 12px;">
-                    📖 View File
+                    📖 View Report
                   </button>
                   <button onclick="window.deleteSupabaseFile('${fileName}')" class="button" style="background: #ef4444; font-size: 12px; padding: 6px 12px;">
-                    🗑️ Delete
-                  </button>
-                  <button onclick="window.downloadSupabaseFile('${fileName}')" class="button" style="background: #10b981; font-size: 12px; padding: 6px 12px;">
-                    📥 Download
+                    🗑️ Delete Report
                   </button>
                 </div>
               </div>
@@ -274,10 +279,10 @@ report the <!DOCTYPE html>
           reportsHistory.scrollIntoView({ behavior: 'smooth' });
         }
         
-        alert('✅ Showing ' + files.length + ' files from Supabase storage');
+        console.log('✅ Reports displayed successfully');
         
       } catch (error) {
-        console.error('❌ Error:', error);
+        console.error('❌ Error displaying reports:', error);
         alert('❌ Error: ' + error.message);
       }
     };
@@ -931,17 +936,19 @@ report the <!DOCTYPE html>
       }
     };
     
-    // File action functions for Supabase files
+    // View Report in New Tab
     window.viewFileInNewTab = async function(fileName) {
-      console.log('📖 Opening file in new tab:', fileName);
+      console.log('📖 Opening report:', fileName);
       
       try {
         window.initializeSupabaseClient();
         
         if (!window.supabaseClient) {
-          alert('❌ Supabase client not available');
+          alert('❌ Cannot access Supabase. Please check your connection.');
           return;
         }
+        
+        console.log('🔄 Creating secure URL for file access...');
         
         // Get signed URL for the file
         const { data: signedUrl, error } = await window.supabaseClient.supabase.storage
@@ -950,28 +957,30 @@ report the <!DOCTYPE html>
         
         if (error) {
           console.error('❌ Error creating signed URL:', error);
-          alert('❌ Error opening file: ' + error.message);
+          alert('❌ Cannot open report: ' + error.message);
           return;
         }
         
         if (signedUrl?.signedUrl) {
           window.open(signedUrl.signedUrl, '_blank');
-          console.log('✅ File opened in new tab');
+          console.log('✅ Report opened in new tab');
         } else {
-          alert('❌ Could not get file URL');
+          alert('❌ Could not generate secure URL for report');
         }
         
       } catch (error) {
-        console.error('❌ Error viewing file:', error);
-        alert('❌ Error viewing file: ' + error.message);
+        console.error('❌ Error viewing report:', error);
+        alert('❌ Error viewing report: ' + error.message);
       }
     };
     
+    // Delete Report from Supabase
     window.deleteSupabaseFile = async function(fileName) {
-      console.log('🗑️ Deleting file:', fileName);
+      console.log('🗑️ Deleting report:', fileName);
       
-      const confirmDelete = confirm('Are you sure you want to delete this file?\n\n' + fileName + '\n\nThis action cannot be undone.');
+      const confirmDelete = confirm('⚠️ Delete Report\n\nAre you sure you want to permanently delete this report?\n\n📄 ' + fileName + '\n\n❌ This action cannot be undone.');
       if (!confirmDelete) {
+        console.log('Delete cancelled by user');
         return;
       }
       
@@ -979,155 +988,40 @@ report the <!DOCTYPE html>
         window.initializeSupabaseClient();
         
         if (!window.supabaseClient) {
-          alert('❌ Supabase client not available');
+          alert('❌ Cannot access Supabase. Please check your connection.');
           return;
         }
+        
+        console.log('🔄 Removing report from Supabase storage...');
         
         const { error } = await window.supabaseClient.supabase.storage
           .from('fuel-reports')
           .remove([fileName]);
         
         if (error) {
-          console.error('❌ Error deleting file:', error);
-          alert('❌ Error deleting file: ' + error.message);
+          console.error('❌ Error deleting report:', error);
+          alert('❌ Failed to delete report: ' + error.message);
           return;
         }
         
-        alert('✅ File deleted successfully: ' + fileName);
-        console.log('✅ File deleted from Supabase');
+        console.log('✅ Report deleted successfully from Supabase');
+        alert('✅ Report deleted successfully!\n\n📄 ' + fileName + '\n\nThe reports list will now refresh.');
         
         // Refresh the reports display
         window.showReportsNow();
         
       } catch (error) {
-        console.error('❌ Error deleting file:', error);
-        alert('❌ Error deleting file: ' + error.message);
+        console.error('❌ Error deleting report:', error);
+        alert('❌ Error deleting report: ' + error.message);
       }
     };
     
-    window.downloadSupabaseFile = async function(fileName) {
-      console.log('📥 Downloading file:', fileName);
-      
-      try {
-        window.initializeSupabaseClient();
-        
-        if (!window.supabaseClient) {
-          alert('❌ Supabase client not available');
-          return;
-        }
-        
-        // Get signed URL for download
-        const { data: signedUrl, error } = await window.supabaseClient.supabase.storage
-          .from('fuel-reports')
-          .createSignedUrl(fileName, 3600);
-        
-        if (error) {
-          console.error('❌ Error creating download URL:', error);
-          alert('❌ Error downloading file: ' + error.message);
-          return;
-        }
-        
-        if (signedUrl?.signedUrl) {
-          // Create download link
-          const link = document.createElement('a');
-          link.href = signedUrl.signedUrl;
-          link.download = fileName;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          
-          console.log('✅ File download initiated');
-          alert('✅ Download started: ' + fileName);
-        } else {
-          alert('❌ Could not get download URL');
-        }
-        
-      } catch (error) {
-        console.error('❌ Error downloading file:', error);
-        alert('❌ Error downloading file: ' + error.message);
-      }
-    };
     
     console.log('✅ CRITICAL FUNCTIONS: All essential functions defined');
-    console.log('🔧 Available test functions: testAllButtonsNow(), testReportManagement(), testSupabaseIntegration(), testUploadAndRetrieval(), debugViewReports()');
-    console.log('🏗️ Available renovation functions: initializeRenovationForm(), loadRenovationItems()');
-    console.log('📊 Available Supabase functions: initializeSupabaseClient(), testSupabaseConnection()');
-    console.log('🔍 Available debug functions: debugViewReports()');
-    console.log('📋 Available render functions: renderReportsHistory()');
-    console.log('🚨 EMERGENCY functions: forceDisplaySupabaseFiles()');
+    console.log('📊 Report Management: Upload PDF, View Reports, Enter Data, View Performance');
+    console.log('🏗️ Renovation System: Enter Data opens manual fuel price form');
+    console.log('📋 File Actions: View Report, Delete Report functions available');
     
-    // SUPER SIMPLE TEST: Just show files directly
-    window.testShowFiles = async function() {
-      console.log('🧪 SUPER SIMPLE: Testing file display...');
-      
-      try {
-        window.initializeSupabaseClient();
-        
-        const { data: files, error } = await window.supabaseClient.supabase.storage
-          .from('fuel-reports')
-          .list('', { limit: 10 });
-        
-        if (error) {
-          alert('❌ Cannot access Supabase: ' + error.message);
-          return;
-        }
-        
-        console.log('Raw files from Supabase:', files);
-        
-        const reportsList = document.getElementById('reports-list');
-        const reportsHistory = document.getElementById('reports-history');
-        
-        if (reportsHistory) reportsHistory.style.display = 'block';
-        
-        if (reportsList) {
-          let html = `
-            <div class="form-section">
-              <h4>🧪 TEST: Files from Supabase (${files.length})</h4>
-              <p class="form-hint">Auto-test display - same styling as Enter Data form</p>
-          `;
-          
-          if (files.length === 0) {
-            html += '<div class="info-card"><p>No files found in Supabase storage</p></div>';
-          } else {
-            files.forEach((file, index) => {
-              html += `
-                <div class="info-card" style="margin-bottom: 10px;">
-                  <h5 style="margin: 0 0 8px 0; color: var(--primary-color);">📄 ${file.name || 'No name'}</h5>
-                  <p style="color: #888; font-size: 12px; margin: 0;">📅 ${file.created_at || 'No date'}</p>
-                  <span class="status-badge" style="background: #10b981; color: white; margin-top: 8px; display: inline-block;">Test Display</span>
-                </div>
-              `;
-            });
-          }
-          
-          html += '</div>';
-          reportsList.innerHTML = html;
-          
-          if (reportsHistory) {
-            reportsHistory.scrollIntoView({ behavior: 'smooth' });
-          }
-          
-          alert('🧪 TEST: Showing ' + files.length + ' files directly');
-        }
-        
-      } catch (error) {
-        alert('❌ Test failed: ' + error.message);
-      }
-    };
-    
-    console.log('🧪 SUPER SIMPLE test function: testShowFiles()');
-    
-    // IMMEDIATE TEST: Run this automatically after page load
-    setTimeout(function() {
-      console.log('🔄 AUTO-TESTING: Running automatic simple test...');
-      if (typeof window.testShowFiles === 'function') {
-        window.testShowFiles().then(() => {
-          console.log('✅ Auto-test completed');
-        }).catch(error => {
-          console.error('❌ Auto-test failed:', error);
-        });
-      }
-    }, 3000); // Run after 3 seconds
     
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
