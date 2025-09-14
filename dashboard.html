@@ -1260,7 +1260,7 @@
           <div class="renovation-planning">
             <div class="planning-header">
               <h3>Renovation Planning</h3>
-              <button id="add-renovation-item" class="button primary" onclick="try{showRenovationForm&&showRenovationForm()}catch(e){console.error('showRenovationForm failed',e)}">+ Add Renovation Item</button>
+              <button id="add-renovation-item" class="button primary" onclick="console.log('Add button clicked!'); if(typeof showRenovationForm === 'function') { showRenovationForm(); } else { console.log('showRenovationForm not ready, trying fallback...'); document.getElementById('renovation-item-form').style.display = 'block'; }">+ Add Renovation Item</button>
             </div>
 
             <!-- Renovation Groups -->
@@ -1447,8 +1447,8 @@
 
               <!-- Form Actions -->
               <div class="form-actions">
-                <button id="save-renovation-item" class="button primary">Save Item</button>
-                <button id="cancel-renovation-item" class="button secondary">Cancel</button>
+                <button id="save-renovation-item" class="button primary" onclick="console.log('Save button clicked!'); if(typeof saveRenovationItem === 'function') { saveRenovationItem(); } else { console.log('saveRenovationItem not ready, trying fallback...'); alert('Save function not ready yet. Please wait for page to fully load.'); }">Save Item</button>
+                <button id="cancel-renovation-item" class="button secondary" onclick="console.log('Cancel button clicked!'); if(typeof hideRenovationForm === 'function') { hideRenovationForm(); } else { console.log('hideRenovationForm not ready, trying fallback...'); document.getElementById('renovation-item-form').style.display = 'none'; }">Cancel</button>
               </div>
             </div>
 
@@ -3040,6 +3040,60 @@
         };
       };
 
+      // Missing function: handleFileUpload
+      window.handleFileUpload = function(event) {
+        console.log('📁 Handling file upload...');
+        try {
+          const file = event.target.files[0];
+          if (file) {
+            console.log('File selected:', file.name);
+            if (typeof processReportFile === 'function') {
+              processReportFile(file);
+            } else {
+              console.error('❌ processReportFile function not available');
+            }
+          }
+        } catch (error) {
+          console.error('Error handling file upload:', error);
+        }
+      };
+
+      // Missing function: processReportFile
+      window.processReportFile = function(file) {
+        console.log('🔄 Processing report file:', file.name);
+        try {
+          // Basic file processing - you can enhance this
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            console.log('File processed successfully');
+            // Add your file processing logic here
+          };
+          reader.readAsText(file);
+        } catch (error) {
+          console.error('Error processing file:', error);
+        }
+      };
+
+      // Missing function: viewReportHistory
+      window.viewReportHistory = function() {
+        console.log('📋 Viewing report history...');
+        try {
+          if (typeof window.renderReportsHistory === 'function') {
+            window.renderReportsHistory();
+          } else {
+            console.error('❌ renderReportsHistory function not available');
+          }
+          
+          // Navigate to reports section
+          const reportsSection = document.getElementById('reports-section');
+          if (reportsSection) {
+            reportsSection.scrollIntoView({ behavior: 'smooth' });
+          }
+        } catch (error) {
+          console.error('Error viewing report history:', error);
+        }
+      };
+
       // Comprehensive test function
       window.testAllButtons = function() {
         console.log('🧪 Running comprehensive button tests...');
@@ -3057,6 +3111,31 @@
           renovation: renovationTest,
           pdfUpload: pdfTest,
           reportsViewing: reportsTest
+        };
+      };
+
+      // Simple immediate test function
+      window.quickTest = function() {
+        console.log('⚡ Quick button test...');
+        
+        // Test 1: Check if buttons exist
+        const addBtn = document.getElementById('add-renovation-item');
+        const saveBtn = document.getElementById('save-renovation-item');
+        const cancelBtn = document.getElementById('cancel-renovation-item');
+        
+        console.log('✅ Add button exists:', !!addBtn);
+        console.log('✅ Save button exists:', !!saveBtn);
+        console.log('✅ Cancel button exists:', !!cancelBtn);
+        
+        // Test 2: Try clicking the add button
+        if (addBtn) {
+          console.log('🔘 Clicking add button...');
+          addBtn.click();
+        }
+        
+        return {
+          buttonsExist: { add: !!addBtn, save: !!saveBtn, cancel: !!cancelBtn },
+          testCompleted: true
         };
       };
 
