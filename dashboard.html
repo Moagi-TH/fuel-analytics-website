@@ -90,6 +90,15 @@
     window.showReportsNow = function() {
       console.log('📊 CRITICAL: Showing reports now...');
       try {
+        // First, show the reports history section
+        const reportsHistory = document.getElementById('reports-history');
+        if (reportsHistory) {
+          reportsHistory.style.display = 'block';
+          console.log('✅ Reports history section shown');
+        } else {
+          console.warn('⚠️ Reports history section not found');
+        }
+        
         const reportsList = document.getElementById('reports-list');
         if (!reportsList) {
           const errorMsg = '❌ Error: Reports list element not found. Cannot display reports.';
@@ -129,6 +138,11 @@
         const successMsg = '✅ Successfully displayed ' + window.uploadedReports.length + ' reports';
         alert(successMsg);
         console.log(successMsg);
+        
+        // Scroll to the reports section
+        if (reportsHistory) {
+          reportsHistory.scrollIntoView({ behavior: 'smooth' });
+        }
       } catch (error) {
         const errorMsg = '❌ Error displaying reports: ' + error.message;
         alert(errorMsg);
@@ -215,8 +229,58 @@
       };
     };
     
+    // Test function specifically for Upload PDF and View Reports
+    window.testReportManagement = function() {
+      console.log('🧪 Testing Report Management functionality...');
+      
+      // Test Upload PDF button
+      console.log('1. Testing Upload PDF button...');
+      const uploadButton = document.getElementById('upload-trigger');
+      const fileInput = document.getElementById('report-file-main');
+      
+      if (uploadButton && fileInput) {
+        console.log('✅ Upload button and file input found');
+        console.log('Upload button onclick:', uploadButton.onclick ? 'Has onclick handler' : 'No onclick handler');
+        console.log('File input type:', fileInput.type);
+        console.log('File input accept:', fileInput.accept);
+      } else {
+        console.error('❌ Upload button or file input not found');
+        console.log('Upload button exists:', !!uploadButton);
+        console.log('File input exists:', !!fileInput);
+      }
+      
+      // Test View Reports button
+      console.log('2. Testing View Reports functionality...');
+      const reportsHistory = document.getElementById('reports-history');
+      const reportsList = document.getElementById('reports-list');
+      
+      if (reportsHistory && reportsList) {
+        console.log('✅ Reports section elements found');
+        console.log('Reports history display:', reportsHistory.style.display);
+        console.log('Reports list exists:', !!reportsList);
+      } else {
+        console.error('❌ Reports section elements not found');
+        console.log('Reports history exists:', !!reportsHistory);
+        console.log('Reports list exists:', !!reportsList);
+      }
+      
+      // Test data availability
+      console.log('3. Testing data availability...');
+      console.log('Uploaded reports count:', window.uploadedReports ? window.uploadedReports.length : 0);
+      console.log('Uploaded reports data:', window.uploadedReports);
+      
+      console.log('🎉 Report Management test completed!');
+      return {
+        uploadButton: !!uploadButton,
+        fileInput: !!fileInput,
+        reportsHistory: !!reportsHistory,
+        reportsList: !!reportsList,
+        reportsCount: window.uploadedReports ? window.uploadedReports.length : 0
+      };
+    };
+    
     console.log('✅ CRITICAL FUNCTIONS: All essential functions defined');
-    console.log('🔧 Available test function: testAllButtonsNow()');
+    console.log('🔧 Available test functions: testAllButtonsNow(), testReportManagement()');
     
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
@@ -1454,7 +1518,7 @@
           <div class="action-card">
             <h3>Upload New Report</h3>
             <p>Upload your monthly PDF report for analysis</p>
-            <button id="upload-trigger" class="button primary" onclick="console.log('Upload button clicked!'); try { if(typeof window.testUpload === 'function') { window.testUpload(); } else { console.log('testUpload not ready, trying fallback...'); document.getElementById('report-file-main').click(); } } catch(e) { console.error('Upload error:', e); document.getElementById('report-file-main').click(); }">Upload PDF</button>
+            <button id="upload-trigger" class="button primary" onclick="console.log('Upload PDF button clicked!'); try { const fileInput = document.getElementById('report-file-main'); if(fileInput) { fileInput.click(); console.log('File input triggered'); } else { alert('❌ Error: File input not found. Cannot open file dialog.'); } } catch(e) { console.error('Upload button error:', e); alert('❌ Error: Failed to open file dialog. ' + e.message); }">Upload PDF</button>
           </div>
           <div class="action-card">
             <h3>Manual Entry</h3>
