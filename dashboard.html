@@ -193,128 +193,45 @@
       }
     };
     
-    // Essential reports display function - Supabase integrated
+    // Essential reports display function - ORIGINAL FUNCTIONALITY RESTORED
     window.showReportsNow = async function() {
-      console.log('📊 CRITICAL: Showing reports with Supabase integration...');
+      console.log('📊 CRITICAL: Showing reports using original functionality...');
       try {
-        // First, show the reports history section
+        // Use the existing system - hide other sections and show reports
+        const uploadArea = document.getElementById('upload-area');
+        const manualForm = document.getElementById('manual-form');
+        const monthlyPerformance = document.getElementById('monthly-performance');
         const reportsHistory = document.getElementById('reports-history');
+        
+        if (uploadArea) uploadArea.style.display = 'none';
+        if (manualForm) manualForm.style.display = 'none';
+        if (monthlyPerformance) monthlyPerformance.style.display = 'none';
+        
         if (reportsHistory) {
           reportsHistory.style.display = 'block';
           console.log('✅ Reports history section shown');
-        } else {
-          console.warn('⚠️ Reports history section not found');
-        }
-        
-        const reportsList = document.getElementById('reports-list');
-        if (!reportsList) {
-          const errorMsg = '❌ Error: Reports list element not found. Cannot display reports.';
-          alert(errorMsg);
-          console.error(errorMsg);
-          return;
-        }
-        
-        // Initialize and load reports from Supabase first
-        window.initializeSupabaseClient();
-        
-        if (window.supabaseClient) {
-          try {
-            console.log('🔄 Loading reports from Supabase...');
-            alert('📊 Loading reports from Supabase...');
-            
-            // Load from storage bucket directly
-            console.log('📦 Loading files from fuel-reports bucket...');
-            const { data: files, error: storageError } = await window.supabaseClient.supabase.storage
-              .from('fuel-reports')
-              .list('', { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
-            
-            if (storageError) {
-              console.error('❌ Storage error:', storageError);
+          
+          // Use the existing loadReportsFromStorage function if available
+          if (typeof window.loadReportsFromStorage === 'function') {
+            console.log('🔄 Loading reports using existing loadReportsFromStorage function...');
+            await window.loadReportsFromStorage();
+            alert('✅ Reports loaded using original system!');
+          } else {
+            console.warn('⚠️ loadReportsFromStorage function not available, using fallback');
+            // Fallback: try to trigger the existing event listener
+            const viewHistoryBtn = document.getElementById('view-history');
+            if (viewHistoryBtn) {
+              viewHistoryBtn.click();
             } else {
-              console.log('✅ Found', files.length, 'files in storage');
-              
-              // Add storage files to reports array
-              if (!window.uploadedReports) window.uploadedReports = [];
-              
-              files.forEach(file => {
-                if (file.name.endsWith('.pdf')) {
-                  const exists = window.uploadedReports.find(r => r.storagePath === file.name);
-                  if (!exists) {
-                    window.uploadedReports.push({
-                      filename: file.name.split('_').slice(1).join('_'), // Remove timestamp prefix
-                      storagePath: file.name,
-                      uploadDate: file.created_at,
-                      fileSize: file.metadata?.size || 0
-                    });
-                  }
-                }
-              });
+              alert('❌ Could not load reports. Original system not available.');
             }
-            
-            // Also try to load from database
-            const result = await window.supabaseClient.getMonthlyReports();
-            if (result.success && result.reports && result.reports.length > 0) {
-              console.log('✅ Loaded', result.reports.length, 'reports from Supabase database');
-              
-              // Merge with existing reports
-              if (!window.uploadedReports) window.uploadedReports = [];
-              result.reports.forEach(report => {
-                // Check if report already exists
-                const exists = window.uploadedReports.find(r => r.filename === report.file_name);
-                if (!exists) {
-                  window.uploadedReports.push({
-                    filename: report.file_name,
-                    uploadDate: report.created_at,
-                    id: report.id,
-                    storagePath: report.storage_path
-                  });
-                }
-              });
-            }
-          } catch (supabaseError) {
-            console.error('❌ Error loading from Supabase:', supabaseError);
-            alert('⚠️ Could not load from Supabase: ' + supabaseError.message + '. Showing local reports.');
           }
-        }
-        
-        if (!window.uploadedReports || window.uploadedReports.length === 0) {
-          const noReportsMsg = '📋 No reports available. Upload a PDF file first or check Supabase connection.';
-          alert(noReportsMsg);
-          console.log(noReportsMsg);
-          reportsList.innerHTML = '<div class="text-gray-500 p-4 text-center">No reports available. Upload a PDF file to get started.</div>';
-          return;
-        }
-        
-        console.log('✅ Found ' + window.uploadedReports.length + ' reports to display');
-        
-        let html = '<div class="space-y-4">';
-        html += '<h3 class="text-lg font-semibold text-white mb-4">📋 Reports from Supabase (' + window.uploadedReports.length + ')</h3>';
-        
-        window.uploadedReports.forEach((report, index) => {
-          const isFromSupabase = report.storagePath ? '☁️ Supabase' : '💾 Local';
-          html += `
-            <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
-              <h4 class="text-lg font-semibold text-white">📄 ${report.filename}</h4>
-              <p class="text-gray-400 text-sm">📅 Uploaded: ${new Date(report.uploadDate).toLocaleString()}</p>
-              <p class="text-blue-400 text-xs">${isFromSupabase}</p>
-              <div class="mt-2 text-gray-300 text-xs max-h-20 overflow-y-auto">
-                ${report.content ? report.content.substring(0, 200) + '...' : 'PDF file - click to view'}
-              </div>
-              <div class="mt-2 text-xs text-blue-400">Report #${index + 1}</div>
-              ${report.storagePath ? `<button onclick="window.openPDFFromStorage('${report.storagePath}', '${report.filename}')" class="mt-2 text-xs bg-blue-600 text-white px-2 py-1 rounded">View PDF</button>` : ''}
-            </div>
-          `;
-        });
-        html += '</div>';
-        
-        reportsList.innerHTML = html;
-        const successMsg = '✅ Successfully displayed ' + window.uploadedReports.length + ' reports from Supabase';
-        alert(successMsg);
-        console.log(successMsg);
-        
-        // Scroll to the reports section
-        if (reportsHistory) {
+          
+          // Scroll to the reports section
           reportsHistory.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          console.error('❌ Reports history section not found');
+          alert('❌ Error: Reports section not found. Cannot display reports.');
         }
       } catch (error) {
         const errorMsg = '❌ Error displaying reports: ' + error.message;
@@ -370,30 +287,34 @@
       }
     };
     
-    // Essential enter data function - Supabase integrated
+    // Essential enter data function - ORIGINAL FUNCTIONALITY RESTORED
     window.enterData = function() {
-      console.log('📝 CRITICAL: Entering data with Supabase integration...');
+      console.log('📝 CRITICAL: Opening manual fuel data entry form...');
       try {
-        // Navigate to renovation section
-        const renovationSection = document.getElementById('renovation');
-        if (renovationSection) {
-          // Show the renovation section
-          renovationSection.style.display = 'block';
-          renovationSection.scrollIntoView({ behavior: 'smooth' });
+        // Show the manual entry form for fuel prices (ORIGINAL FUNCTIONALITY)
+        const manualForm = document.getElementById('manual-form');
+        if (manualForm) {
+          // Hide other sections
+          const uploadArea = document.getElementById('upload-area');
+          const reportsHistory = document.getElementById('reports-history');
+          const monthlyPerformance = document.getElementById('monthly-performance');
           
-          // Initialize renovation form if not already done
-          if (typeof window.initializeRenovationForm === 'function') {
-            window.initializeRenovationForm();
-          }
+          if (uploadArea) uploadArea.style.display = 'none';
+          if (reportsHistory) reportsHistory.style.display = 'none';
+          if (monthlyPerformance) monthlyPerformance.style.display = 'none';
           
-          alert('✅ Data entry section opened! You can now add renovation items that will be saved to Supabase.');
-          console.log('✅ Renovation section opened for data entry');
+          // Show manual entry form
+          manualForm.style.display = 'block';
+          manualForm.scrollIntoView({ behavior: 'smooth' });
+          
+          alert('✅ Manual data entry form opened! Enter fuel prices and shop data for performance metrics.');
+          console.log('✅ Manual entry form opened for fuel price data entry');
         } else {
-          console.error('❌ Renovation section not found');
-          alert('❌ Error: Renovation section not found. Cannot open data entry form.');
+          console.error('❌ Manual entry form not found');
+          alert('❌ Error: Manual entry form not found. Cannot open fuel data entry.');
         }
       } catch (error) {
-        const errorMsg = '❌ Error opening data entry: ' + error.message;
+        const errorMsg = '❌ Error opening manual entry form: ' + error.message;
         console.error(errorMsg);
         alert(errorMsg);
       }
