@@ -140,6 +140,41 @@
     };
     
     // Essential upload functions - Supabase integrated
+    // PDF text extraction function - needed for auto-trigger
+    window.extractPdfText = async function(file) {
+      if (!window["pdfjsLib"]) {
+        throw new Error("PDF.js not loaded - cannot extract text from PDF");
+      }
+      const pdfjsLib = window["pdfjsLib"];
+      if (pdfjsLib.GlobalWorkerOptions) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      }
+      try {
+        const buf = await file.arrayBuffer();
+        console.log("File converted to ArrayBuffer, size:", buf.byteLength);
+        
+        const loadingTask = pdfjsLib.getDocument({ data: buf });
+        console.log("PDF loading task created");
+        
+        const pdf = await loadingTask.promise;
+        console.log("PDF loaded, pages:", pdf.numPages);
+        
+        let fullText = "";
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items.map(item => item.str).join(" ");
+          fullText += pageText + "\n";
+        }
+        
+        console.log("PDF text extraction complete, length:", fullText.length);
+        return fullText;
+      } catch (error) {
+        console.error("PDF text extraction failed:", error);
+        throw new Error("Failed to extract text from PDF: " + error.message);
+      }
+    };
+    
     window.handleFileUpload = async function(event) {
       console.log('📁 CRITICAL: Handling file upload with Supabase integration...');
       try {
@@ -236,7 +271,7 @@
               
               try {
                 // Extract text from PDF
-                const text = await extractPdfText(file);
+                const text = await window.extractPdfText(file);
                 console.log("📄 Extracted text length:", text.length);
                 
                 // Call edge function
@@ -5816,7 +5851,7 @@
           if (BACKEND_URL.includes('supabase.co/functions')) {
             // Client extracts text, send to Supabase Edge Function as JSON
             console.log('🔄 Calling Supabase Edge Function: -analyze-storage-report-v1');
-            const text = await extractPdfText(file);
+            const text = await window.extractPdfText(file);
             console.log('📄 Extracted text length:', text.length);
             
             const edgeFunctionUrl = `${BACKEND_URL}/-analyze-storage-report-v1`;
