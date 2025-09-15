@@ -1335,6 +1335,16 @@
         if (response.ok) {
           const analysisData = await response.json();
           console.log("✅ Analysis complete:", analysisData);
+          console.log("📊 Raw analysis data type:", typeof analysisData);
+          console.log("📊 Analysis data keys:", Object.keys(analysisData || {}));
+          console.log("📊 Is analysisData an object?", analysisData console.log("✅ Analysis complete:", analysisData);console.log("✅ Analysis complete:", analysisData); typeof analysisData === "object");
+          
+          // Check if the response is actually an error message
+          if (typeof analysisData === "string" || analysisData.error || analysisData.message) {
+            console.warn("⚠️ Edge function returned error or string instead of data:", analysisData);
+            analyzeStatus.textContent = `⚠️ Edge function returned: ${JSON.stringify(analysisData)}`;
+            return;
+          }
           console.log("📊 Analysis data structure:");
           console.log("   - fuels:", analysisData.fuels);
           console.log("   - shop_lines:", analysisData.shop_lines);
