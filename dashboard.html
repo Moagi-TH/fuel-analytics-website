@@ -13735,6 +13735,79 @@
       // Run navigation visibility check immediately
       ensureNavigationVisible();
       
+      // Ensure critical dashboard functions are available
+      function ensureDashboardFunctions() {
+        console.log("🔧 Ensuring dashboard functions are available...");
+        
+        // Check function availability
+        const requiredFunctions = [
+          "showReportsNow",
+          "enterData",
+          "viewPerformance",
+          "handleFileUpload"
+        ];
+        
+        const missingFunctions = requiredFunctions.filter(funcName => 
+          typeof window[funcName] !== "function"
+        );
+        
+        if (missingFunctions.length > 0) {
+          console.warn("⚠️ Missing dashboard functions:", missingFunctions);
+          return false;
+        }
+        
+        console.log("✅ All dashboard functions are ready!");
+        return true;
+      }
+      
+      // Set up dashboard button event listeners
+      function updateDashboardButtonHandlers() {
+        console.log("🔄 Setting up dashboard button event listeners...");
+        
+        // View History button
+        const viewHistoryBtn = document.getElementById("view-history");
+        if (viewHistoryBtn) {
+          viewHistoryBtn.onclick = function() {
+            console.log("📋 View History button clicked");
+            if (typeof window.showReportsNow === "function") {
+              window.showReportsNow();
+            } else {
+              console.error("❌ showReportsNow function not available");
+            }
+          };
+          console.log("✅ View History button handler set");
+        }
+        
+        // Manual Entry button
+        const manualEntryBtn = document.getElementById("manual-entry");
+        if (manualEntryBtn) {
+          manualEntryBtn.onclick = function() {
+            console.log("📝 Manual Entry button clicked");
+            if (typeof window.enterData === "function") {
+              window.enterData();
+            } else {
+              console.error("❌ enterData function not available");
+            }
+          };
+          console.log("✅ Manual Entry button handler set");
+        }
+        
+        console.log("✅ Dashboard button handlers updated");
+      }
+      
+      // Initialize dashboard functions
+      setTimeout(() => {
+        if (ensureDashboardFunctions()) {
+          updateDashboardButtonHandlers();
+        } else {
+          console.log("⏳ Dashboard functions not ready, retrying in 500ms...");
+          setTimeout(() => {
+            if (ensureDashboardFunctions()) {
+              updateDashboardButtonHandlers();
+            }
+          }, 500);
+        }
+      }, 100);      
       // Ensure loading indicator doesn't interfere with navigation
       function hideLoadingIndicator() {
         const loadingIndicator = document.getElementById('loading-indicator');
@@ -13882,18 +13955,237 @@
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function() {
           ensureNavigationVisible();
-          initializeRenovationEventHandlers();
+      
+      // Ensure critical dashboard functions are available
+      function ensureDashboardFunctions() {
+        console.log("🔧 Ensuring dashboard functions are available...");
+        
+        // Check function availability
+        const requiredFunctions = [
+          "showReportsNow",
+          "enterData",
+          "viewPerformance",
+          "handleFileUpload"
+        ];
+        
+        const missingFunctions = requiredFunctions.filter(funcName => 
+          typeof window[funcName] !== "function"
+        );
+        
+        if (missingFunctions.length > 0) {
+          console.warn("⚠️ Missing dashboard functions:", missingFunctions);
+          return false;
+        }
+        
+        console.log("✅ All dashboard functions are ready!");
+        return true;
+      }
+      
+      // Set up dashboard button event listeners
+      function updateDashboardButtonHandlers() {
+        console.log("🔄 Setting up dashboard button event listeners...");
+        
+        // View History button
+        const viewHistoryBtn = document.getElementById("view-history");
+        if (viewHistoryBtn) {
+          viewHistoryBtn.onclick = function() {
+            console.log("📋 View History button clicked");
+            if (typeof window.showReportsNow === "function") {
+              window.showReportsNow();
+            } else {
+              console.error("❌ showReportsNow function not available");
+            }
+          };
+          console.log("✅ View History button handler set");
+        }
+        
+        // Manual Entry button
+        const manualEntryBtn = document.getElementById("manual-entry");
+        if (manualEntryBtn) {
+          manualEntryBtn.onclick = function() {
+            console.log("📝 Manual Entry button clicked");
+            if (typeof window.enterData === "function") {
+              window.enterData();
+            } else {
+              console.error("❌ enterData function not available");
+            }
+          };
+          console.log("✅ Manual Entry button handler set");
+        }
+        
+        console.log("✅ Dashboard button handlers updated");
+      }
+      
+      // Initialize dashboard functions
+      setTimeout(() => {
+        if (ensureDashboardFunctions()) {
+          updateDashboardButtonHandlers();
+        } else {
+          console.log("⏳ Dashboard functions not ready, retrying in 500ms...");
+          setTimeout(() => {
+            if (ensureDashboardFunctions()) {
+              updateDashboardButtonHandlers();
+            }
+          }, 500);
+        }
+      }, 100);          initializeRenovationEventHandlers();
         });
       } else {
         ensureNavigationVisible();
-        initializeRenovationEventHandlers();
+      
+      // Ensure critical dashboard functions are available
+      function ensureDashboardFunctions() {
+        console.log("🔧 Ensuring dashboard functions are available...");
+        
+        // Check function availability
+        const requiredFunctions = [
+          "showReportsNow",
+          "enterData",
+          "viewPerformance",
+          "handleFileUpload"
+        ];
+        
+        const missingFunctions = requiredFunctions.filter(funcName => 
+          typeof window[funcName] !== "function"
+        );
+        
+        if (missingFunctions.length > 0) {
+          console.warn("⚠️ Missing dashboard functions:", missingFunctions);
+          return false;
+        }
+        
+        console.log("✅ All dashboard functions are ready!");
+        return true;
+      }
+      
+      // Set up dashboard button event listeners
+      function updateDashboardButtonHandlers() {
+        console.log("🔄 Setting up dashboard button event listeners...");
+        
+        // View History button
+        const viewHistoryBtn = document.getElementById("view-history");
+        if (viewHistoryBtn) {
+          viewHistoryBtn.onclick = function() {
+            console.log("📋 View History button clicked");
+            if (typeof window.showReportsNow === "function") {
+              window.showReportsNow();
+            } else {
+              console.error("❌ showReportsNow function not available");
+            }
+          };
+          console.log("✅ View History button handler set");
+        }
+        
+        // Manual Entry button
+        const manualEntryBtn = document.getElementById("manual-entry");
+        if (manualEntryBtn) {
+          manualEntryBtn.onclick = function() {
+            console.log("📝 Manual Entry button clicked");
+            if (typeof window.enterData === "function") {
+              window.enterData();
+            } else {
+              console.error("❌ enterData function not available");
+            }
+          };
+          console.log("✅ Manual Entry button handler set");
+        }
+        
+        console.log("✅ Dashboard button handlers updated");
+      }
+      
+      // Initialize dashboard functions
+      setTimeout(() => {
+        if (ensureDashboardFunctions()) {
+          updateDashboardButtonHandlers();
+        } else {
+          console.log("⏳ Dashboard functions not ready, retrying in 500ms...");
+          setTimeout(() => {
+            if (ensureDashboardFunctions()) {
+              updateDashboardButtonHandlers();
+            }
+          }, 500);
+        }
+      }, 100);        initializeRenovationEventHandlers();
       }
       
       // Also try on window load as backup
       window.addEventListener('load', function() {
         console.log('🔄 Window load - re-initializing renovation system...');
         ensureNavigationVisible();
-        setTimeout(initializeRenovationEventHandlers, 200);
+      
+      // Ensure critical dashboard functions are available
+      function ensureDashboardFunctions() {
+        console.log("🔧 Ensuring dashboard functions are available...");
+        
+        // Check function availability
+        const requiredFunctions = [
+          "showReportsNow",
+          "enterData",
+          "viewPerformance",
+          "handleFileUpload"
+        ];
+        
+        const missingFunctions = requiredFunctions.filter(funcName => 
+          typeof window[funcName] !== "function"
+        );
+        
+        if (missingFunctions.length > 0) {
+          console.warn("⚠️ Missing dashboard functions:", missingFunctions);
+          return false;
+        }
+        
+        console.log("✅ All dashboard functions are ready!");
+        return true;
+      }
+      
+      // Set up dashboard button event listeners
+      function updateDashboardButtonHandlers() {
+        console.log("🔄 Setting up dashboard button event listeners...");
+        
+        // View History button
+        const viewHistoryBtn = document.getElementById("view-history");
+        if (viewHistoryBtn) {
+          viewHistoryBtn.onclick = function() {
+            console.log("📋 View History button clicked");
+            if (typeof window.showReportsNow === "function") {
+              window.showReportsNow();
+            } else {
+              console.error("❌ showReportsNow function not available");
+            }
+          };
+          console.log("✅ View History button handler set");
+        }
+        
+        // Manual Entry button
+        const manualEntryBtn = document.getElementById("manual-entry");
+        if (manualEntryBtn) {
+          manualEntryBtn.onclick = function() {
+            console.log("📝 Manual Entry button clicked");
+            if (typeof window.enterData === "function") {
+              window.enterData();
+            } else {
+              console.error("❌ enterData function not available");
+            }
+          };
+          console.log("✅ Manual Entry button handler set");
+        }
+        
+        console.log("✅ Dashboard button handlers updated");
+      }
+      
+      // Initialize dashboard functions
+      setTimeout(() => {
+        if (ensureDashboardFunctions()) {
+          updateDashboardButtonHandlers();
+        } else {
+          console.log("⏳ Dashboard functions not ready, retrying in 500ms...");
+          setTimeout(() => {
+            if (ensureDashboardFunctions()) {
+              updateDashboardButtonHandlers();
+            }
+          }, 500);
+        }
+      }, 100);        setTimeout(initializeRenovationEventHandlers, 200);
       });
 
       // Add CSS for role and status badges
