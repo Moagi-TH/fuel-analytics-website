@@ -2287,7 +2287,7 @@
           </div>
         </div>
       </a>
-      <nav class="nav">
+      <nav class="nav" style="display: flex !important; visibility: visible !important;">
         <a href="#overview" class="nav-link active">Overview</a>
         <a href="#reports" class="nav-link">Reports</a>
         <a href="#analytics" class="nav-link">Analytics</a>
@@ -13319,6 +13319,31 @@
       // Set a flag that functions are ready
       window.renovationFunctionsReady = true;
       
+      // Ensure navigation is visible
+      function ensureNavigationVisible() {
+        const nav = document.querySelector('.nav');
+        const navLinks = document.querySelectorAll('.nav-link');
+        
+        if (nav) {
+          nav.style.display = 'flex';
+          nav.style.visibility = 'visible';
+          nav.style.opacity = '1';
+          console.log('✅ Navigation container made visible');
+        }
+        
+        navLinks.forEach((link, index) => {
+          link.style.display = 'block';
+          link.style.visibility = 'visible';
+          link.style.opacity = '1';
+          console.log(`✅ Nav link ${index + 1}: ${link.textContent} made visible`);
+        });
+        
+        console.log(`✅ Made ${navLinks.length} navigation links visible`);
+      }
+      
+      // Run navigation visibility check immediately
+      ensureNavigationVisible();
+      
       // Try immediate initialization
       setTimeout(() => {
         if (window.ensureRenovationFunctionsReady && window.ensureRenovationFunctionsReady()) {
@@ -13426,14 +13451,19 @@
 
       // Multiple initialization triggers to ensure it works
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeRenovationSystem);
+        document.addEventListener('DOMContentLoaded', function() {
+          ensureNavigationVisible();
+          initializeRenovationSystem();
+        });
       } else {
+        ensureNavigationVisible();
         initializeRenovationSystem();
       }
       
       // Also try on window load as backup
       window.addEventListener('load', function() {
         console.log('🔄 Window load - re-initializing renovation system...');
+        ensureNavigationVisible();
         setTimeout(initializeRenovationSystem, 200);
       });
 
