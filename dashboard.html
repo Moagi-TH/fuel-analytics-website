@@ -10378,19 +10378,22 @@
       // RENOVATION PLANNING SYSTEM
       // ========================================
       
-      // Renovation state management
-      window.renovationState = {
-        items: [],
-        selectedGroup: 'forecourt',
-        currentProject: null,
-        projectSettings: {
-          currency: 'ZAR',
-          discountRate: 12,
-          taxRate: 28,
-          vatRate: 15,
-          horizon: 120
-        }
-      };
+      // Renovation state management - Ensure it's always initialized
+      if (!window.renovationState) {
+        window.renovationState = {
+          items: [],
+          selectedGroup: 'forecourt',
+          currentProject: null,
+          projectSettings: {
+            currency: 'ZAR',
+            discountRate: 12,
+            taxRate: 28,
+            vatRate: 15,
+            horizon: 120
+          }
+        };
+        console.log('✅ Renovation state initialized');
+      }
 
       // Renovation client instance
       let renovationClient = null;
@@ -13490,9 +13493,9 @@
         }
       }, 50);
 
-      // Initialize renovation functions when DOM is ready - ENHANCED TIMING
-      function initializeRenovationSystem() {
-        console.log('🚀 Initializing renovation system...');
+      // Initialize renovation event handlers when DOM is ready - ENHANCED TIMING
+      function initializeRenovationEventHandlers() {
+        console.log('🚀 Initializing renovation event handlers...');
         
         // Wait for all scripts to load
         setTimeout(() => {
@@ -13506,10 +13509,34 @@
             updateOnclickHandlers();
           } else {
             console.log('⏳ Renovation functions not ready, retrying in 500ms...');
-            setTimeout(initializeRenovationSystem, 500);
+            setTimeout(initializeRenovationEventHandlers, 500);
           }
         }, 100);
       }
+
+      // Test renovation system functionality
+      window.testRenovationSystem = function() {
+        console.log('🧪 Testing renovation system...');
+        
+        const tests = {
+          renovationState: !!window.renovationState,
+          showRenovationForm: typeof window.showRenovationForm === 'function',
+          hideRenovationForm: typeof window.hideRenovationForm === 'function',
+          saveRenovationItem: typeof window.saveRenovationItem === 'function',
+          selectRenovationGroup: typeof window.selectRenovationGroup === 'function',
+          refreshRenovationCharts: typeof window.refreshRenovationCharts === 'function',
+          calculateIRR: typeof window.calculateIRR === 'function',
+          calculateNPV: typeof window.calculateNPV === 'function',
+          calculatePaybackPeriod: typeof window.calculatePaybackPeriod === 'function'
+        };
+        
+        console.log('🧪 Renovation system test results:', tests);
+        
+        const allWorking = Object.values(tests).every(test => test === true);
+        console.log('🧪 All renovation functions working:', allWorking);
+        
+        return allWorking;
+      };
 
       // Update onclick handlers to use direct function calls once ready
       function updateOnclickHandlers() {
@@ -13586,18 +13613,18 @@
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function() {
           ensureNavigationVisible();
-          initializeRenovationSystem();
+          initializeRenovationEventHandlers();
         });
       } else {
         ensureNavigationVisible();
-        initializeRenovationSystem();
+        initializeRenovationEventHandlers();
       }
       
       // Also try on window load as backup
       window.addEventListener('load', function() {
         console.log('🔄 Window load - re-initializing renovation system...');
         ensureNavigationVisible();
-        setTimeout(initializeRenovationSystem, 200);
+        setTimeout(initializeRenovationEventHandlers, 200);
       });
 
       // Add CSS for role and status badges
