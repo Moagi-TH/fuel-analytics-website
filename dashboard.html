@@ -228,6 +228,63 @@
                 window.loadReportsFromStorage();
               }
               
+              // AUTO-TRIGGER EDGE FUNCTION ANALYSIS AFTER UPLOAD
+              console.log("🤖 Auto-triggering edge function analysis after upload...");
+              if (analyzeStatus) {
+                analyzeStatus.textContent = `📤 Analyzing ${file.name} with edge function...`;
+              }
+              
+              try {
+                // Extract text from PDF
+                const text = await extractPdfText(file);
+                console.log("📄 Extracted text length:", text.length);
+                
+                // Call edge function
+                const edgeFunctionUrl = "https://fynfomhoikzpsrbghnzr.supabase.co/functions/v1/-analyze-storage-report-v1";
+                console.log("🌐 Edge Function URL:", edgeFunctionUrl);
+                
+                const res = await fetch(edgeFunctionUrl, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.cEOR4UiBh1tWXFL6nC7ftRpi2un8DfCAG5cD7xdd_Cw",
+                    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.cEOR4UiBh1tWXFL6nC7ftRpi2un8DfCAG5cD7xdd_Cw"
+                  },
+                  body: JSON.stringify({ text })
+                });
+                
+                console.log("📡 Edge Function Response Status:", res.status);
+                if (res.ok) {
+                  const data = await res.json();
+                  console.log("✅ Edge Function Analysis Complete:", data);
+                  
+                  if (analyzeStatus) {
+                    analyzeStatus.textContent = `✅ Analysis complete! ${file.name} processed successfully.`;
+                    setTimeout(() => {
+                      if (analyzeStatus) {
+                        analyzeStatus.textContent = "";
+                      }
+                    }, 3000);
+                  }
+                  
+                  // TODO: Process the analysis data and update the dashboard
+                  // This would populate fuel data, shop data, etc.
+                  console.log("📊 Analysis data ready for dashboard integration");
+                  
+                } else {
+                  const errorText = await res.text();
+                  console.error("❌ Edge Function Error:", errorText);
+                  if (analyzeStatus) {
+                    analyzeStatus.textContent = `❌ Analysis failed: ${errorText}`;
+                  }
+                }
+              } catch (analysisError) {
+                console.error("❌ Auto-analysis failed:", analysisError);
+                if (analyzeStatus) {
+                  analyzeStatus.textContent = `⚠️ Upload successful, but analysis failed: ${analysisError.message}`;
+                }
+              }
+              
             } catch (supabaseError) {
               console.error('❌ Supabase upload error:', supabaseError);
               
