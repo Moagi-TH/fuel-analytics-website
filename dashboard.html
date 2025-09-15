@@ -533,6 +533,9 @@
                   <button onclick="window.deleteSupabaseFile('${fileName}')" class="button" style="background: #ef4444; border-color: #ef4444; font-size: 12px; padding: 8px 16px;">
                     🗑️ Delete
                   </button>
+                  <button onclick="window.analyzeReport('${fileName}')" class="button" style="background: #10b981; border-color: #10b981; font-size: 12px; padding: 8px 16px;">
+                    �� Analyze
+                  </button>
                   <button onclick="window.downloadSupabaseFile('${fileName}')" class="button secondary" style="background: #4a9eff; border-color: #4a9eff; font-size: 12px; padding: 8px 16px;">
                     📥 Download
                   </button>
@@ -1283,6 +1286,97 @@
       }
     };
     
+    // Analyze specific report using edge function
+    window.analyzeReport = async function(fileName) {
+      console.log("🤖 Analyzing report:", fileName);
+      
+      try {
+        // Show status
+        const analyzeStatus = document.getElementById("analyze-status") || document.createElement("div");
+        if (!analyzeStatus.id) {
+          analyzeStatus.id = "analyze-status";
+          analyzeStatus.style.cssText = "position: fixed; top: 20px; right: 20px; background: #1e3a8a; color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.3);";
+          document.body.appendChild(analyzeStatus);
+        }
+        analyzeStatus.textContent = `📤 Analyzing ${fileName}...`;
+        
+        // Get the file from Supabase storage
+        window.initializeSupabaseClient();
+        const { data: fileData, error: downloadError } = await window.supabaseClient.supabase.storage
+          .from("fuel-reports")
+          .download(fileName);
+        
+        if (downloadError) {
+          throw new Error("Failed to download file: " + downloadError.message);
+        }
+        
+        console.log("📄 File downloaded for analysis, size:", fileData.size);
+        
+        // Extract text from the downloaded PDF
+        const text = await window.extractPdfText(fileData);
+        console.log("📄 Text extracted, length:", text.length);
+        
+        // Call edge function
+        const edgeFunctionUrl = "https://fynfomhoikzpsrbghnzr.supabase.co/functions/v1/-analyze-storage-report-v1";
+        console.log("🌐 Calling edge function:", edgeFunctionUrl);
+        
+        const response = await fetch(edgeFunctionUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.cEOR4UiBh1tWXFL6nC7ftRpi2un8DfCAG5cD7xdd_Cw",
+            "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.cEOR4UiBh1tWXFL6nC7ftRpi2un8DfCAG5cD7xdd_Cw"
+          },
+          body: JSON.stringify({ text })
+        });
+        
+        console.log("📡 Edge function response status:", response.status);
+        
+        if (response.ok) {
+          const analysisData = await response.json();
+          console.log("✅ Analysis complete:", analysisData);
+          
+          analyzeStatus.textContent = `✅ Analysis complete for ${fileName}!`;
+          
+          // Update dashboard with analysis data
+          if (analysisData && typeof window.updateDashboardMetrics === "function") {
+            console.log("📊 Updating dashboard with analysis data...");
+            window.updateDashboardMetrics(analysisData.fuels || {}, analysisData.shop_lines || []);
+          }
+          
+          // Hide status after 3 seconds
+          setTimeout(() => {
+            if (analyzeStatus && analyzeStatus.parentNode) {
+              analyzeStatus.parentNode.removeChild(analyzeStatus);
+            }
+          }, 3000);
+          
+        } else {
+          const errorText = await response.text();
+          console.error("❌ Edge function error:", errorText);
+          analyzeStatus.textContent = `❌ Analysis failed: ${errorText}`;
+          
+          setTimeout(() => {
+            if (analyzeStatus && analyzeStatus.parentNode) {
+              analyzeStatus.parentNode.removeChild(analyzeStatus);
+            }
+          }, 5000);
+        }
+        
+      } catch (error) {
+        console.error("❌ Analysis error:", error);
+        const analyzeStatus = document.getElementById("analyze-status");
+        if (analyzeStatus) {
+          analyzeStatus.textContent = `❌ Analysis failed: ${error.message}`;
+          setTimeout(() => {
+            if (analyzeStatus && analyzeStatus.parentNode) {
+              analyzeStatus.parentNode.removeChild(analyzeStatus);
+            }
+          }, 5000);
+        }
+      }
+    };
+    
     window.downloadSupabaseFile = async function(fileName) {
       console.log('📥 Downloading file:', fileName);
       
@@ -1392,7 +1486,10 @@
                     <button onclick="window.deleteSupabaseFile('${fileName}')" class="button" style="background: #ef4444; border-color: #ef4444; font-size: 12px; padding: 8px 16px;">
                       🗑️ Delete
                     </button>
-                    <button onclick="window.downloadSupabaseFile('${fileName}')" class="button secondary" style="background: #4a9eff; border-color: #4a9eff; font-size: 12px; padding: 8px 16px;">
+                    <button onclick="window.analyzeReport('${fileName}')" class="button" style="background: #10b981; border-color: #10b981; font-size: 12px; padding: 8px 16px;">
+                    �� Analyze
+                  </button>
+                  <button onclick="window.downloadSupabaseFile('${fileName}')" class="button secondary" style="background: #4a9eff; border-color: #4a9eff; font-size: 12px; padding: 8px 16px;">
                       📥 Download
                     </button>
                   </div>
