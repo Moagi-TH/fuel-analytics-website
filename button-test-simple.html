@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Test - Simple</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .button { 
+            padding: 10px 20px; 
+            margin: 10px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px;
+        }
+        .primary { background: #007bff; color: white; }
+        .secondary { background: #6c757d; color: white; }
+        .button:hover { opacity: 0.8; }
+        #results { margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Button Test - Simple</h1>
+    
+    <button id="upload-trigger" class="button primary">Upload PDF</button>
+    <button id="manual-entry" class="button secondary">Enter Data</button>
+    <button id="view-history" class="button secondary">View History</button>
+    
+    <div id="results">
+        <h3>Test Results:</h3>
+        <div id="status">Testing...</div>
+    </div>
+    
+    <script>
+        function log(message) {
+            const status = document.getElementById('status');
+            status.innerHTML += '<br>' + new Date().toLocaleTimeString() + ': ' + message;
+        }
+        
+        function testButtons() {
+            log('Starting button test...');
+            
+            const uploadBtn = document.getElementById('upload-trigger');
+            const manualBtn = document.getElementById('manual-entry');
+            const historyBtn = document.getElementById('view-history');
+            
+            log('Buttons found: Upload=' + !!uploadBtn + ', Manual=' + !!manualBtn + ', History=' + !!historyBtn);
+            
+            if (uploadBtn) {
+                uploadBtn.addEventListener('click', () => {
+                    log('✅ Upload button clicked!');
+                    alert('Upload button is working!');
+                });
+                log('✅ Upload button event listener attached');
+            }
+            
+            if (manualBtn) {
+                manualBtn.addEventListener('click', () => {
+                    log('✅ Manual button clicked!');
+                    alert('Manual button is working!');
+                });
+                log('✅ Manual button event listener attached');
+            }
+            
+            if (historyBtn) {
+                historyBtn.addEventListener('click', () => {
+                    log('✅ History button clicked!');
+                    alert('History button is working!');
+                });
+                log('✅ History button event listener attached');
+            }
+            
+            log('Button test completed!');
+        }
+        
+        // Test immediately
+        testButtons();
+        
+        // Test on DOM ready
+        document.addEventListener('DOMContentLoaded', () => {
+            log('DOM ready - testing buttons again');
+            testButtons();
+        });
+    </script>
+</body>
+</html>

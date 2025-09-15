@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Test</title>
+</head>
+<body>
+    <h1>Button Test</h1>
+    <button id="upload-trigger" class="button primary">Upload PDF</button>
+    <button id="manual-entry" class="button secondary">Enter Data</button>
+    <button id="view-history" class="button secondary">View History</button>
+    
+    <div id="test-results"></div>
+    
+    <script>
+        function testButtons() {
+            const results = document.getElementById('test-results');
+            const uploadBtn = document.getElementById('upload-trigger');
+            const manualBtn = document.getElementById('manual-entry');
+            const historyBtn = document.getElementById('view-history');
+            
+            results.innerHTML = `
+                <h3>Button Test Results:</h3>
+                <p>Upload Button Found: ${!!uploadBtn}</p>
+                <p>Manual Button Found: ${!!manualBtn}</p>
+                <p>History Button Found: ${!!historyBtn}</p>
+            `;
+            
+            // Test event listeners
+            if (uploadBtn) {
+                uploadBtn.addEventListener('click', () => {
+                    alert('Upload button clicked!');
+                });
+                results.innerHTML += '<p>✅ Upload button event listener attached</p>';
+            }
+            
+            if (manualBtn) {
+                manualBtn.addEventListener('click', () => {
+                    alert('Manual button clicked!');
+                });
+                results.innerHTML += '<p>✅ Manual button event listener attached</p>';
+            }
+            
+            if (historyBtn) {
+                historyBtn.addEventListener('click', () => {
+                    alert('History button clicked!');
+                });
+                results.innerHTML += '<p>✅ History button event listener attached</p>';
+            }
+        }
+        
+        // Test immediately
+        testButtons();
+        
+        // Test on DOM ready
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM ready - testing buttons again');
+            testButtons();
+        });
+    </script>
+</body>
+</html>

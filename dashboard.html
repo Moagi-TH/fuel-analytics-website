@@ -63,16 +63,6 @@
       }
     };
     
-    // Helper function to reset upload button state
-    window.resetUploadButton = function() {
-      const uploadButton = document.getElementById('upload-trigger');
-      if (uploadButton) {
-        uploadButton.disabled = false;
-        uploadButton.textContent = 'Upload PDF';
-        uploadButton.style.opacity = '1';
-      }
-    };
-
     // Essential upload functions - Supabase integrated
     window.handleFileUpload = async function(event) {
       console.log('📁 CRITICAL: Handling file upload with Supabase integration...');
@@ -96,13 +86,12 @@
             return;
           }
           
-          // Show loading state
-          const uploadButton = document.getElementById('upload-trigger');
-          const originalText = uploadButton ? uploadButton.textContent : '';
-          if (uploadButton) {
-            uploadButton.disabled = true;
-            uploadButton.textContent = '📤 Uploading...';
-            uploadButton.style.opacity = '0.6';
+          // Show loading message in UI instead of alert
+          const analyzeStatus = document.getElementById('analyze-status');
+          if (analyzeStatus) {
+            analyzeStatus.textContent = `📤 Uploading ${file.name} to Supabase storage...`;
+          } else {
+            alert('📤 Uploading file to Supabase: ' + file.name + '\nPlease wait...');
           }
           
           // Initialize and upload to Supabase storage
@@ -140,11 +129,18 @@
               if (!window.uploadedReports) window.uploadedReports = [];
               window.uploadedReports.push(reportData);
               
-              // Reset button state
-              window.resetUploadButton();
-              
-              // Show success message
-              alert('✅ Report uploaded successfully!\nFile: ' + file.name + '\nStored in database and ready for viewing.');
+              // Show success message in UI
+              if (analyzeStatus) {
+                analyzeStatus.textContent = `✅ Upload successful! ${file.name} stored in Supabase.`;
+                // Clear status after 3 seconds
+                setTimeout(() => {
+                  if (analyzeStatus) {
+                    analyzeStatus.textContent = '';
+                  }
+                }, 3000);
+              } else {
+                alert('✅ Upload successful to Supabase!\nFile: ' + file.name + '\nStored in fuel-reports bucket.\nAdded to reports list.');
+              }
               
               // Update display
               if (typeof window.showReportsNow === 'function') {
@@ -159,10 +155,17 @@
             } catch (supabaseError) {
               console.error('❌ Supabase upload error:', supabaseError);
               
-              // Reset button state
-              window.resetUploadButton();
-              
-              alert('❌ Upload failed: ' + supabaseError.message + '\nFalling back to local storage.');
+              // Update status to show error
+              if (analyzeStatus) {
+                analyzeStatus.textContent = `❌ Upload failed: ${supabaseError.message}. Using local storage.`;
+                setTimeout(() => {
+                  if (analyzeStatus) {
+                    analyzeStatus.textContent = '';
+                  }
+                }, 5000);
+              } else {
+                alert('❌ Supabase upload failed: ' + supabaseError.message + '\nFalling back to local storage.');
+              }
               
               // Fallback to local storage
               const reader = new FileReader();
@@ -176,7 +179,17 @@
                 if (!window.uploadedReports) window.uploadedReports = [];
                 window.uploadedReports.push(reportData);
                 
-                alert('✅ File stored locally as fallback: ' + file.name);
+                // Update status for local storage success
+                if (analyzeStatus) {
+                  analyzeStatus.textContent = `✅ File stored locally: ${file.name}`;
+                  setTimeout(() => {
+                    if (analyzeStatus) {
+                      analyzeStatus.textContent = '';
+                    }
+                  }, 3000);
+                } else {
+                  alert('✅ File stored locally as fallback: ' + file.name);
+                }
                 if (typeof window.showReportsNow === 'function') {
                   window.showReportsNow();
                 }
@@ -184,10 +197,12 @@
               reader.readAsText(file);
             }
           } else {
-            // Reset button state
-            window.resetUploadButton();
-            
-            alert('⚠️ Supabase not available. Storing locally.');
+            // Update status for no Supabase
+            if (analyzeStatus) {
+              analyzeStatus.textContent = `⚠️ Supabase not available. Storing locally...`;
+            } else {
+              alert('⚠️ Supabase not available. Storing locally.');
+            }
             console.warn('⚠️ Supabase client not available, using local storage');
             
             // Fallback to local storage
@@ -202,7 +217,17 @@
               if (!window.uploadedReports) window.uploadedReports = [];
               window.uploadedReports.push(reportData);
               
-              alert('✅ File stored locally: ' + file.name);
+              // Update status for local storage success
+              if (analyzeStatus) {
+                analyzeStatus.textContent = `✅ File stored locally: ${file.name}`;
+                setTimeout(() => {
+                  if (analyzeStatus) {
+                    analyzeStatus.textContent = '';
+                  }
+                }, 3000);
+              } else {
+                alert('✅ File stored locally: ' + file.name);
+              }
               if (typeof window.showReportsNow === 'function') {
                 window.showReportsNow();
               }
@@ -214,10 +239,18 @@
           console.error('❌ No file selected');
         }
       } catch (error) {
-        // Reset button state on any error
-        window.resetUploadButton();
-        
-        alert('❌ Upload failed: ' + error.message);
+        // Update status for general error
+        const analyzeStatus = document.getElementById('analyze-status');
+        if (analyzeStatus) {
+          analyzeStatus.textContent = `❌ Upload failed: ${error.message}`;
+          setTimeout(() => {
+            if (analyzeStatus) {
+              analyzeStatus.textContent = '';
+            }
+          }, 5000);
+        } else {
+          alert('❌ Upload failed: ' + error.message);
+        }
         console.error('❌ Error handling file upload:', error);
       }
     };
@@ -5661,7 +5694,7 @@
           return;
         }
         const file = reportInputMain.files[0];
-        analyzeStatus.textContent = `Uploading and analyzing… (Backend: ${BACKEND_URL})`;
+        analyzeStatus.textContent = `📤 Uploading and analyzing ${file.name}... (Backend: ${BACKEND_URL})`;
         try {
           let data;
           if (BACKEND_URL.includes('functions.supabase.co')) {
@@ -5706,7 +5739,13 @@
             updateCharts(state.fuel, state.shop, data.forecast);
           }
           
-          analyzeStatus.textContent = 'Analysis complete.';
+          analyzeStatus.textContent = '✅ Analysis complete.';
+          // Clear status after 3 seconds
+          setTimeout(() => {
+            if (analyzeStatus) {
+              analyzeStatus.textContent = '';
+            }
+          }, 3000);
           
           // Save to database if available
           if (db && db.isInitialized) {
@@ -5742,7 +5781,12 @@
               }
             }, 1000);
             
-            analyzeStatus.textContent = 'Analysis complete! Data saved to database.';
+            analyzeStatus.textContent = '✅ Analysis complete! Data saved to database.';
+            setTimeout(() => {
+              if (analyzeStatus) {
+                analyzeStatus.textContent = '';
+              }
+            }, 3000);
             
             // Also save to local storage as backup
             addReportToHistory(file, data);
@@ -5763,11 +5807,21 @@
             // Save updated data to localStorage for persistence across sessions
             window.saveUserDataToLocalStorage();
             
-            analyzeStatus.textContent = 'Analysis complete! Data saved locally. (Database not available - user profile needs setup)';
+            analyzeStatus.textContent = '✅ Analysis complete! Data saved locally. (Database not available - user profile needs setup)';
+            setTimeout(() => {
+              if (analyzeStatus) {
+                analyzeStatus.textContent = '';
+              }
+            }, 5000);
           }
           
         } catch (err) {
-          analyzeStatus.textContent = `Failed to analyze: ${err.message}`;
+          analyzeStatus.textContent = `❌ Failed to analyze: ${err.message}`;
+          setTimeout(() => {
+            if (analyzeStatus) {
+              analyzeStatus.textContent = '';
+            }
+          }, 5000);
         }
       });
 

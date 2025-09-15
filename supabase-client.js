@@ -3,10 +3,34 @@
 
 const SUPABASE_URL = 'https://fynfomhoikzpsrbghnzr.supabase.co';
 // Updated anon key - you may need to get the current one from your Supabase dashboard
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.cEOR4UiBh1tWXFL6nC7ftRpi2un8DfCAG5cD7xdd_Cw'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.cEOR4UiBh1tWXFL6nC7ftRpi2un8DfCAG5cD7xdd_Cw';
+
+// ==================================================================
+// == NEW: SINGLETON PATTERN FOR SUPABASE CLIENT
+// ==================================================================
+// This ensures createClient() is only called once in the entire application.
+
+let supabaseInstance = null;
+
+function getSupabaseClient() {
+    if (!supabaseInstance) {
+        if (window.supabase && typeof window.supabase.createClient === 'function') {
+            console.log('Creating SINGLE Supabase client instance.');
+            supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } else {
+            console.error('Supabase library not available to create client.');
+        }
+    }
+    return supabaseInstance;
+}
+
+// Global accessor for the Supabase client
+window.getSupabase = getSupabaseClient;
+
+// ==================================================================
 
 // Initialize Supabase client
-let supabase = null;
+let supabase = null; // This variable will be populated by the singleton accessor.
 
 // Enhanced error handling and retry logic
 class SupabaseError extends Error {
@@ -61,8 +85,10 @@ async function retryOperation(operation, maxAttempts = RETRY_CONFIG.maxAttempts)
 // Function to initialize Supabase client
 function initializeSupabase() {
     try {
-        if (window.supabase && typeof window.supabase.createClient === 'function') {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Use the new singleton accessor to get the client
+        supabase = getSupabaseClient();
+        
+        if (supabase) {
             // Set global supabaseClient for dashboard access
             window.supabaseClient = {
                 supabase: supabase,
@@ -85,7 +111,7 @@ function initializeSupabase() {
             console.log('✅ Supabase client initialized successfully and set as window.supabaseClient');
             return supabase;
         } else {
-            console.error('❌ Supabase library not available');
+            console.error('❌ Supabase client could not be created.');
             return null;
         }
     } catch (error) {
@@ -1222,6 +1248,32 @@ window.checkAndFixAuth = async function() {
         return { success: false, error: error.message };
     }
 };
+
+// Initialize global variables for browser usage
+if (typeof window !== 'undefined') {
+    // Set up global Supabase client immediately (it's loaded from CDN)
+    window.supabase = window.supabase || null;
+    
+    // Initialize the database client
+    const db = new FuelAnalyticsDB();
+    window.fuelAnalyticsDB = db;
+    
+    // This direct assignment is part of the problem. 
+    // The dashboard should use the singleton accessor.
+    // We keep it for legacy access but will update the dashboard code.
+    window.supabaseClient = db;
+    
+    console.log('✅ FuelAnalyticsDB initialized globally');
+    
+    // Also set up a ready event for the dashboard
+    window.dispatchEvent(new CustomEvent('supabaseReady', { 
+        detail: { 
+            supabase: window.supabase, 
+            supabaseClient: db,
+            getSupabase: getSupabaseClient // Pass the accessor function
+        } 
+    }));
+}
 
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {

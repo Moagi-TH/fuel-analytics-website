@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Functionality Test</title>
+</head>
+<body>
+    <h1>Fuel Flux Analytics - Functionality Test</h1>
+    <div id="test-results"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-client.js"></script>
+    
+    <script>
+        async function runTests() {
+            const results = document.getElementById('test-results');
+            const tests = [];
+            
+            // Test 1: Check if Supabase is loaded
+            tests.push({
+                name: 'Supabase Library Loaded',
+                status: typeof window.supabase !== 'undefined',
+                message: typeof window.supabase !== 'undefined' ? '✅ Supabase loaded' : '❌ Supabase not loaded'
+            });
+            
+            // Test 2: Check if global variables are set
+            tests.push({
+                name: 'Global Variables Set',
+                status: !!(window.supabaseClient && window.fuelAnalyticsDB),
+                message: (window.supabaseClient && window.fuelAnalyticsDB) ? '✅ Global variables set' : '❌ Global variables not set'
+            });
+            
+            // Test 3: Check if database client is initialized
+            tests.push({
+                name: 'Database Client Initialized',
+                status: window.fuelAnalyticsDB && typeof window.fuelAnalyticsDB.getMonthlyReports === 'function',
+                message: (window.fuelAnalyticsDB && typeof window.fuelAnalyticsDB.getMonthlyReports === 'function') ? '✅ Database client ready' : '❌ Database client not ready'
+            });
+            
+            // Test 4: Check Chart.js
+            tests.push({
+                name: 'Chart.js Loaded',
+                status: typeof Chart !== 'undefined',
+                message: typeof Chart !== 'undefined' ? '✅ Chart.js loaded' : '❌ Chart.js not loaded'
+            });
+            
+            // Display results
+            results.innerHTML = tests.map(test => 
+                `<div style="margin: 10px 0; padding: 10px; border: 1px solid ${test.status ? 'green' : 'red'}; background: ${test.status ? '#d4edda' : '#f8d7da'};">
+                    <strong>${test.name}:</strong> ${test.message}
+                </div>`
+            ).join('');
+            
+            // Overall status
+            const allPassed = tests.every(test => test.status);
+            results.innerHTML += `<div style="margin: 20px 0; padding: 15px; border: 2px solid ${allPassed ? 'green' : 'red'}; background: ${allPassed ? '#d4edda' : '#f8d7da'}; font-size: 18px; font-weight: bold;">
+                Overall Status: ${allPassed ? '✅ ALL TESTS PASSED' : '❌ SOME TESTS FAILED'}
+            </div>`;
+        }
+        
+        // Run tests when page loads
+        document.addEventListener('DOMContentLoaded', runTests);
+    </script>
+</body>
+</html>
