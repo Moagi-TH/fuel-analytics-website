@@ -4764,23 +4764,7 @@
         };
       };
 
-      // Missing function: handleFileUpload
-      window.handleFileUpload = function(event) {
-        console.log('📁 Handling file upload...');
-        try {
-          const file = event.target.files[0];
-          if (file) {
-            console.log('File selected:', file.name);
-            if (typeof processReportFile === 'function') {
-              processReportFile(file);
-            } else {
-              console.error('❌ processReportFile function not available');
-            }
-          }
-        } catch (error) {
-          console.error('Error handling file upload:', error);
-        }
-      };
+      // Note: handleFileUpload function is already defined above with Supabase Edge Function integration
 
       // Missing function: processReportFile
       window.processReportFile = function(file) {
@@ -5538,8 +5522,8 @@
       // Make renderReportsHistory globally accessible
       window.renderReportsHistory = renderReportsHistory;
 
-      // Use local backend server for PDF parsing
-      const BACKEND_URL = 'http://localhost:8787';
+      // Use Supabase Edge Function for PDF parsing
+      const BACKEND_URL = 'https://fynfomhoikzpsrbghnzr.supabase.co/functions/v1';
 
       // PDF.js text extractor (client-side) for Supabase Edge Functions flow
       async function extractPdfText(file){
@@ -5772,10 +5756,16 @@
         analyzeStatus.textContent = `📤 Uploading and analyzing ${file.name}... (Backend: ${BACKEND_URL})`;
         try {
           let data;
-          if (BACKEND_URL.includes('functions.supabase.co')) {
+          if (BACKEND_URL.includes('supabase.co/functions')) {
             // Client extracts text, send to Supabase Edge Function as JSON
+            console.log('🔄 Calling Supabase Edge Function: analyze-report');
             const text = await extractPdfText(file);
-            const res = await fetch(`${BACKEND_URL}/analyze-report`, { 
+            console.log('📄 Extracted text length:', text.length);
+            
+            const edgeFunctionUrl = `${BACKEND_URL}/analyze-report`;
+            console.log('🌐 Edge Function URL:', edgeFunctionUrl);
+            
+            const res = await fetch(edgeFunctionUrl, { 
               method: 'POST', 
               headers: { 
                 'Content-Type': 'application/json',
@@ -5784,8 +5774,15 @@
               }, 
               body: JSON.stringify({ text }) 
             });
-            if (!res.ok) throw new Error(`Server error (${res.status})`);
+            
+            console.log('📡 Edge Function Response Status:', res.status);
+            if (!res.ok) {
+              const errorText = await res.text();
+              console.error('❌ Edge Function Error:', errorText);
+              throw new Error(`Edge Function error (${res.status}): ${errorText}`);
+            }
             data = await res.json();
+            console.log('✅ Edge Function Analysis Complete:', data);
           } else {
             // Local dev server (Node) accepts the PDF as multipart form-data
             const form = new FormData();
@@ -5814,8 +5811,8 @@
             updateCharts(state.fuel, state.shop, data.forecast);
           }
           
-          analyzeStatus.textContent = '✅ Analysis complete.';
-          // Clear status after 3 seconds
+          // Show completion message
+          analyzeStatus.textContent = `✅ Analysis complete! ${file.name} processed successfully.`;
           setTimeout(() => {
             if (analyzeStatus) {
               analyzeStatus.textContent = '';
