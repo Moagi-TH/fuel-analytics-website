@@ -1335,6 +1335,39 @@
         if (response.ok) {
           const analysisData = await response.json();
           console.log("✅ Analysis complete:", analysisData);
+          console.log("📊 Analysis data structure:");
+          console.log("   - fuels:", analysisData.fuels);
+          console.log("   - shop_lines:", analysisData.shop_lines);
+          console.log("   - forecast:", analysisData.forecast);
+          
+          // Also try updating dashboard directly with raw data
+          if (analysisData.fuels) {
+            console.log("📊 Attempting direct dashboard update...");
+            
+            // Calculate totals from analysis data
+            let totalRevenue = 0;
+            let totalVolume = 0;
+            
+            Object.values(analysisData.fuels).forEach(fuel => {
+              totalRevenue += fuel.total_revenue_zar || 0;
+              totalVolume += fuel.quantity_liters || 0;
+            });
+            
+            console.log("📊 Calculated totals - Revenue:", totalRevenue, "Volume:", totalVolume);
+            
+            // Update dashboard elements directly
+            const totalRevenueEl = document.getElementById("total-revenue");
+            if (totalRevenueEl) {
+              totalRevenueEl.textContent = `R ${totalRevenue.toLocaleString()}`;
+              console.log("✅ Updated total revenue element");
+            }
+            
+            const fuelVolumeEl = document.getElementById("total-volume");
+            if (fuelVolumeEl) {
+              fuelVolumeEl.textContent = `${totalVolume.toLocaleString()} L`;
+              console.log("✅ Updated fuel volume element");
+            }
+          }
           
           analyzeStatus.textContent = `✅ Analysis complete for ${fileName}!`;
           
