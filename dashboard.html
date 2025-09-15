@@ -14,6 +14,56 @@
   <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cpath fill='%2309172b' d='M0 0h96v96H0z'/%3E%3Cpath fill='%233b82f6' d='M22 70V22a6 6 0 0 1 6-6h20a6 6 0 0 1 6 6v6h8a6 6 0 0 1 6 6v14h2a6 6 0 0 1 6 6v10a10 10 0 1 1-20 0V50h-2v20a6 6 0 0 1-6 6H28a6 6 0 0 1-6-6z'/%3E%3Cpath fill='%23fff' d='M36 28h8v12h-8zM66 36h6v14a3 3 0 1 0 6 0v-8h-2v-6a3 3 0 0 0-3-3h-7z'/%3E%3C/svg%3E" />
   
+  <!-- Force Navigation Visibility -->
+  <style>
+    .site-header {
+      z-index: 1000 !important;
+      position: sticky !important;
+      top: 0 !important;
+      background: rgba(11,16,32,0.95) !important;
+      backdrop-filter: blur(12px) !important;
+      border-bottom: 1px solid var(--border) !important;
+    }
+    
+    .nav {
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      z-index: 1001 !important;
+      position: relative !important;
+      background: rgba(11,16,32,0.95) !important;
+      padding: 8px 16px !important;
+      border-radius: 8px !important;
+      border: 1px solid rgba(255,255,255,0.1) !important;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+    }
+    
+    .nav-link {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      color: #94a3b8 !important;
+      background: transparent !important;
+      padding: 8px 16px !important;
+      border-radius: 6px !important;
+      text-decoration: none !important;
+      font-weight: 500 !important;
+      font-size: 15px !important;
+      cursor: pointer !important;
+      transition: all 0.2s ease !important;
+    }
+    
+    .nav-link.active {
+      color: #4a9eff !important;
+      background: rgba(91, 140, 255, 0.2) !important;
+    }
+    
+    .nav-link:hover {
+      color: #eaf0ff !important;
+      background: rgba(255, 255, 255, 0.05) !important;
+    }
+  </style>
+  
   <!-- CRITICAL FUNCTIONS - DEFINED IMMEDIATELY -->
   <script>
     console.log('🚀 CRITICAL FUNCTIONS: Defining essential functions immediately...');
@@ -2287,15 +2337,15 @@
           </div>
         </div>
       </a>
-      <nav class="nav" style="display: flex !important; visibility: visible !important;">
-        <a href="#overview" class="nav-link active">Overview</a>
-        <a href="#reports" class="nav-link">Reports</a>
-        <a href="#analytics" class="nav-link">Analytics</a>
-        <a href="#insights" class="nav-link">Insights</a>
-        <a href="#personnel" class="nav-link">Personnel</a>
-        <a href="#users" class="nav-link">Users</a>
-        <a href="#renovation" class="nav-link">Renovation</a>
-        <a href="#expansion" class="nav-link">Expansion</a>
+      <nav class="nav" style="display: flex !important; visibility: visible !important; z-index: 1000 !important; position: relative !important; background: rgba(11,16,32,0.95) !important; padding: 8px 16px !important; border-radius: 8px !important;">
+        <a href="#overview" class="nav-link active" style="display: block !important; visibility: visible !important; opacity: 1 !important; color: #4a9eff !important; background: rgba(91, 140, 255, 0.2) !important;">Overview</a>
+        <a href="#reports" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Reports</a>
+        <a href="#analytics" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Analytics</a>
+        <a href="#insights" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Insights</a>
+        <a href="#personnel" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Personnel</a>
+        <a href="#users" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Users</a>
+        <a href="#renovation" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Renovation</a>
+        <a href="#expansion" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Expansion</a>
       </nav>
       <div class="header-actions">
         <span id="user-email" class="user-email"></span>
@@ -13325,20 +13375,51 @@
         const navLinks = document.querySelectorAll('.nav-link');
         
         if (nav) {
-          nav.style.display = 'flex';
-          nav.style.visibility = 'visible';
-          nav.style.opacity = '1';
-          console.log('✅ Navigation container made visible');
+          // Aggressive styling to ensure visibility
+          nav.style.display = 'flex !important';
+          nav.style.visibility = 'visible !important';
+          nav.style.opacity = '1 !important';
+          nav.style.zIndex = '1000 !important';
+          nav.style.position = 'relative !important';
+          nav.style.background = 'rgba(11,16,32,0.95) !important';
+          nav.style.padding = '8px 16px !important';
+          nav.style.borderRadius = '8px !important';
+          nav.style.border = '1px solid rgba(255,255,255,0.1) !important';
+          nav.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3) !important';
+          console.log('✅ Navigation container made highly visible with enhanced styling');
         }
         
         navLinks.forEach((link, index) => {
-          link.style.display = 'block';
-          link.style.visibility = 'visible';
-          link.style.opacity = '1';
-          console.log(`✅ Nav link ${index + 1}: ${link.textContent} made visible`);
+          // Aggressive styling for each link
+          link.style.display = 'block !important';
+          link.style.visibility = 'visible !important';
+          link.style.opacity = '1 !important';
+          link.style.color = link.classList.contains('active') ? '#4a9eff !important' : '#94a3b8 !important';
+          link.style.background = link.classList.contains('active') ? 'rgba(91, 140, 255, 0.2) !important' : 'transparent !important';
+          link.style.padding = '8px 16px !important';
+          link.style.borderRadius = '6px !important';
+          link.style.textDecoration = 'none !important';
+          link.style.fontWeight = '500 !important';
+          link.style.fontSize = '15px !important';
+          link.style.cursor = 'pointer !important';
+          link.style.transition = 'all 0.2s ease !important';
+          
+          console.log(`✅ Nav link ${index + 1}: ${link.textContent} made highly visible`);
         });
         
-        console.log(`✅ Made ${navLinks.length} navigation links visible`);
+        console.log(`✅ Made ${navLinks.length} navigation links highly visible with enhanced styling`);
+        
+        // Also ensure the header is visible
+        const header = document.querySelector('.site-header');
+        if (header) {
+          header.style.zIndex = '1000 !important';
+          header.style.position = 'sticky !important';
+          header.style.top = '0 !important';
+          header.style.background = 'rgba(11,16,32,0.95) !important';
+          header.style.backdropFilter = 'blur(12px) !important';
+          header.style.borderBottom = '1px solid var(--border) !important';
+          console.log('✅ Header made highly visible');
+        }
       }
       
       // Run navigation visibility check immediately
