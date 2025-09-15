@@ -63,6 +63,16 @@
       }
     };
     
+    // Helper function to reset upload button state
+    window.resetUploadButton = function() {
+      const uploadButton = document.getElementById('upload-trigger');
+      if (uploadButton) {
+        uploadButton.disabled = false;
+        uploadButton.textContent = 'Upload PDF';
+        uploadButton.style.opacity = '1';
+      }
+    };
+
     // Essential upload functions - Supabase integrated
     window.handleFileUpload = async function(event) {
       console.log('📁 CRITICAL: Handling file upload with Supabase integration...');
@@ -86,8 +96,14 @@
             return;
           }
           
-          // Show loading message
-          alert('📤 Uploading file to Supabase: ' + file.name + '\nPlease wait...');
+          // Show loading state
+          const uploadButton = document.getElementById('upload-trigger');
+          const originalText = uploadButton ? uploadButton.textContent : '';
+          if (uploadButton) {
+            uploadButton.disabled = true;
+            uploadButton.textContent = '📤 Uploading...';
+            uploadButton.style.opacity = '0.6';
+          }
           
           // Initialize and upload to Supabase storage
           window.initializeSupabaseClient();
@@ -124,8 +140,11 @@
               if (!window.uploadedReports) window.uploadedReports = [];
               window.uploadedReports.push(reportData);
               
+              // Reset button state
+              window.resetUploadButton();
+              
               // Show success message
-              alert('✅ Upload successful to Supabase!\nFile: ' + file.name + '\nStored in fuel-reports bucket.\nAdded to reports list.');
+              alert('✅ Report uploaded successfully!\nFile: ' + file.name + '\nStored in database and ready for viewing.');
               
               // Update display
               if (typeof window.showReportsNow === 'function') {
@@ -139,7 +158,11 @@
               
             } catch (supabaseError) {
               console.error('❌ Supabase upload error:', supabaseError);
-              alert('❌ Supabase upload failed: ' + supabaseError.message + '\nFalling back to local storage.');
+              
+              // Reset button state
+              window.resetUploadButton();
+              
+              alert('❌ Upload failed: ' + supabaseError.message + '\nFalling back to local storage.');
               
               // Fallback to local storage
               const reader = new FileReader();
@@ -161,6 +184,9 @@
               reader.readAsText(file);
             }
           } else {
+            // Reset button state
+            window.resetUploadButton();
+            
             alert('⚠️ Supabase not available. Storing locally.');
             console.warn('⚠️ Supabase client not available, using local storage');
             
@@ -188,6 +214,9 @@
           console.error('❌ No file selected');
         }
       } catch (error) {
+        // Reset button state on any error
+        window.resetUploadButton();
+        
         alert('❌ Upload failed: ' + error.message);
         console.error('❌ Error handling file upload:', error);
       }
