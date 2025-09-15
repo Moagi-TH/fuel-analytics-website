@@ -5758,11 +5758,11 @@
           let data;
           if (BACKEND_URL.includes('supabase.co/functions')) {
             // Client extracts text, send to Supabase Edge Function as JSON
-            console.log('🔄 Calling Supabase Edge Function: analyze-report');
+            console.log('🔄 Calling Supabase Edge Function: -analyze-storage-report-v1');
             const text = await extractPdfText(file);
             console.log('📄 Extracted text length:', text.length);
             
-            const edgeFunctionUrl = `${BACKEND_URL}/analyze-report`;
+            const edgeFunctionUrl = `${BACKEND_URL}/-analyze-storage-report-v1`;
             console.log('🌐 Edge Function URL:', edgeFunctionUrl);
             
             const res = await fetch(edgeFunctionUrl, { 
@@ -5787,7 +5787,7 @@
             // Local dev server (Node) accepts the PDF as multipart form-data
             const form = new FormData();
             form.append('file', file);
-            const res = await fetch(`${BACKEND_URL}/analyze-report`, { method: 'POST', body: form });
+            const res = await fetch(`${BACKEND_URL}/-analyze-storage-report-v1`, { method: 'POST', body: form });
             if (!res.ok) throw new Error(`Server error (${res.status})`);
             data = await res.json();
           }
