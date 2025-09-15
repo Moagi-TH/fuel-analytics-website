@@ -167,7 +167,7 @@
           if (analyzeStatus) {
             analyzeStatus.textContent = `📤 Uploading ${file.name} to Supabase storage...`;
           } else {
-            alert('📤 Uploading file to Supabase: ' + file.name + '\nPlease wait...');
+          alert('📤 Uploading file to Supabase: ' + file.name + '\nPlease wait...');
           }
           
           // Initialize and upload to Supabase storage
@@ -215,7 +215,7 @@
                   }
                 }, 3000);
               } else {
-                alert('✅ Upload successful to Supabase!\nFile: ' + file.name + '\nStored in fuel-reports bucket.\nAdded to reports list.');
+              console.log('✅ Upload successful to Supabase!\nFile: ' + file.name + '\nStored in fuel-reports bucket.\nAdded to reports list.');
               }
               
               // Update display
@@ -240,7 +240,7 @@
                   }
                 }, 5000);
               } else {
-                alert('❌ Supabase upload failed: ' + supabaseError.message + '\nFalling back to local storage.');
+              console.error('❌ Supabase upload failed: ' + supabaseError.message + '\nFalling back to local storage.');
               }
               
               // Fallback to local storage
@@ -264,7 +264,7 @@
                     }
                   }, 3000);
                 } else {
-                  alert('✅ File stored locally as fallback: ' + file.name);
+                alert('✅ File stored locally as fallback: ' + file.name);
                 }
                 if (typeof window.showReportsNow === 'function') {
                   window.showReportsNow();
@@ -276,8 +276,8 @@
             // Update status for no Supabase
             if (analyzeStatus) {
               analyzeStatus.textContent = `⚠️ Supabase not available. Storing locally...`;
-            } else {
-              alert('⚠️ Supabase not available. Storing locally.');
+          } else {
+            alert('⚠️ Supabase not available. Storing locally.');
             }
             console.warn('⚠️ Supabase client not available, using local storage');
             
@@ -302,7 +302,7 @@
                   }
                 }, 3000);
               } else {
-                alert('✅ File stored locally: ' + file.name);
+              alert('✅ File stored locally: ' + file.name);
               }
               if (typeof window.showReportsNow === 'function') {
                 window.showReportsNow();
@@ -325,7 +325,7 @@
             }
           }, 5000);
         } else {
-          alert('❌ Upload failed: ' + error.message);
+        alert('❌ Upload failed: ' + error.message);
         }
         console.error('❌ Error handling file upload:', error);
       }
@@ -422,7 +422,7 @@
           reportsHistory.scrollIntoView({ behavior: 'smooth' });
         }
         
-        alert('✅ Reports loaded successfully! Found ' + files.length + ' report(s) in storage.');
+        console.log('✅ Reports loaded successfully! Found ' + files.length + ' report(s) in storage.');
         
       } catch (error) {
         console.error('❌ Error:', error);
@@ -763,7 +763,7 @@
           // Load from local storage as fallback
           const localItems = JSON.parse(localStorage.getItem('renovationItems') || '[]');
           console.log('📋 Loaded', localItems.length, 'items from local storage');
-          alert('⚠️ Supabase not available. Loaded ' + localItems.length + ' items from local storage.');
+          console.log('⚠️ Supabase not available. Loaded ' + localItems.length + ' items from local storage.');
         }
       } catch (error) {
         console.error('❌ Error loading renovation items:', error);
@@ -799,7 +799,7 @@
           
         if (error) {
           console.error('❌ Bucket access failed:', error);
-          alert('❌ Cannot access fuel-reports bucket: ' + error.message);
+          console.error('❌ Cannot access fuel-reports bucket: ' + error.message);
           return false;
         }
         
@@ -823,7 +823,7 @@
       // Test 1: Supabase connection
       const connectionTest = await window.testSupabaseConnection();
       if (!connectionTest) {
-        alert('❌ Database connection failed. Cannot access reports.');
+        console.error('❌ Database connection failed. Cannot access reports.');
         return false;
       }
       
@@ -834,7 +834,7 @@
           .list('', { limit: 10 });
           
         if (error) {
-          alert('❌ Cannot access fuel-reports bucket: ' + error.message);
+          console.error('❌ Cannot access fuel-reports bucket: ' + error.message);
           return false;
         }
         
@@ -1068,7 +1068,7 @@
             reportsHistory.scrollIntoView({ behavior: 'smooth' });
           }
           
-          alert('🚨 EMERGENCY DISPLAY: Showing ' + files.length + ' raw files from Supabase bucket');
+          console.log('🚨 EMERGENCY DISPLAY: Showing ' + files.length + ' raw files from Supabase bucket');
         }
         
       } catch (error) {
@@ -1280,7 +1280,7 @@
             reportsHistory.scrollIntoView({ behavior: 'smooth' });
           }
           
-          alert('✅ Showing ' + files.length + ' files from storage');
+          console.log('✅ Showing ' + files.length + ' files from storage');
         }
         
       } catch (error) {
@@ -1441,12 +1441,12 @@
             viewHistoryBtn.click();
             
             return { success: true, message: 'View Reports functionality is working' };
-          } else {
+        } else {
             return { success: false, message: 'View History button not found' };
-          }
+        }
         } else {
           return { success: false, message: 'showReportsNow function not available' };
-        }
+    }
       } catch (error) {
         console.error('❌ Error testing view reports:', error);
         return { success: false, message: 'Error: ' + error.message };
@@ -2290,13 +2290,13 @@
     
     window.addEventListener('load', function() {
       // Hide loading indicator immediately to prevent navigation blocking
-      const loadingIndicator = document.getElementById('loading-indicator');
-      if (loadingIndicator) {
-        loadingIndicator.style.display = 'none';
+        const loadingIndicator = document.getElementById('loading-indicator');
+        if (loadingIndicator) {
+            loadingIndicator.style.display = 'none';
         loadingIndicator.style.opacity = '0';
         loadingIndicator.style.zIndex = '100';
         console.log('✅ Loading indicator hidden on window load');
-      }
+        }
       
       // Force hide loading indicator after 2 seconds maximum
       setTimeout(function() {
@@ -5492,7 +5492,7 @@
               <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
                 <h5 style="margin: 0; color: #4a9eff;">📄 ${report.name}</h5>
                 <span class="badge" style="background: #4a9eff; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">☁️ Local</span>
-              </div>
+                </div>
               
               <div style="margin-bottom: 12px;">
                 <p style="color: #888; font-size: 13px; margin: 4px 0;">📅 Uploaded: ${uploadDate}</p>
@@ -6993,7 +6993,7 @@
         });
         
         if (months.length === 0) {
-          alert('No reports available to load data from. Please upload a report first.');
+          console.log('No reports available to load data from. Please upload a report first.');
           return;
         }
         
@@ -8954,7 +8954,7 @@
           
           if (!window.supabaseClient) {
             console.error('❌ Supabase client not available');
-            alert('Error: Cannot access storage');
+            console.error('Error: Cannot access storage');
             return;
           }
           
@@ -9364,7 +9364,7 @@
           
         } catch (error) {
           console.error('❌ Error refreshing reports:', error);
-          alert('Error refreshing reports: ' + error.message);
+          console.error('Error refreshing reports: ' + error.message);
         }
       };
       
@@ -9499,7 +9499,7 @@
             
           } catch (error) {
             console.error('❌ Error clearing all reports:', error);
-            alert('Error clearing reports: ' + error.message);
+            console.error('Error clearing reports: ' + error.message);
           }
         }
       };
@@ -10380,18 +10380,18 @@
       
       // Renovation state management - Ensure it's always initialized
       if (!window.renovationState) {
-        window.renovationState = {
-          items: [],
-          selectedGroup: 'forecourt',
-          currentProject: null,
-          projectSettings: {
-            currency: 'ZAR',
-            discountRate: 12,
-            taxRate: 28,
-            vatRate: 15,
-            horizon: 120
-          }
-        };
+      window.renovationState = {
+        items: [],
+        selectedGroup: 'forecourt',
+        currentProject: null,
+        projectSettings: {
+          currency: 'ZAR',
+          discountRate: 12,
+          taxRate: 28,
+          vatRate: 15,
+          horizon: 120
+        }
+      };
         console.log('✅ Renovation state initialized');
       }
 
