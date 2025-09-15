@@ -14,28 +14,40 @@
   <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cpath fill='%2309172b' d='M0 0h96v96H0z'/%3E%3Cpath fill='%233b82f6' d='M22 70V22a6 6 0 0 1 6-6h20a6 6 0 0 1 6 6v6h8a6 6 0 0 1 6 6v14h2a6 6 0 0 1 6 6v10a10 10 0 1 1-20 0V50h-2v20a6 6 0 0 1-6 6H28a6 6 0 0 1-6-6z'/%3E%3Cpath fill='%23fff' d='M36 28h8v12h-8zM66 36h6v14a3 3 0 1 0 6 0v-8h-2v-6a3 3 0 0 0-3-3h-7z'/%3E%3C/svg%3E" />
   
-  <!-- Force Navigation Visibility -->
+  <!-- Force Navigation Visibility - Cross Browser Compatible -->
   <style>
     .site-header {
       z-index: 1000 !important;
+      position: -webkit-sticky !important; /* Safari */
       position: sticky !important;
       top: 0 !important;
       background: rgba(11,16,32,0.95) !important;
+      background: rgba(11,16,32,1) !important; /* Fallback for Safari */
+      -webkit-backdrop-filter: blur(12px) !important; /* Safari */
       backdrop-filter: blur(12px) !important;
-      border-bottom: 1px solid var(--border) !important;
+      border-bottom: 1px solid #263258 !important;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
     }
     
     .nav {
+      display: -webkit-flex !important; /* Safari */
       display: flex !important;
       visibility: visible !important;
       opacity: 1 !important;
       z-index: 1001 !important;
       position: relative !important;
       background: rgba(11,16,32,0.95) !important;
+      background: rgba(11,16,32,1) !important; /* Fallback for Safari */
       padding: 8px 16px !important;
+      -webkit-border-radius: 8px !important; /* Safari */
       border-radius: 8px !important;
       border: 1px solid rgba(255,255,255,0.1) !important;
+      -webkit-box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important; /* Safari */
       box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+      margin-left: auto !important;
+      gap: 32px !important;
     }
     
     .nav-link {
@@ -45,12 +57,16 @@
       color: #94a3b8 !important;
       background: transparent !important;
       padding: 8px 16px !important;
+      -webkit-border-radius: 6px !important; /* Safari */
       border-radius: 6px !important;
       text-decoration: none !important;
       font-weight: 500 !important;
       font-size: 15px !important;
       cursor: pointer !important;
+      -webkit-transition: all 0.2s ease !important; /* Safari */
       transition: all 0.2s ease !important;
+      letter-spacing: -0.1px !important;
+      position: relative !important;
     }
     
     .nav-link.active {
@@ -61,6 +77,16 @@
     .nav-link:hover {
       color: #eaf0ff !important;
       background: rgba(255, 255, 255, 0.05) !important;
+    }
+    
+    /* Safari-specific fixes */
+    @media screen and (-webkit-min-device-pixel-ratio:0) {
+      .site-header {
+        background: rgba(11,16,32,1) !important;
+      }
+      .nav {
+        background: rgba(11,16,32,1) !important;
+      }
     }
   </style>
   
@@ -13374,51 +13400,64 @@
         const nav = document.querySelector('.nav');
         const navLinks = document.querySelectorAll('.nav-link');
         
+        // Detect Safari browser
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        console.log('🌐 Browser detected:', isSafari ? 'Safari' : 'Other');
+        
         if (nav) {
           // Aggressive styling to ensure visibility
-          nav.style.display = 'flex !important';
-          nav.style.visibility = 'visible !important';
-          nav.style.opacity = '1 !important';
-          nav.style.zIndex = '1000 !important';
-          nav.style.position = 'relative !important';
-          nav.style.background = 'rgba(11,16,32,0.95) !important';
-          nav.style.padding = '8px 16px !important';
-          nav.style.borderRadius = '8px !important';
-          nav.style.border = '1px solid rgba(255,255,255,0.1) !important';
-          nav.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3) !important';
-          console.log('✅ Navigation container made highly visible with enhanced styling');
+          nav.style.display = isSafari ? '-webkit-flex' : 'flex';
+          nav.style.visibility = 'visible';
+          nav.style.opacity = '1';
+          nav.style.zIndex = '1000';
+          nav.style.position = 'relative';
+          nav.style.background = isSafari ? 'rgba(11,16,32,1)' : 'rgba(11,16,32,0.95)';
+          nav.style.padding = '8px 16px';
+          nav.style.borderRadius = '8px';
+          nav.style.border = '1px solid rgba(255,255,255,0.1)';
+          nav.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)';
+          nav.style.marginLeft = 'auto';
+          nav.style.gap = '32px';
+          console.log('✅ Navigation container made highly visible with Safari-compatible styling');
         }
         
         navLinks.forEach((link, index) => {
-          // Aggressive styling for each link
-          link.style.display = 'block !important';
-          link.style.visibility = 'visible !important';
-          link.style.opacity = '1 !important';
-          link.style.color = link.classList.contains('active') ? '#4a9eff !important' : '#94a3b8 !important';
-          link.style.background = link.classList.contains('active') ? 'rgba(91, 140, 255, 0.2) !important' : 'transparent !important';
-          link.style.padding = '8px 16px !important';
-          link.style.borderRadius = '6px !important';
-          link.style.textDecoration = 'none !important';
-          link.style.fontWeight = '500 !important';
-          link.style.fontSize = '15px !important';
-          link.style.cursor = 'pointer !important';
-          link.style.transition = 'all 0.2s ease !important';
+          // Aggressive styling for each link with Safari compatibility
+          link.style.display = 'block';
+          link.style.visibility = 'visible';
+          link.style.opacity = '1';
+          link.style.color = link.classList.contains('active') ? '#4a9eff' : '#94a3b8';
+          link.style.background = link.classList.contains('active') ? 'rgba(91, 140, 255, 0.2)' : 'transparent';
+          link.style.padding = '8px 16px';
+          link.style.borderRadius = '6px';
+          link.style.textDecoration = 'none';
+          link.style.fontWeight = '500';
+          link.style.fontSize = '15px';
+          link.style.cursor = 'pointer';
+          link.style.transition = isSafari ? '-webkit-transition: all 0.2s ease' : 'transition: all 0.2s ease';
+          link.style.letterSpacing = '-0.1px';
+          link.style.position = 'relative';
           
-          console.log(`✅ Nav link ${index + 1}: ${link.textContent} made highly visible`);
+          console.log(`✅ Nav link ${index + 1}: ${link.textContent} made highly visible (Safari-compatible)`);
         });
         
         console.log(`✅ Made ${navLinks.length} navigation links highly visible with enhanced styling`);
         
-        // Also ensure the header is visible
+        // Also ensure the header is visible with Safari compatibility
         const header = document.querySelector('.site-header');
         if (header) {
-          header.style.zIndex = '1000 !important';
-          header.style.position = 'sticky !important';
-          header.style.top = '0 !important';
-          header.style.background = 'rgba(11,16,32,0.95) !important';
-          header.style.backdropFilter = 'blur(12px) !important';
-          header.style.borderBottom = '1px solid var(--border) !important';
-          console.log('✅ Header made highly visible');
+          header.style.zIndex = '1000';
+          header.style.position = isSafari ? '-webkit-sticky' : 'sticky';
+          header.style.top = '0';
+          header.style.background = isSafari ? 'rgba(11,16,32,1)' : 'rgba(11,16,32,0.95)';
+          if (!isSafari) {
+            header.style.backdropFilter = 'blur(12px)';
+          }
+          header.style.borderBottom = '1px solid #263258';
+          header.style.display = 'block';
+          header.style.visibility = 'visible';
+          header.style.opacity = '1';
+          console.log('✅ Header made highly visible (Safari-compatible)');
         }
       }
       
