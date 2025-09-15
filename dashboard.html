@@ -229,7 +229,7 @@
               }
               
               // AUTO-TRIGGER EDGE FUNCTION ANALYSIS AFTER UPLOAD
-              console.log("🤖 Auto-triggering edge function analysis after upload...");
+              console.log("🤖 Auto-triggering edge function analysis after upload..."); alert("AUTO-TRIGGER: Starting analysis...");
               if (analyzeStatus) {
                 analyzeStatus.textContent = `📤 Analyzing ${file.name} with edge function...`;
               }
@@ -256,7 +256,7 @@
                 console.log("📡 Edge Function Response Status:", res.status);
                 if (res.ok) {
                   const data = await res.json();
-                  console.log("✅ Edge Function Analysis Complete:", data);
+                  console.log("✅ Edge Function Analysis Complete:", data); alert("SUCCESS: Edge function called and returned data!");
                   
                   if (analyzeStatus) {
                     analyzeStatus.textContent = `✅ Analysis complete! ${file.name} processed successfully.`;
@@ -278,7 +278,7 @@
                     analyzeStatus.textContent = `❌ Analysis failed: ${errorText}`;
                   }
                 }
-              } catch (analysisError) {
+              } catch (analysisError) { alert("AUTO-TRIGGER ERROR: " + analysisError.message);
                 console.error("❌ Auto-analysis failed:", analysisError);
                 if (analyzeStatus) {
                   analyzeStatus.textContent = `⚠️ Upload successful, but analysis failed: ${analysisError.message}`;
