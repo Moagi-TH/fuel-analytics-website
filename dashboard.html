@@ -4747,8 +4747,7 @@
                   // Save to localStorage for next session
                   window.saveUserDataToLocalStorage();
                 }
-                }
-                
+
                 // Run fast tests and cleanup asynchronously
                 setTimeout(() => {
                   console.log('Running quick integration tests...');
@@ -4771,7 +4770,7 @@
                 } catch (e) {
                   console.warn('Initial refresh/render failed:', e);
                 }
-        
+
                 // Add event listener for personnel section to refresh data when clicked
                 document.addEventListener('DOMContentLoaded', () => {
                   const personnelNav = document.querySelector('a[href="#personnel"]');
@@ -4798,7 +4797,8 @@
                 
                 // Set up fuel price tracking
                 setupFuelPriceTracking();
-              } else {
+              }
+              else {
                 console.log('No authenticated user, attempting to sign in...');
                 console.log('Authentication status:', await db.checkAuthStatus());
                 
@@ -4905,6 +4905,16 @@
         
         // Show notification
         showNotification('Sample data loaded for demonstration. Upload a real report to see your actual data.', 'info');
+      }
+
+      // Backward-compat for old inline onclicks
+      if (!window.navigateToOverview) {
+        window.navigateToOverview = function () {
+          try {
+            const target = document.querySelector('a[href="#overview"]');
+            if (target) target.click();
+          } catch {}
+        };
       }
 
       // Create a test user for demonstration
@@ -5797,6 +5807,89 @@
       // Use Supabase Edge Function for PDF parsing
       const BACKEND_URL = 'https://fynfomhoikzpsrbghnzr.supabase.co/functions/v1';
 
+      // === Supabase Edge Function integration (auto-populate) ===
+      const FUNCTION_URL = 'https://fynfomhoikzpsrbghnzr.functions.supabase.co/analyze-storage-report';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.cEOR4UiBh1tWXFL6nC7ftRpi2un8DfCAG5cD7xdd_Cw'; // Project Settings → API → anon public
+
+      async function callAnalyzeStorageReport(payload = {}) {
+        const res = await fetch(FUNCTION_URL, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error(`Edge Function error ${res.status}`);
+        return res.json();
+      }
+
+      function applyAnalysisToUI(data) {
+        // Map fuels → existing fields
+        if (data?.fuels) {
+          setField(fields.diesel.revenue, data.fuels.diesel_ex?.total_revenue_zar ?? '');
+          setField(fields.diesel.qty,     data.fuels.diesel_ex?.quantity_liters ?? '');
+          setField(fields.v95.revenue,    data.fuels.vpower_95?.total_revenue_zar ?? '');
+          setField(fields.v95.qty,        data.fuels.vpower_95?.quantity_liters ?? '');
+          setField(fields.vd.revenue,     data.fuels.vpower_diesel?.total_revenue_zar ?? '');
+          setField(fields.vd.qty,         data.fuels.vpower_diesel?.quantity_liters ?? '');
+        }
+
+        // Shop lines → your state
+        if (Array.isArray(data?.shop_lines)) {
+          state.shop = data.shop_lines.map(x => ({
+            category: String(x.category || 'Unknown'),
+            revenue: Number(x.total_revenue_zar || 0),
+            units: Number(x.quantity_units || 0)
+          }));
+        }
+
+        // UI metrics and header
+        if (data?.ui_metrics) {
+          const m = data.ui_metrics;
+          updateDashboardMetricsFromReport({
+            totalRevenue: Number(m.total_revenue || 0),
+            totalProfit: Number(m.total_profit || 0),
+            totalFuelVolume: Number(m.total_volume || 0),
+            shopFuelRatio: (Number(m.shop_fuel_ratio || 0)).toFixed(2),
+            monthKey: data?.period ? `${data.period.month}/${data.period.year}` : 'Current'
+          });
+        }
+
+        // Optional: charts
+        if (typeof updateChartsFromReport === 'function') {
+          updateChartsFromReport(data);
+        }
+        renderSummary?.();
+      }
+
+      // Auto-populate on page load with the latest file in bucket
+      document.addEventListener('DOMContentLoaded', async () => {
+        try {
+          const data = await callAnalyzeStorageReport({}); // latest in fuel-reports
+          applyAnalysisToUI(data);
+        } catch (e) {
+          console.error('Auto-populate failed:', e);
+        }
+      });
+
+      // Upload → analyze → populate
+      async function uploadThenAnalyze(file) {
+        try {
+          const supa = window.getSupabase?.();
+          if (!supa) throw new Error('Supabase client not initialized');
+          const path = `${new Date().toISOString().slice(0,10)}/${Date.now()}-${file.name}`;
+          const { error } = await supa.storage.from('fuel-reports').upload(path, file, {
+            upsert: true, contentType: 'application/pdf'
+          });
+          if (error) throw error;
+          const data = await callAnalyzeStorageReport({ path });
+          applyAnalysisToUI(data);
+        } catch (e) {
+          console.error('Upload/Analyze failed:', e);
+        }
+      }
+
       // PDF.js text extractor (client-side) for Supabase Edge Functions flow
       async function extractPdfText(file){
         if (!window['pdfjsLib']) {
@@ -6024,149 +6117,9 @@
           analyzeStatus.textContent = 'Please choose a PDF report first.';
           return;
         }
-        const file = reportInputMain.files[0];
-        analyzeStatus.textContent = `📤 Uploading and analyzing ${file.name}... (Backend: ${BACKEND_URL})`;
-        try {
-          let data;
-          if (BACKEND_URL.includes('supabase.co/functions')) {
-            // Client extracts text, send to Supabase Edge Function as JSON
-            console.log('🔄 Calling Supabase Edge Function: -analyze-storage-report-v1');
-            const text = await window.extractPdfText(file);
-            console.log('📄 Extracted text length:', text.length);
-            
-            const edgeFunctionUrl = `${BACKEND_URL}/-analyze-storage-report-v1`;
-            console.log('🌐 Edge Function URL:', edgeFunctionUrl);
-            
-            const res = await fetch(edgeFunctionUrl, { 
-              method: 'POST', 
-              headers: { 
-                'Content-Type': 'application/json',
-                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.cEOR4UiBh1tWXFL6nC7ftRpi2un8DfCAG5cD7xdd_Cw',
-                'authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.cEOR4UiBh1tWXFL6nC7ftRpi2un8DfCAG5cD7xdd_Cw'
-              }, 
-              body: JSON.stringify({ text }) 
-            });
-            
-            console.log('📡 Edge Function Response Status:', res.status);
-            if (!res.ok) {
-              const errorText = await res.text();
-              console.error('❌ Edge Function Error:', errorText);
-              throw new Error(`Edge Function error (${res.status}): ${errorText}`);
-            }
-            data = await res.json();
-            console.log('✅ Edge Function Analysis Complete:', data);
-          } else {
-            // Local dev server (Node) accepts the PDF as multipart form-data
-            const form = new FormData();
-            form.append('file', file);
-            const res = await fetch(`${BACKEND_URL}/-analyze-storage-report-v1`, { method: 'POST', body: form });
-            if (!res.ok) throw new Error(`Server error (${res.status})`);
-            data = await res.json();
-          }
-          // Map fuels
-          if (data && data.fuels) {
-            setField(fields.diesel.revenue, data.fuels.diesel_ex?.total_revenue_zar ?? '');
-            setField(fields.diesel.qty, data.fuels.diesel_ex?.quantity_liters ?? '');
-            setField(fields.v95.revenue, data.fuels.vpower_95?.total_revenue_zar ?? '');
-            setField(fields.v95.qty, data.fuels.vpower_95?.quantity_liters ?? '');
-            setField(fields.vd.revenue, data.fuels.vpower_diesel?.total_revenue_zar ?? '');
-            setField(fields.vd.qty, data.fuels.vpower_diesel?.quantity_liters ?? '');
-          }
-          // Map shop lines
-          if (Array.isArray(data?.shop_lines)) {
-            state.shop = data.shop_lines.map(x => ({ category: String(x.category || 'Unknown'), revenue: Number(x.total_revenue_zar || 0), units: Number(x.quantity_units || 0) }));
-          }
-          renderSummary();
-          
-          // Update charts with forecast data
-          if (data?.forecast) {
-            updateCharts(state.fuel, state.shop, data.forecast);
-          }
-          
-          // Show completion message
-          analyzeStatus.textContent = `✅ Analysis complete! ${file.name} processed successfully.`;
-          setTimeout(() => {
-            if (analyzeStatus) {
-              analyzeStatus.textContent = '';
-            }
-          }, 3000);
-          
-          // Save to database if available
-          if (db && db.isInitialized) {
-            analyzeStatus.textContent = 'Saving to database...';
-            
-            // Add the PDF file to the data before saving
-            data.pdfFile = file;
-            data.fileName = file.name;
-            
-            // Save report to database first
-            const saveResult = await saveReportToDatabase(data);
-            if (!saveResult.success) {
-              console.error('❌ Failed to save to database:', saveResult.error);
-              analyzeStatus.textContent = `Database save failed: ${saveResult.error}. Using local storage.`;
-              // Fall back to local storage
-              addReportToHistory(file, data);
-              return;
-            }
-            
-            // Then refresh dashboard data (with delay to prevent recursion)
-            setTimeout(async () => {
-              try {
-                await refreshAllDashboardData();
-                
-                // Update all dashboard sections with new data
-                updateAnalyticsSection(data);
-                updateInsightsSection(data);
-                updatePersonnelSection(data);
-                
-                console.log('✅ All dashboard sections updated with new data');
-              } catch (error) {
-                console.error('Error refreshing dashboard:', error);
-              }
-            }, 1000);
-            
-            analyzeStatus.textContent = '✅ Analysis complete! Data saved to database.';
-            setTimeout(() => {
-              if (analyzeStatus) {
-                analyzeStatus.textContent = '';
-              }
-            }, 3000);
-            
-            // Also save to local storage as backup
-            addReportToHistory(file, data);
-            console.log('✅ Report also saved to local storage as backup');
-            
-            // Save updated data to localStorage for persistence across sessions
-            window.saveUserDataToLocalStorage();
-          } else {
-            // Fallback to local storage
-            console.log('⚠️ Database not available, saving to local storage only');
-            addReportToHistory(file, data);
-            
-            // Update all dashboard sections with new data
-            updateAnalyticsSection(data);
-            updateInsightsSection(data);
-            updatePersonnelSection(data);
-            
-            // Save updated data to localStorage for persistence across sessions
-            window.saveUserDataToLocalStorage();
-            
-            analyzeStatus.textContent = '✅ Analysis complete! Data saved locally. (Database not available - user profile needs setup)';
-            setTimeout(() => {
-              if (analyzeStatus) {
-                analyzeStatus.textContent = '';
-              }
-            }, 5000);
-          }
-          
-        } catch (err) {
-          analyzeStatus.textContent = `❌ Failed to analyze: ${err.message}`;
-          setTimeout(() => {
-            if (analyzeStatus) {
-              analyzeStatus.textContent = '';
-            }
-          }, 5000);
-        }
+        analyzeStatus.textContent = 'Uploading and analyzing…';
+        await uploadThenAnalyze(reportInputMain.files[0]);
+        analyzeStatus.textContent = 'Analysis complete.';
       });
 
       saveDataBtn?.addEventListener('click', () => {
