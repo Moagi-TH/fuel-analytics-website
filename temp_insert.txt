@@ -1,0 +1,65 @@
+              
+              // Automatically trigger edge function analysis after successful upload
+              console.log('🔄 Automatically triggering edge function analysis...');
+              try {
+                const analysisStatus = document.getElementById('analyze-status');
+                if (analysisStatus) {
+                  analysisStatus.textContent = `🔄 Analyzing ${file.name} with edge function...`;
+                }
+                
+                // Extract text and call edge function
+                const text = await extractPdfText(file);
+                console.log('📄 Extracted text length:', text.length);
+                
+                const edgeFunctionUrl = `${BACKEND_URL}/-analyze-storage-report-v1`;
+                console.log('🌐 Calling Edge Function:', edgeFunctionUrl);
+                
+                const res = await fetch(edgeFunctionUrl, { 
+                  method: 'POST', 
+                  headers: { 
+                    'Content-Type': 'application/json',
+                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.cEOR4UiBh1tWXFL6nC7ftRpi2un8DfCAG5cD7xdd_Cw',
+                    'authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.cEOR4UiBh1tWXFL6nC7ftRpi2un8DfCAG5cD7xdd_Cw'
+                  }, 
+                  body: JSON.stringify({ text }) 
+                });
+                
+                console.log('📡 Edge Function Response Status:', res.status);
+                if (!res.ok) {
+                  const errorText = await res.text();
+                  console.error('❌ Edge Function Error:', errorText);
+                  throw new Error(`Edge Function error (${res.status}): ${errorText}`);
+                }
+                
+                const analysisData = await res.json();
+                console.log('✅ Edge Function Analysis Complete:', analysisData);
+                
+                // Update status to show analysis complete
+                if (analysisStatus) {
+                  analysisStatus.textContent = `✅ Analysis complete! ${file.name} processed successfully.`;
+                  setTimeout(() => {
+                    if (analysisStatus) {
+                      analysisStatus.textContent = '';
+                    }
+                  }, 3000);
+                }
+                
+                // Store analysis data with the report
+                reportData.analysisData = analysisData;
+                reportData.analyzed = true;
+                reportData.analysisDate = new Date().toISOString();
+                
+                console.log('✅ Report uploaded, analyzed, and stored successfully!');
+                
+              } catch (analysisError) {
+                console.error('❌ Analysis failed:', analysisError);
+                if (analyzeStatus) {
+                  analyzeStatus.textContent = `⚠️ Upload successful, but analysis failed: ${analysisError.message}`;
+                  setTimeout(() => {
+                    if (analyzeStatus) {
+                      analyzeStatus.textContent = '';
+                    }
+                  }, 5000);
+                }
+              }
+              

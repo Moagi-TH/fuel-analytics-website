@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Supabase Storage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #10b981; }
+        .error { background: #ef4444; }
+        .warning { background: #f59e0b; }
+        .info { background: #3b82f6; }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #2563eb; }
+        .log {
+            background: #2d2d2d;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .files-list {
+            background: #2d3748;
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .file-item {
+            background: #1a202c;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Supabase Storage</h1>
+    
+    <div id="status" class="status info">Ready to test Supabase storage...</div>
+    
+    <div>
+        <button onclick="testSupabaseConnection()">🔍 Test Connection</button>
+        <button onclick="listAllFiles()">📁 List All Files</button>
+        <button onclick="checkDirectories()">📂 Check Directories</button>
+        <button onclick="clearLog()">🗑️ Clear Log</button>
+    </div>
+    
+    <div id="log" class="log"></div>
+    
+    <div id="files-display" class="files-list" style="display: none;">
+        <h3>📋 Files in Supabase Storage</h3>
+        <div id="files-list"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        let supabaseClient = null;
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += '<div>[' + timestamp + '] ' + message + '</div>';
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = 'status ' + type;
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            document.getElementById('files-display').style.display = 'none';
+        }
+        
+        function initializeSupabase() {
+            if (!supabaseClient && window.supabase) {
+                const supabaseUrl = 'https://fynfomhoikzpsrbghnzr.supabase.co';
+                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDUwNTc5MSwiZXhwIjoyMDcwMDgxNzkxfQ.LAo0ngckbfAwplBvvQv9zhIzgvTT88H4ZKluHrV8Opo';
+                
+                supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+                log('✅ Supabase client initialized');
+                return true;
+            }
+            return !!supabaseClient;
+        }
+        
+        async function testSupabaseConnection() {
+            log('🔍 Testing Supabase connection...');
+            updateStatus('Testing connection...', 'info');
+            
+            try {
+                if (!initializeSupabase()) {
+                    log('❌ Failed to initialize Supabase client');
+                    updateStatus('❌ Supabase client initialization failed', 'error');
+                    return;
+                }
+                
+                // Test auth
+                const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+                if (authError) {
+                    log('⚠️ Auth check: ' + authError.message);
+                } else {
+                    log('✅ Auth check passed');
+                }
+                
+                // Test storage
+                const { data: buckets, error: bucketsError } = await supabaseClient.storage.listBuckets();
+                if (bucketsError) {
+                    log('❌ Bucket list error: ' + bucketsError.message);
+                    updateStatus('❌ Cannot access storage', 'error');
+                    return;
+                }
+                
+                log('✅ Found ' + buckets.length + ' buckets');
+                const fuelReportsBucket = buckets.find(b => b.id === 'fuel-reports');
+                if (fuelReportsBucket) {
+                    log('✅ fuel-reports bucket found');
+                } else {
+                    log('❌ fuel-reports bucket not found!');
+                    log('Available buckets: ' + buckets.map(b => b.id).join(', '));
+                    updateStatus('❌ fuel-reports bucket missing', 'error');
+                    return;
+                }
+                
+                updateStatus('✅ Supabase connection successful', 'success');
+                
+            } catch (error) {
+                log('❌ Connection test failed: ' + error.message);
+                updateStatus('❌ Connection test failed', 'error');
+            }
+        }
+        
+        async function listAllFiles() {
+            log('📁 Listing all files in Supabase storage...');
+            updateStatus('Listing files...', 'info');
+            
+            try {
+                if (!initializeSupabase()) {
+                    log('❌ Supabase client not available');
+                    return;
+                }
+                
+                // Get files from root
+                const { data: rootFiles, error: rootError } = await supabaseClient.storage
+                    .from('fuel-reports')
+                    .list('', { limit: 1000 });
+                
+                if (rootError) {
+                    log('❌ Error listing root files: ' + rootError.message);
+                    return;
+                }
+                
+                log('✅ Found ' + rootFiles.length + ' files in root directory');
+                
+                // Get files from uploads directory
+                let uploadsFiles = [];
+                try {
+                    const { data: uploads, error: uploadsError } = await supabaseClient.storage
+                        .from('fuel-reports')
+                        .list('uploads', { limit: 1000 });
+                    
+                    if (!uploadsError && uploads) {
+                        uploadsFiles = uploads;
+                        log('✅ Found ' + uploads.length + ' files in uploads/ directory');
+                    }
+                } catch (e) {
+                    log('⚠️ Could not check uploads directory: ' + e.message);
+                }
+                
+                // Get files from uploads/anonymous directory
+                let anonymousFiles = [];
+                try {
+                    const { data: anonymous, error: anonymousError } = await supabaseClient.storage
+                        .from('fuel-reports')
+                        .list('uploads/anonymous', { limit: 1000 });
+                    
+                    if (!anonymousError && anonymous) {
+                        anonymousFiles = anonymous;
+                        log('✅ Found ' + anonymous.length + ' files in uploads/anonymous/ directory');
+                    }
+                } catch (e) {
+                    log('⚠️ Could not check anonymous directory: ' + e.message);
+                }
+                
+                // Combine all files
+                const allFiles = [
+                    ...rootFiles.map(f => ({ ...f, path: f.name, directory: 'root' })),
+                    ...uploadsFiles.map(f => ({ ...f, path: 'uploads/' + f.name, directory: 'uploads' })),
+                    ...anonymousFiles.map(f => ({ ...f, path: 'uploads/anonymous/' + f.name, directory: 'uploads/anonymous' }))
+                ];
+                
+                log('✅ Total files found: ' + allFiles.length);
+                
+                // Display files
+                displayFiles(allFiles);
+                
+                updateStatus('✅ File listing completed', 'success');
+                
+            } catch (error) {
+                log('❌ File listing failed: ' + error.message);
+                updateStatus('❌ File listing failed', 'error');
+            }
+        }
+        
+        function displayFiles(files) {
+            const filesDisplay = document.getElementById('files-display');
+            const filesList = document.getElementById('files-list');
+            
+            if (files.length === 0) {
+                filesList.innerHTML = '<p style="color: #a0aec0; text-align: center; padding: 20px;">No files found in Supabase storage.</p>';
+            } else {
+                let html = '';
+                files.forEach((file, index) => {
+                    const fileName = file.name || 'Unknown File';
+                    const fileDate = file.created_at ? new Date(file.created_at).toLocaleDateString() : 'Unknown Date';
+                    const fileSize = file.metadata?.size || 0;
+                    const fileSizeKB = Math.round(fileSize / 1024);
+                    const isPDF = fileName.toLowerCase().endsWith('.pdf');
+                    
+                    html += `
+                        <div class="file-item">
+                            <div>
+                                <div style="font-weight: 600; color: ${isPDF ? '#10b981' : '#fff'};">${fileName}</div>
+                                <div style="font-size: 12px; color: #a0aec0;">
+                                    📁 ${file.directory} • 📅 ${fileDate} • 📊 ${fileSizeKB} KB
+                                </div>
+                            </div>
+                            <div>
+                                ${isPDF ? '<span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px;">PDF</span>' : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                filesList.innerHTML = html;
+            }
+            
+            filesDisplay.style.display = 'block';
+        }
+        
+        async function checkDirectories() {
+            log('📂 Checking directory structure...');
+            updateStatus('Checking directories...', 'info');
+            
+            try {
+                if (!initializeSupabase()) {
+                    log('❌ Supabase client not available');
+                    return;
+                }
+                
+                // Check root
+                const { data: rootFiles, error: rootError } = await supabaseClient.storage
+                    .from('fuel-reports')
+                    .list('', { limit: 10 });
+                
+                if (rootError) {
+                    log('❌ Root directory error: ' + rootError.message);
+                } else {
+                    log('✅ Root directory accessible, ' + rootFiles.length + ' items');
+                }
+                
+                // Check uploads
+                try {
+                    const { data: uploads, error: uploadsError } = await supabaseClient.storage
+                        .from('fuel-reports')
+                        .list('uploads', { limit: 10 });
+                    
+                    if (uploadsError) {
+                        log('⚠️ uploads/ directory error: ' + uploadsError.message);
+                    } else {
+                        log('✅ uploads/ directory accessible, ' + uploads.length + ' items');
+                    }
+                } catch (e) {
+                    log('⚠️ uploads/ directory not accessible: ' + e.message);
+                }
+                
+                // Check uploads/anonymous
+                try {
+                    const { data: anonymous, error: anonymousError } = await supabaseClient.storage
+                        .from('fuel-reports')
+                        .list('uploads/anonymous', { limit: 10 });
+                    
+                    if (anonymousError) {
+                        log('⚠️ uploads/anonymous/ directory error: ' + anonymousError.message);
+                    } else {
+                        log('✅ uploads/anonymous/ directory accessible, ' + anonymous.length + ' items');
+                    }
+                } catch (e) {
+                    log('⚠️ uploads/anonymous/ directory not accessible: ' + e.message);
+                }
+                
+                updateStatus('✅ Directory check completed', 'success');
+                
+            } catch (error) {
+                log('❌ Directory check failed: ' + error.message);
+                updateStatus('❌ Directory check failed', 'error');
+            }
+        }
+        
+        // Auto-run tests on load
+        window.addEventListener('load', function() {
+            setTimeout(testSupabaseConnection, 1000);
+        });
+    </script>
+</body>
+</html>

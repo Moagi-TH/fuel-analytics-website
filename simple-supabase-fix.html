@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Supabase Upload Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #10b981; }
+        .error { background: #ef4444; }
+        .warning { background: #f59e0b; }
+        .info { background: #3b82f6; }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #2563eb; }
+        .log {
+            background: #2d2d2d;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Simple Supabase Upload Fix</h1>
+    
+    <div id="status" class="status info">Ready to fix Supabase upload issues...</div>
+    
+    <div>
+        <button onclick="runDiagnosis()">🔍 Run Full Diagnosis</button>
+        <button onclick="testUpload()">📤 Test Upload</button>
+        <button onclick="applyFix()">🛠️ Apply Fix to Dashboard</button>
+        <button onclick="clearLog()">🗑️ Clear Log</button>
+    </div>
+    
+    <div id="log" class="log"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        let supabaseClient = null;
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += '<div>[' + timestamp + '] ' + message + '</div>';
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = 'status ' + type;
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+        
+        async function runDiagnosis() {
+            log('🔍 Starting Supabase diagnosis...');
+            updateStatus('Diagnosing Supabase issues...', 'info');
+            
+            try {
+                // 1. Check Supabase library
+                log('1. Checking Supabase library...');
+                if (typeof window.supabase === 'undefined') {
+                    log('❌ Supabase library not loaded!');
+                    updateStatus('❌ Supabase library not loaded', 'error');
+                    return;
+                }
+                log('✅ Supabase library loaded');
+                
+                // 2. Initialize client
+                log('2. Initializing Supabase client...');
+                const supabaseUrl = 'https://fynfomhoikzpsrbghnzr.supabase.co';
+                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDUwNTc5MSwiZXhwIjoyMDcwMDgxNzkxfQ.LAo0ngckbfAwplBvvQv9zhIzgvTT88H4ZKluHrV8Opo';
+                
+                supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+                log('✅ Supabase client created');
+                
+                // 3. Test connection
+                log('3. Testing connection...');
+                const { data, error } = await supabaseClient.auth.getUser();
+                if (error) {
+                    log('⚠️ Auth check: ' + error.message);
+                } else {
+                    log('✅ Auth check passed');
+                }
+                
+                // 4. Check buckets
+                log('4. Checking storage buckets...');
+                const { data: buckets, error: bucketsError } = await supabaseClient.storage.listBuckets();
+                if (bucketsError) {
+                    log('❌ Bucket list error: ' + bucketsError.message);
+                    updateStatus('❌ Cannot access storage buckets', 'error');
+                    return;
+                }
+                
+                log('✅ Found ' + buckets.length + ' buckets');
+                const fuelReportsBucket = buckets.find(function(b) { return b.id === 'fuel-reports'; });
+                if (fuelReportsBucket) {
+                    log('✅ fuel-reports bucket found');
+                } else {
+                    log('❌ fuel-reports bucket not found!');
+                    log('Available buckets: ' + buckets.map(function(b) { return b.id; }).join(', '));
+                    updateStatus('❌ fuel-reports bucket missing', 'error');
+                    return;
+                }
+                
+                // 5. Test bucket access
+                log('5. Testing bucket access...');
+                const { data: files, error: filesError } = await supabaseClient.storage
+                    .from('fuel-reports')
+                    .list('', { limit: 5 });
+                
+                if (filesError) {
+                    log('❌ Bucket access error: ' + filesError.message);
+                    updateStatus('❌ Cannot access fuel-reports bucket', 'error');
+                    return;
+                }
+                
+                log('✅ Bucket access successful. Found ' + files.length + ' files');
+                
+                updateStatus('✅ Supabase diagnosis completed successfully', 'success');
+                log('🎉 Diagnosis completed - Supabase is working correctly!');
+                
+            } catch (error) {
+                log('❌ Diagnosis failed: ' + error.message);
+                updateStatus('❌ Diagnosis failed', 'error');
+            }
+        }
+        
+        async function testUpload() {
+            log('📤 Testing upload to Supabase...');
+            updateStatus('Testing upload...', 'info');
+            
+            try {
+                if (!supabaseClient) {
+                    const supabaseUrl = 'https://fynfomhoikzpsrbghnzr.supabase.co';
+                    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDUwNTc5MSwiZXhwIjoyMDcwMDgxNzkxfQ.LAo0ngckbfAwplBvvQv9zhIzgvTT88H4ZKluHrV8Opo';
+                    supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+                }
+                
+                // Create test file
+                const testContent = 'Test PDF content for upload verification';
+                const testFile = new File([testContent], 'test-upload.pdf', { type: 'application/pdf' });
+                
+                // Upload to Supabase
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const objectPath = 'uploads/anonymous/' + timestamp + '-test-upload.pdf';
+                
+                log('📤 Uploading test file to: ' + objectPath);
+                
+                const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                    .from('fuel-reports')
+                    .upload(objectPath, testFile, { 
+                        upsert: true, 
+                        contentType: 'application/pdf' 
+                    });
+                
+                if (uploadError) {
+                    log('❌ Upload failed: ' + uploadError.message);
+                    updateStatus('❌ Upload test failed', 'error');
+                    return;
+                }
+                
+                log('✅ Upload successful: ' + uploadData.path);
+                updateStatus('✅ Upload test successful', 'success');
+                
+                // Clean up test file
+                const { error: deleteError } = await supabaseClient.storage
+                    .from('fuel-reports')
+                    .remove([uploadData.path]);
+                
+                if (deleteError) {
+                    log('⚠️ Could not delete test file: ' + deleteError.message);
+                } else {
+                    log('✅ Test file cleaned up');
+                }
+                
+            } catch (error) {
+                log('❌ Upload test failed: ' + error.message);
+                updateStatus('❌ Upload test failed', 'error');
+            }
+        }
+        
+        async function applyFix() {
+            log('🛠️ Applying fix to dashboard...');
+            updateStatus('Applying fix...', 'info');
+            
+            try {
+                // Create the fixed upload function
+                const fixScript = document.createElement('script');
+                fixScript.textContent = `
+                    // Fixed Supabase upload function
+                    window.fixedUploadToSupabase = async function(file) {
+                        try {
+                            console.log('🔄 Starting fixed upload to Supabase...');
+                            
+                            // Initialize client if not available
+                            if (!window.supabaseClient) {
+                                const supabaseUrl = 'https://fynfomhoikzpsrbghnzr.supabase.co';
+                                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDUwNTc5MSwiZXhwIjoyMDcwMDgxNzkxfQ.LAo0ngckbfAwplBvvQv9zhIzgvTT88H4ZKluHrV8Opo';
+                                
+                                window.supabaseClient = {
+                                    supabase: window.supabase.createClient(supabaseUrl, supabaseKey),
+                                    initialized: true
+                                };
+                                console.log('✅ Supabase client initialized');
+                            }
+                            
+                            // Create upload path
+                            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                            const objectPath = 'uploads/anonymous/' + timestamp + '-' + file.name;
+                            
+                            console.log('📤 Uploading to: ' + objectPath);
+                            
+                            // Upload file
+                            const { data: uploadData, error: uploadError } = await window.supabaseClient.supabase.storage
+                                .from('fuel-reports')
+                                .upload(objectPath, file, { 
+                                    upsert: true, 
+                                    contentType: 'application/pdf' 
+                                });
+                            
+                            if (uploadError) {
+                                throw new Error('Upload failed: ' + uploadError.message);
+                            }
+                            
+                            console.log('✅ Upload successful: ' + uploadData.path);
+                            
+                            // Return upload data
+                            return {
+                                success: true,
+                                path: uploadData.path,
+                                data: uploadData
+                            };
+                            
+                        } catch (error) {
+                            console.log('❌ Upload failed: ' + error.message);
+                            return {
+                                success: false,
+                                error: error.message
+                            };
+                        }
+                    };
+                    
+                    console.log('✅ Fixed upload function installed');
+                `;
+                
+                document.head.appendChild(fixScript);
+                log('✅ Fixed upload function installed in dashboard');
+                
+                updateStatus('✅ Fix applied successfully! You can now test uploads in the main dashboard.', 'success');
+                
+                // Open main dashboard in new tab
+                setTimeout(function() {
+                    window.open('http://localhost:8000/dashboard.html', '_blank');
+                }, 2000);
+                
+            } catch (error) {
+                log('❌ Fix application failed: ' + error.message);
+                updateStatus('❌ Fix application failed', 'error');
+            }
+        }
+        
+        // Auto-run diagnosis on load
+        window.addEventListener('load', function() {
+            setTimeout(runDiagnosis, 1000);
+        });
+    </script>
+</body>
+</html>
