@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Upload Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #6c757d; cursor: not-allowed; }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        input[type="file"] {
+            margin: 10px 0;
+            padding: 10px;
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📁 Simple Upload Test</h1>
+        
+        <div id="status" class="status info">🔄 Ready to test upload...</div>
+        
+        <div>
+            <h3>File Upload Test:</h3>
+            <input type="file" id="pdfFile" accept=".pdf" />
+            <button onclick="testUpload()" id="uploadBtn">Upload PDF</button>
+        </div>
+        
+        <div>
+            <h3>Storage Test:</h3>
+            <button onclick="testStorage()">Test Storage Bucket</button>
+            <button onclick="testAuth()">Test Authentication</button>
+        </div>
+        
+        <div class="log" id="log"></div>
+    </div>
+
+    <!-- Load Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // Force cache busting
+        console.log('🔄 Loading updated simple-upload-test.html - v2');
+        
+        const SUPABASE_URL = 'https://fynfomhoikzpsrbghnzr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.cEOR4UiBh1tWXFL6nC7ftRpi2un8DfCAG5cD7xdd_Cw';
+        
+        let supabaseClient = null;
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #666;">[${timestamp}]</span> ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+        }
+        
+        async function initializeSupabase() {
+            try {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                log('✅ Supabase client created');
+                return true;
+            } catch (error) {
+                log('❌ Failed to create Supabase client: ' + error.message);
+                return false;
+            }
+        }
+        
+        async function testStorage() {
+            log('🔍 Testing storage bucket...');
+            
+            try {
+                if (!supabaseClient) {
+                    await initializeSupabase();
+                }
+                
+                const { data, error } = await supabaseClient.storage.listBuckets();
+                
+                if (error) {
+                    log('❌ Storage test failed: ' + error.message);
+                    return;
+                }
+                
+                const fuelReportsBucket = data.find(bucket => bucket.id === 'reports');
+                if (fuelReportsBucket) {
+                    log('✅ Storage bucket "reports" found');
+                    updateStatus('✅ Storage bucket exists', 'success');
+                } else {
+                    log('❌ Storage bucket "reports" not found');
+                    log('💡 You need to create the storage bucket in Supabase Dashboard');
+                    updateStatus('❌ Storage bucket missing', 'error');
+                }
+            } catch (error) {
+                log('❌ Storage test failed: ' + error.message);
+            }
+        }
+        
+        async function testAuth() {
+            log('🔍 Testing authentication...');
+            
+            try {
+                if (!supabaseClient) {
+                    await initializeSupabase();
+                }
+                
+                const { data: { user }, error } = await supabaseClient.auth.getUser();
+                
+                if (error) {
+                    log('❌ Authentication test failed: ' + error.message);
+                    return;
+                }
+                
+                if (user) {
+                    log('✅ User authenticated: ' + user.email);
+                    updateStatus('✅ User authenticated', 'success');
+                } else {
+                    log('⚠️ No user authenticated');
+                    updateStatus('⚠️ No user authenticated', 'info');
+                }
+            } catch (error) {
+                log('❌ Authentication test failed: ' + error.message);
+            }
+        }
+        
+        async function testUpload() {
+            const fileInput = document.getElementById('pdfFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                log('❌ Please select a PDF file first');
+                return;
+            }
+            
+            log('📁 Starting upload test...');
+            log('📄 File: ' + file.name + ' (' + (file.size / 1024).toFixed(2) + ' KB)');
+            
+            try {
+                if (!supabaseClient) {
+                    await initializeSupabase();
+                }
+                
+                // Check if user is authenticated
+                const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+                
+                if (!user) {
+                    log('⚠️ No authenticated user, trying to sign in...');
+                    
+                    const { data: signInData, error: signInError } = await supabaseClient.auth.signInWithPassword({
+                        email: 'test@fuelstation.com',
+                        password: 'testpassword123'
+                    });
+                    
+                    if (signInError) {
+                        log('❌ Authentication failed: ' + signInError.message);
+                        updateStatus('❌ Upload failed - authentication required', 'error');
+                        return;
+                    }
+                    
+                    log('✅ User signed in successfully');
+                }
+                
+                // Check if storage bucket exists
+                const { data: buckets, error: bucketError } = await supabaseClient.storage.listBuckets();
+                
+                if (bucketError) {
+                    log('❌ Failed to check storage buckets: ' + bucketError.message);
+                    return;
+                }
+                
+                const fuelReportsBucket = buckets.find(bucket => bucket.id === 'reports');
+                if (!fuelReportsBucket) {
+                    log('❌ Storage bucket "reports" not found');
+                    log('💡 Please create the storage bucket first');
+                    updateStatus('❌ Upload failed - storage bucket missing', 'error');
+                    return;
+                }
+                
+                log('✅ Storage bucket found, attempting upload...');
+                
+                // Upload file
+                const fileName = `test_${Date.now()}_${file.name}`;
+                const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                    .from('reports')
+                    .upload(fileName, file, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+                
+                if (uploadError) {
+                    log('❌ Upload failed: ' + uploadError.message);
+                    updateStatus('❌ Upload failed', 'error');
+                    return;
+                }
+                
+                log('✅ File uploaded successfully!');
+                log('📁 File path: ' + uploadData.path);
+                updateStatus('✅ Upload successful!', 'success');
+                
+                // Get public URL
+                const { data: urlData } = supabaseClient.storage
+                    .from('reports')
+                    .getPublicUrl(uploadData.path);
+                
+                log('🔗 Public URL: ' + urlData.publicUrl);
+                
+            } catch (error) {
+                log('❌ Upload test failed: ' + error.message);
+                updateStatus('❌ Upload failed', 'error');
+            }
+        }
+        
+        // Initialize
+        window.addEventListener('load', async function() {
+            log('🚀 Page loaded, initializing...');
+            await initializeSupabase();
+            updateStatus('✅ Ready for upload test', 'success');
+            
+            // Enable upload button when file is selected
+            const fileInput = document.getElementById('pdfFile');
+            const uploadBtn = document.getElementById('uploadBtn');
+            
+            fileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    uploadBtn.disabled = false;
+                    log('📁 File selected: ' + this.files[0].name);
+                } else {
+                    uploadBtn.disabled = true;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

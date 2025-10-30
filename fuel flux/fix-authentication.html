@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Authentication - Get Database Working</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a1a; color: white; }
+        .fix-box { margin: 20px 0; padding: 20px; border-radius: 8px; }
+        .success { background: #2d5a2d; border: 1px solid #4caf50; }
+        .error { background: #5a2d2d; border: 1px solid #f44336; }
+        .warning { background: #5a4a2d; border: 1px solid #ff9800; }
+        .info { background: #2d4a5a; border: 1px solid #2196f3; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; background: #4caf50; color: white; border: none; border-radius: 4px; }
+        input { padding: 8px; margin: 5px; border-radius: 4px; border: 1px solid #ccc; }
+        pre { background: #333; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Fix Authentication - Get Database Working</h1>
+
+    <div class="fix-box error">
+        <h2>🚨 Current Problem</h2>
+        <p><strong>Issue:</strong> Supabase client not loading properly, causing authentication and database failures.</p>
+        <p><strong>Error:</strong> "undefined is not an object" for Supabase auth methods.</p>
+    </div>
+
+    <div class="fix-box info">
+        <h2>🔧 Solution Steps</h2>
+        <p>Let's fix the Supabase client loading and authentication issues step by step.</p>
+    </div>
+
+    <div class="fix-box">
+        <h2>Step 1: Check Supabase Client</h2>
+        <p>First, let's verify the Supabase client is loading correctly.</p>
+        <button onclick="checkSupabaseClient()">Check Supabase Client</button>
+        <div id="step1-result"></div>
+    </div>
+
+    <div class="fix-box">
+        <h2>Step 2: Fix Current User Profile</h2>
+        <p>This will create a proper profile and company for the current authenticated user.</p>
+        <button onclick="fixCurrentUserProfile()">Fix Current User Profile</button>
+        <div id="step2-result"></div>
+    </div>
+
+    <div class="fix-box">
+        <h2>Step 3: Create New Test User</h2>
+        <p>Create a completely fresh test user with proper setup.</p>
+        <button onclick="createNewTestUser()">Create New Test User</button>
+        <div id="step3-result"></div>
+    </div>
+
+    <div class="fix-box">
+        <h2>Step 4: Test Database Connection</h2>
+        <p>Test if the database is working after fixes.</p>
+        <button onclick="testDatabaseSave()">Test Database Save</button>
+        <div id="step4-result"></div>
+    </div>
+
+    <!-- Load Supabase client first -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-client.js?v=6"></script>
+
+    <script>
+        let db = null;
+        let supabaseClient = null;
+
+        // Wait for Supabase to load
+        function waitForSupabase() {
+            return new Promise((resolve, reject) => {
+                let attempts = 0;
+                const maxAttempts = 50; // 5 seconds max wait
+                
+                const checkSupabase = () => {
+                    attempts++;
+                    
+                    if (typeof window.supabase !== 'undefined' && window.supabase.auth) {
+                        console.log('Supabase client found after', attempts, 'attempts');
+                        resolve(window.supabase);
+                    } else if (attempts >= maxAttempts) {
+                        reject(new Error('Supabase client failed to load after 5 seconds'));
+                    } else {
+                        setTimeout(checkSupabase, 100);
+                    }
+                };
+                
+                checkSupabase();
+            });
+        }
+
+        // Initialize Supabase client
+        async function initializeSupabase() {
+            try {
+                // Wait for Supabase to be available
+                const client = await waitForSupabase();
+                console.log('Supabase client initialized successfully');
+                return client;
+            } catch (error) {
+                console.error('Failed to initialize Supabase:', error);
+                return null;
+            }
+        }
+
+        async function checkSupabaseClient() {
+            const resultDiv = document.getElementById('step1-result');
+            resultDiv.innerHTML = '<p>🔄 Checking Supabase client...</p>';
+            
+            try {
+                // Try to get Supabase client
+                supabaseClient = await initializeSupabase();
+                
+                if (!supabaseClient) {
+                    throw new Error('Supabase client not available');
+                }
+                
+                // Test basic functionality
+                const { data, error } = await supabaseClient.auth.getSession();
+                
+                if (error) {
+                    throw new Error('Supabase auth test failed: ' + error.message);
+                }
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✅ Supabase client working!</h3>
+                        <p><strong>Client:</strong> Loaded successfully</p>
+                        <p><strong>Auth:</strong> Working</p>
+                        <p><strong>Session:</strong> ${data.session ? 'Active' : 'None'}</p>
+                    </div>
+                `;
+                
+                // Initialize our database client
+                if (window.fuelAnalyticsDB) {
+                    db = window.fuelAnalyticsDB;
+                    console.log('Database client loaded');
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Supabase client error:</h3>
+                        <pre>${error.message}</pre>
+                        <p>Please refresh the page and try again.</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function fixCurrentUserProfile() {
+            const resultDiv = document.getElementById('step2-result');
+            resultDiv.innerHTML = '<p>🔄 Fixing current user profile...</p>';
+            
+            try {
+                if (!supabaseClient) {
+                    supabaseClient = await initializeSupabase();
+                    if (!supabaseClient) {
+                        throw new Error('Supabase client not available');
+                    }
+                }
+                
+                if (!db) {
+                    db = window.fuelAnalyticsDB;
+                }
+                
+                // Get current user
+                const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+                if (userError || !user) {
+                    throw new Error('No authenticated user found');
+                }
+                
+                console.log('Fixing profile for user:', user.email);
+                
+                // Step 1: Create or get company
+                const companyName = 'Test Fuel Station';
+                let company = null;
+                
+                // Try to find existing company
+                const { data: existingCompanies, error: companySearchError } = await supabaseClient
+                    .from('companies')
+                    .select('*')
+                    .eq('name', companyName)
+                    .limit(1);
+                
+                if (companySearchError) {
+                    console.warn('Company search failed:', companySearchError);
+                }
+                
+                if (existingCompanies && existingCompanies.length > 0) {
+                    company = existingCompanies[0];
+                    console.log('Using existing company:', company.id);
+                } else {
+                    // Create new company
+                    const { data: newCompany, error: createCompanyError } = await supabaseClient
+                        .from('companies')
+                        .insert([{
+                            name: companyName,
+                            address: '123 Test Street, Test City',
+                            phone: '+27 123 456 789',
+                            email: 'test@fuelstation.com',
+                            created_at: new Date().toISOString()
+                        }])
+                        .select()
+                        .single();
+                    
+                    if (createCompanyError) {
+                        throw new Error('Failed to create company: ' + createCompanyError.message);
+                    }
+                    
+                    company = newCompany;
+                    console.log('Created new company:', company.id);
+                }
+                
+                // Step 2: Create or update user profile
+                const { data: existingProfile, error: profileSearchError } = await supabaseClient
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+                
+                if (profileSearchError && !profileSearchError.message.includes('No rows found')) {
+                    console.warn('Profile search failed:', profileSearchError);
+                }
+                
+                if (existingProfile) {
+                    // Update existing profile with company
+                    const { error: updateError } = await supabaseClient
+                        .from('profiles')
+                        .update({
+                            company_id: company.id,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', user.id);
+                    
+                    if (updateError) {
+                        throw new Error('Failed to update profile: ' + updateError.message);
+                    }
+                    
+                    console.log('Updated existing profile with company');
+                } else {
+                    // Create new profile
+                    const { error: createProfileError } = await supabaseClient
+                        .from('profiles')
+                        .insert([{
+                            id: user.id,
+                            email: user.email,
+                            company_id: company.id,
+                            role: 'admin',
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        }]);
+                    
+                    if (createProfileError) {
+                        throw new Error('Failed to create profile: ' + createProfileError.message);
+                    }
+                    
+                    console.log('Created new profile with company');
+                }
+                
+                // Step 3: Re-initialize database
+                const initResult = await db.initialize();
+                
+                if (initResult.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Profile fixed successfully!</h3>
+                            <p><strong>User:</strong> ${user.email}</p>
+                            <p><strong>Company:</strong> ${company.name}</p>
+                            <p><strong>Company ID:</strong> ${company.id}</p>
+                            <p>Database is now properly initialized and ready to use.</p>
+                        </div>
+                    `;
+                } else {
+                    throw new Error('Database initialization failed: ' + initResult.error);
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error fixing profile:</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        async function createNewTestUser() {
+            const resultDiv = document.getElementById('step3-result');
+            resultDiv.innerHTML = '<p>🔄 Creating new test user...</p>';
+            
+            try {
+                if (!supabaseClient) {
+                    supabaseClient = await initializeSupabase();
+                    if (!supabaseClient) {
+                        throw new Error('Supabase client not available');
+                    }
+                }
+                
+                if (!db) {
+                    db = window.fuelAnalyticsDB;
+                }
+                
+                // Sign out first
+                await supabaseClient.auth.signOut();
+                
+                // Create new test user with timestamp
+                const timestamp = Date.now();
+                const testEmail = `test${timestamp}@fuelstation.com`;
+                const testPassword = 'testpassword123';
+                
+                console.log('Creating user:', testEmail);
+                
+                // Sign up new user
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: testEmail,
+                    password: testPassword
+                });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✅ New test user created successfully!</h3>
+                        <p><strong>Email:</strong> ${testEmail}</p>
+                        <p><strong>Password:</strong> ${testPassword}</p>
+                        <p>User is now authenticated. Please use Step 2 to set up the profile.</p>
+                    </div>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error creating test user:</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        async function testDatabaseSave() {
+            const resultDiv = document.getElementById('step4-result');
+            resultDiv.innerHTML = '<p>🔄 Testing database save...</p>';
+            
+            try {
+                if (!db) {
+                    db = window.fuelAnalyticsDB;
+                }
+                
+                // Test if database is initialized
+                const initResult = await db.initialize();
+                
+                if (!initResult.success) {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Database not initialized</h3>
+                            <p>Please complete Steps 1-2 first.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                if (!db.currentCompany) {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ No company associated</h3>
+                            <p>Please complete Step 2 to set up the user profile and company.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Test saving a simple report
+                const testReport = {
+                    period: { month: 12, year: 2024 },
+                    fuels: {
+                        diesel_ex: { total_revenue_zar: 100000, quantity_liters: 4000 },
+                        vpower_95: { total_revenue_zar: 80000, quantity_liters: 3000 },
+                        vpower_diesel: { total_revenue_zar: 60000, quantity_liters: 2500 }
+                    },
+                    shop_lines: [
+                        { category: 'Test Category', total_revenue_zar: 50000, quantity_units: 100 }
+                    ]
+                };
+                
+                const saveResult = await db.saveMonthlyReport(testReport);
+                
+                if (saveResult.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Database save successful!</h3>
+                            <p>Report saved with ID: ${saveResult.reportId}</p>
+                            <p><strong>🎉 Your database is now working!</strong></p>
+                            <p>Go back to the main dashboard and try uploading a PDF - it should now save to the database.</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Database save failed:</h3>
+                            <pre>${saveResult.error}</pre>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error testing database save:</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-check on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                checkSupabaseClient();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

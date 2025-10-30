@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bucket Check</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        button:hover { background-color: #0056b3; }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Bucket Check</h1>
+        
+        <div id="status" class="status info">🔄 Ready to check buckets...</div>
+        
+        <div>
+            <button onclick="checkAllBuckets()">Check All Storage Buckets</button>
+            <button onclick="testAuth()">Test Authentication</button>
+        </div>
+        
+        <div class="log" id="log"></div>
+    </div>
+
+    <!-- Load Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        const SUPABASE_URL = 'https://fynfomhoikzpsrbghnzr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.cEOR4UiBh1tWXFL6nC7ftRpi2un8DfCAG5cD7xdd_Cw';
+        
+        let supabaseClient = null;
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #666;">[${timestamp}]</span> ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+        }
+        
+        async function initializeSupabase() {
+            try {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                log('✅ Supabase client created');
+                return true;
+            } catch (error) {
+                log('❌ Failed to create Supabase client: ' + error.message);
+                return false;
+            }
+        }
+        
+        async function checkAllBuckets() {
+            log('🔍 Checking all storage buckets...');
+            
+            try {
+                if (!supabaseClient) {
+                    await initializeSupabase();
+                }
+                
+                const { data, error } = await supabaseClient.storage.listBuckets();
+                
+                if (error) {
+                    log('❌ Failed to list buckets: ' + error.message);
+                    updateStatus('❌ Failed to list buckets', 'error');
+                    return;
+                }
+                
+                log('✅ Found ' + data.length + ' storage buckets:');
+                
+                if (data.length === 0) {
+                    log('⚠️ No storage buckets found');
+                    updateStatus('⚠️ No storage buckets found', 'error');
+                } else {
+                    data.forEach((bucket, index) => {
+                        log(`📁 Bucket ${index + 1}: "${bucket.id}" (${bucket.name})`);
+                        log(`   - Public: ${bucket.public}`);
+                        log(`   - Created: ${bucket.created_at}`);
+                        log(`   - File size limit: ${bucket.file_size_limit} bytes`);
+                        if (bucket.allowed_mime_types) {
+                            log(`   - Allowed types: ${bucket.allowed_mime_types.join(', ')}`);
+                        }
+                        log('');
+                    });
+                    
+                    // Check for specific buckets
+                    const reportsBucket = data.find(bucket => bucket.id === 'reports');
+                    const fuelReportsBucket = data.find(bucket => bucket.id === 'fuel-reports');
+                    
+                    if (reportsBucket) {
+                        log('✅ Found "reports" bucket!');
+                        updateStatus('✅ Found "reports" bucket', 'success');
+                    } else {
+                        log('❌ "reports" bucket not found');
+                    }
+                    
+                    if (fuelReportsBucket) {
+                        log('✅ Found "fuel-reports" bucket!');
+                    } else {
+                        log('❌ "fuel-reports" bucket not found');
+                    }
+                }
+                
+            } catch (error) {
+                log('❌ Bucket check failed: ' + error.message);
+                updateStatus('❌ Bucket check failed', 'error');
+            }
+        }
+        
+        async function testAuth() {
+            log('🔍 Testing authentication...');
+            
+            try {
+                if (!supabaseClient) {
+                    await initializeSupabase();
+                }
+                
+                const { data: { user }, error } = await supabaseClient.auth.getUser();
+                
+                if (error) {
+                    log('❌ Authentication test failed: ' + error.message);
+                    return;
+                }
+                
+                if (user) {
+                    log('✅ User authenticated: ' + user.email);
+                    updateStatus('✅ User authenticated', 'success');
+                } else {
+                    log('⚠️ No user authenticated');
+                    updateStatus('⚠️ No user authenticated', 'info');
+                }
+            } catch (error) {
+                log('❌ Authentication test failed: ' + error.message);
+            }
+        }
+        
+        // Initialize
+        window.addEventListener('load', async function() {
+            log('🚀 Bucket check page loaded');
+            await initializeSupabase();
+            updateStatus('✅ Ready to check buckets', 'success');
+        });
+    </script>
+</body>
+</html>

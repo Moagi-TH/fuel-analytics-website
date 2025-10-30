@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FUEL FLUX Brand Guide - Official Colors & Logo</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 20mm;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background: #ffffff;
+      padding: 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 60px;
+      padding: 40px;
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+      border-radius: 20px;
+      color: white;
+    }
+    
+    .header-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .header-logo svg {
+      width: 60px;
+      height: 60px;
+    }
+    
+    .header h1 {
+      font-size: 56px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -1px;
+    }
+    
+    .header p {
+      font-size: 20px;
+      opacity: 0.9;
+    }
+    
+    .section {
+      margin-bottom: 60px;
+      page-break-inside: avoid;
+    }
+    
+    .section-title {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 30px;
+      color: #1e3a8a;
+      letter-spacing: -0.5px;
+      border-bottom: 4px solid #3b82f6;
+      padding-bottom: 15px;
+    }
+    
+    /* Logo Section */
+    .logo-showcase {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-top: 30px;
+    }
+    
+    .logo-box {
+      border: 3px solid #e5e7eb;
+      border-radius: 20px;
+      padding: 50px;
+      text-align: center;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .logo-box.dark {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      border-color: #1e293b;
+    }
+    
+    .logo-box.light {
+      background: #ffffff;
+      border-color: #e5e7eb;
+    }
+    
+    .logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    
+    .logo-svg {
+      width: 70px;
+      height: 70px;
+    }
+    
+    .brand-name {
+      font-size: 48px;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+    
+    .logo-box.dark .brand-name {
+      color: #ffffff;
+    }
+    
+    .logo-box.light .brand-name {
+      color: #1e3a8a;
+    }
+    
+    .logo-label {
+      font-size: 15px;
+      color: #666;
+      margin-top: 20px;
+      font-weight: 600;
+      background: white;
+      padding: 8px 20px;
+      border-radius: 20px;
+    }
+    
+    /* Color Palette */
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+      margin-top: 30px;
+    }
+    
+    .color-card {
+      border: 3px solid #e5e7eb;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+    
+    .color-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .color-swatch {
+      height: 180px;
+      width: 100%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+    }
+    
+    .color-info {
+      padding: 25px;
+      background: #ffffff;
+    }
+    
+    .color-name {
+      font-weight: 700;
+      font-size: 20px;
+      margin-bottom: 10px;
+      color: #1e3a8a;
+    }
+    
+    .color-hex {
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 16px;
+      color: #3b82f6;
+      margin-bottom: 6px;
+      font-weight: 600;
+      background: #f1f5f9;
+      padding: 4px 8px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+    
+    .color-usage {
+      font-size: 14px;
+      color: #64748b;
+      margin-top: 10px;
+      line-height: 1.6;
+    }
+    
+    .subsection {
+      margin: 40px 0 25px;
+      font-size: 24px;
+      font-weight: 700;
+      color: #475569;
+      padding-left: 15px;
+      border-left: 4px solid #3b82f6;
+    }
+    
+    /* UI Examples */
+    .ui-examples {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-top: 30px;
+    }
+    
+    .ui-example {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      padding: 40px;
+      border-radius: 20px;
+      border: 3px solid #1e3a8a;
+    }
+    
+    .metric-card {
+      background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+      padding: 30px;
+      border-radius: 16px;
+      color: white;
+      box-shadow: 0 10px 30px rgba(37, 99, 235, 0.3);
+    }
+    
+    .metric-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .metric-icon {
+      width: 50px;
+      height: 50px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    
+    .metric-label {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.9;
+      font-weight: 600;
+    }
+    
+    .metric-value {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .metric-change {
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 4px 12px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+    
+    /* Print Button */
+    .print-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+      color: white;
+      padding: 18px 32px;
+      border-radius: 50px;
+      border: none;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 10px 40px rgba(37, 99, 235, 0.4);
+      transition: transform 0.2s;
+      z-index: 1000;
+    }
+    
+    .print-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 50px rgba(37, 99, 235, 0.5);
+    }
+    
+    /* Print styles */
+    @media print {
+      body {
+        padding: 0;
+      }
+      
+      .section {
+        page-break-inside: avoid;
+      }
+      
+      .print-btn {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  
+  <!-- Header -->
+  <div class="header">
+    <div class="header-logo">
+      <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: white; position: relative;">
+        F
+        <div style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 12px; height: 2px; background: white; box-shadow: 0 -4px 0 white, 0 4px 0 white; border-radius: 2px;"></div>
+      </div>
+      <div style="display: flex; flex-direction: column; line-height: 1;">
+        <span style="font-size: 32px; font-weight: 600; letter-spacing: -0.5px; color: #1e3a8a;">FUEL</span>
+        <span style="font-size: 28px; font-weight: 500; letter-spacing: -0.3px; color: white;">FLUX</span>
+      </div>
+    </div>
+    <p>Official Brand Identity & Color Palette</p>
+  </div>
+  
+  <!-- Logo Section -->
+  <div class="section">
+    <h2 class="section-title">🎨 Logo & Brand Mark</h2>
+    
+    <div class="logo-showcase">
+      <!-- Dark Background -->
+      <div class="logo-box dark">
+        <div class="logo-container">
+          <div style="width: 70px; height: 70px; background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 38px; font-weight: 700; color: white; position: relative; box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);">
+            F
+            <div style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 12px; height: 2px; background: white; box-shadow: 0 -4px 0 white, 0 4px 0 white; border-radius: 2px;"></div>
+          </div>
+          <div style="display: flex; flex-direction: column; line-height: 1; margin-left: 15px;">
+            <span style="font-size: 32px; font-weight: 600; letter-spacing: -0.5px; color: #1e3a8a;">FUEL</span>
+            <span style="font-size: 28px; font-weight: 500; letter-spacing: -0.3px; color: #ffffff;">FLUX</span>
+          </div>
+        </div>
+        <div class="logo-label">Primary Logo - Dark Background</div>
+      </div>
+      
+      <!-- Light Background -->
+      <div class="logo-box light">
+        <div class="logo-container">
+          <div style="width: 70px; height: 70px; background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 38px; font-weight: 700; color: white; position: relative; box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);">
+            F
+            <div style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 12px; height: 2px; background: white; box-shadow: 0 -4px 0 white, 0 4px 0 white; border-radius: 2px;"></div>
+          </div>
+          <div style="display: flex; flex-direction: column; line-height: 1; margin-left: 15px;">
+            <span style="font-size: 32px; font-weight: 600; letter-spacing: -0.5px; color: #1e3a8a;">FUEL</span>
+            <span style="font-size: 28px; font-weight: 500; letter-spacing: -0.3px; color: #1e3a8a;">FLUX</span>
+          </div>
+        </div>
+        <div class="logo-label">Alternative Logo - Light Background</div>
+      </div>
+    </div>
+    
+    <!-- Logo Construction Details -->
+    <div style="margin-top: 50px; padding: 40px; background: #f8f9fa; border-radius: 20px; border: 3px solid #e5e7eb;">
+      <h3 style="font-size: 28px; margin-bottom: 25px; color: #1e3a8a;">Logo Construction & Specifications</h3>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+        <div>
+          <h4 style="font-size: 20px; margin-bottom: 15px; color: #475569;">Icon Component</h4>
+          <ul style="color: #64748b; line-height: 2; padding-left: 20px;">
+            <li><strong>Size:</strong> 48px × 48px (scalable)</li>
+            <li><strong>Background:</strong> Linear gradient (135deg)</li>
+            <li><strong>Gradient Colors:</strong> #2563eb → #3b82f6</li>
+            <li><strong>Border Radius:</strong> 8px (rounded corners)</li>
+            <li><strong>Letter:</strong> "F" in white, bold (700 weight)</li>
+            <li><strong>Symbol:</strong> "=" created with white dots</li>
+            <li><strong>Box Shadow:</strong> 0 4px 20px rgba(59, 130, 246, 0.3)</li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 style="font-size: 20px; margin-bottom: 15px; color: #475569;">Text Component</h4>
+          <ul style="color: #64748b; line-height: 2; padding-left: 20px;">
+            <li><strong>Layout:</strong> Stacked vertical (FUEL over FLUX)</li>
+            <li><strong>"FUEL" Color:</strong> #3b82f6 (primary blue)</li>
+            <li><strong>"FUEL" Size:</strong> 22px</li>
+            <li><strong>"FUEL" Weight:</strong> 600 (semibold)</li>
+            <li><strong>"FLUX" Color:</strong> White (#ffffff) on dark</li>
+            <li><strong>"FLUX" Size:</strong> 20px</li>
+            <li><strong>"FLUX" Weight:</strong> 500 (medium)</li>
+            <li><strong>Letter Spacing:</strong> -0.3px to -0.2px (tight)</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div style="margin-top: 30px; padding: 25px; background: white; border-radius: 12px; border: 2px solid #e5e7eb;">
+        <h4 style="font-size: 18px; margin-bottom: 15px; color: #1e3a8a;">CSS Code Example</h4>
+        <pre style="background: #f1f5f9; padding: 20px; border-radius: 10px; overflow-x: auto; font-family: 'Monaco', 'Courier New', monospace; font-size: 13px; color: #334155; line-height: 1.6;"><code>.logo-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+}
+
+.logo-fuel {
+  color: #3b82f6;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.logo-flux {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+}</code></pre>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Color Palette -->
+  <div class="section">
+    <h2 class="section-title">🎨 Official Color Palette</h2>
+    
+    <h3 class="subsection">Background Colors</h3>
+    <div class="color-grid">
+      <div class="color-card">
+        <div class="color-swatch" style="background: #0f172a;">
+          <span style="color: white;">Aa</span>
+        </div>
+        <div class="color-info">
+          <div class="color-name">Primary Background</div>
+          <div class="color-hex">#0f172a</div>
+          <div class="color-hex">rgb(15, 23, 42)</div>
+          <p class="color-usage">Main dashboard background, dark theme base</p>
+        </div>
+      </div>
+      
+      <div class="color-card">
+        <div class="color-swatch" style="background: #1e293b;">
+          <span style="color: white;">Aa</span>
+        </div>
+        <div class="color-info">
+          <div class="color-name">Secondary Background</div>
+          <div class="color-hex">#1e293b</div>
+          <div class="color-hex">rgb(30, 41, 59)</div>
+          <p class="color-usage">Secondary surfaces, panels, cards</p>
+        </div>
+      </div>
+      
+      <div class="color-card">
+        <div class="color-swatch" style="background: #1e3a8a;">
+          <span style="color: white;">Aa</span>
+        </div>
+        <div class="color-info">
+          <div class="color-name">Dark Blue Accent</div>
+          <div class="color-hex">#1e3a8a</div>
+          <div class="color-hex">rgb(30, 58, 138)</div>
+          <p class="color-usage">Borders, subtle accents, depth</p>
+        </div>
+      </div>
+    </div>
+    
+    <h3 class="subsection">Primary Brand Colors</h3>
+    <div class="color-grid">
+      <div class="color-card">
+        <div class="color-swatch" style="background: #3b82f6;">
+          <span style="color: white;">★</span>
+        </div>
+        <div class="color-info">
+          <div class="color-name">Primary Blue</div>
+          <div class="color-hex">#3b82f6</div>
+          <div class="color-hex">rgb(59, 130, 246)</div>
+          <p class="color-usage"><strong>PRIMARY BRAND COLOR</strong> - Metric cards, buttons, active states, highlights, main interactive elements</p>
+        </div>
+      </div>
+      
+      <div class="color-card">
+        <div class="color-swatch" style="background: #2563eb;">
+          <span style="color: white;">★</span>
+        </div>
+        <div class="color-info">
+          <div class="color-name">Royal Blue</div>
+          <div class="color-hex">#2563eb</div>
+          <div class="color-hex">rgb(37, 99, 235)</div>
+          <p class="color-usage">Gradient start, hover states, deeper blue accents</p>
+        </div>
+      </div>
+      
+      <div class="color-card">
+        <div class="color-swatch" style="background: #60a5fa;">
+          <span style="color: white;">✓</span>
+        </div>
+        <div class="color-info">
+          <div class="color-name">Light Blue</div>
+          <div class="color-hex">#60a5fa</div>
+          <div class="color-hex">rgb(96, 165, 250)</div>
+          <p class="color-usage">Lighter accents, secondary highlights</p>
+        </div>
+      </div>
+    </div>
+    
+    <h3 class="subsection">Text & UI Colors</h3>
+    <div class="color-grid">
+      <div class="color-card">
+        <div class="color-swatch" style="background: #ffffff;">
+          <span style="color: #0f172a;">Aa</span>
+        </div>
+        <div class="color-info">
+          <div class="color-name">White</div>
+          <div class="color-hex">#ffffff</div>
+          <div class="color-hex">rgb(255, 255, 255)</div>
+          <p class="color-usage">Primary text on dark backgrounds, icons</p>
+        </div>
+      </div>
+      
+      <div class="color-card">
+        <div class="color-swatch" style="background: #cbd5e1;">
+          <span style="color: #0f172a;">Aa</span>
+        </div>
+        <div class="color-info">
+          <div class="color-name">Light Gray</div>
+          <div class="color-hex">#cbd5e1</div>
+          <div class="color-hex">rgb(203, 213, 225)</div>
+          <p class="color-usage">Secondary text, descriptions, muted content</p>
+        </div>
+      </div>
+      
+      <div class="color-card">
+        <div class="color-swatch" style="background: #64748b;">
+          <span style="color: white;">Aa</span>
+        </div>
+        <div class="color-info">
+          <div class="color-name">Slate Gray</div>
+          <div class="color-hex">#64748b</div>
+          <div class="color-hex">rgb(100, 116, 139)</div>
+          <p class="color-usage">Subtle text, placeholders, inactive states</p>
+        </div>
+      </div>
+    </div>
+    
+    <h3 class="subsection">Status & Feedback Colors</h3>
+    <div class="color-grid">
+      <div class="color-card">
+        <div class="color-swatch" style="background: #10b981;">
+          <span style="color: white;">✓</span>
+        </div>
+        <div class="color-info">
+          <div class="color-name">Success Green</div>
+          <div class="color-hex">#10b981</div>
+          <div class="color-hex">rgb(16, 185, 129)</div>
+          <p class="color-usage">Success messages, positive trends, confirmations</p>
+        </div>
+      </div>
+      
+      <div class="color-card">
+        <div class="color-swatch" style="background: #f59e0b;">
+          <span style="color: white;">⚠</span>
+        </div>
+        <div class="color-info">
+          <div class="color-name">Warning Orange</div>
+          <div class="color-hex">#f59e0b</div>
+          <div class="color-hex">rgb(245, 158, 11)</div>
+          <p class="color-usage">Warnings, alerts, important notices</p>
+        </div>
+      </div>
+      
+      <div class="color-card">
+        <div class="color-swatch" style="background: #ef4444;">
+          <span style="color: white;">✕</span>
+        </div>
+        <div class="color-info">
+          <div class="color-name">Error Red</div>
+          <div class="color-hex">#ef4444</div>
+          <div class="color-hex">rgb(239, 68, 68)</div>
+          <p class="color-usage">Errors, negative trends, critical alerts</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- UI Examples -->
+  <div class="section">
+    <h2 class="section-title">📱 UI Component Examples</h2>
+    
+    <div class="ui-examples">
+      <div class="ui-example">
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon">💰</div>
+            <div>
+              <div class="metric-label">TOTAL REVENUE</div>
+              <div class="metric-value">R 0</div>
+              <div class="metric-change">+0%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="ui-example">
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon">⛽</div>
+            <div>
+              <div class="metric-label">FUEL VOLUME</div>
+              <div class="metric-value">0 L</div>
+              <div class="metric-change">+0%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <p style="margin-top: 30px; color: #64748b; text-align: center; font-size: 14px;">
+      Metric cards use gradient: <code style="background: #f1f5f9; padding: 4px 10px; border-radius: 6px; font-family: monospace;">#2563eb → #3b82f6</code>
+    </p>
+  </div>
+  
+  <!-- Typography -->
+  <div class="section">
+    <h2 class="section-title">📝 Typography</h2>
+    
+    <div style="padding: 40px; background: #f8f9fa; border-radius: 20px; border: 3px solid #e5e7eb;">
+      <div style="margin-bottom: 30px;">
+        <h1 style="font-size: 48px; font-weight: 700; color: #1e3a8a; margin-bottom: 10px;">Heading 1 - 48px Bold</h1>
+        <h2 style="font-size: 36px; font-weight: 700; color: #1e3a8a; margin-bottom: 10px;">Heading 2 - 36px Bold</h2>
+        <h3 style="font-size: 24px; font-weight: 600; color: #475569; margin-bottom: 10px;">Heading 3 - 24px Semibold</h3>
+        <p style="font-size: 16px; color: #64748b; margin-bottom: 10px;">Body Text - 16px Regular - The quick brown fox jumps over the lazy dog</p>
+        <p style="font-size: 14px; color: #94a3b8;">Small Text - 14px Regular - Secondary information and descriptions</p>
+      </div>
+      
+      <div style="background: white; padding: 25px; border-radius: 12px; border: 2px solid #e5e7eb;">
+        <p style="margin-bottom: 10px;"><strong>Font Family:</strong> <code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px;">-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif</code></p>
+        <p style="margin-bottom: 10px;"><strong>Font Weights:</strong> Regular (400), Medium (500), Semibold (600), Bold (700)</p>
+        <p><strong>Letter Spacing:</strong> Tight (-1px to -0.5px) for large headings, normal for body</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Usage Guidelines -->
+  <div class="section">
+    <h2 class="section-title">📋 Brand Usage Guidelines</h2>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+      <div style="padding: 30px; background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%); border-radius: 16px; border: 3px solid #10b981;">
+        <h3 style="color: #065f46; margin-bottom: 20px; font-size: 22px;">✓ DO</h3>
+        <ul style="color: #047857; line-height: 2; padding-left: 20px;">
+          <li>Use #3b82f6 as primary brand color</li>
+          <li>Maintain dark background (#0f172a)</li>
+          <li>Use gradient for metric cards</li>
+          <li>Keep logo proportions consistent</li>
+          <li>Ensure proper contrast for text</li>
+          <li>Use white text on dark backgrounds</li>
+        </ul>
+      </div>
+      
+      <div style="padding: 30px; background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-radius: 16px; border: 3px solid #ef4444;">
+        <h3 style="color: #991b1b; margin-bottom: 20px; font-size: 22px;">✕ DON'T</h3>
+        <ul style="color: #dc2626; line-height: 2; padding-left: 20px;">
+          <li>Don't distort or stretch the logo</li>
+          <li>Don't use light backgrounds for main UI</li>
+          <li>Don't change the blue color values</li>
+          <li>Don't use low-contrast text colors</li>
+          <li>Don't mix incompatible gradients</li>
+          <li>Don't alter logo proportions</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Gradient Examples -->
+  <div class="section">
+    <h2 class="section-title">🌈 Gradient Formulas</h2>
+    
+    <div style="display: grid; gap: 20px;">
+      <div style="padding: 40px; background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%); border-radius: 16px; text-align: center; color: white;">
+        <h3 style="font-size: 24px; margin-bottom: 10px;">Primary Gradient</h3>
+        <code style="background: rgba(0,0,0,0.2); padding: 8px 16px; border-radius: 8px; font-size: 14px;">linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)</code>
+        <p style="margin-top: 15px; opacity: 0.9;">Used for metric cards and primary CTAs</p>
+      </div>
+      
+      <div style="padding: 40px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 16px; text-align: center; color: white;">
+        <h3 style="font-size: 24px; margin-bottom: 10px;">Background Gradient</h3>
+        <code style="background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 8px; font-size: 14px;">linear-gradient(135deg, #0f172a 0%, #1e293b 100%)</code>
+        <p style="margin-top: 15px; opacity: 0.9;">Used for panels and secondary surfaces</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Footer -->
+  <div style="text-align: center; padding: 40px; margin-top: 60px; border-top: 3px solid #e5e7eb; color: #64748b;">
+    <div style="margin-bottom: 20px; display: flex; justify-content: center;">
+      <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; color: white; position: relative; opacity: 0.7;">
+        F
+        <div style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 12px; height: 2px; background: white; box-shadow: 0 -4px 0 white, 0 4px 0 white; border-radius: 2px;"></div>
+      </div>
+    </div>
+    <p style="font-size: 18px; font-weight: 700; color: #1e3a8a; margin-bottom: 8px;">FUEL FLUX Official Brand Guide</p>
+    <p style="font-size: 14px;">Version 1.0 · October 2025</p>
+    <p style="font-size: 13px; margin-top: 15px;">For brand inquiries: <a href="mailto:brand@fuelflux.com" style="color: #3b82f6;">brand@fuelflux.com</a></p>
+  </div>
+  
+  <!-- Print Button -->
+  <button class="print-btn" onclick="window.print()">
+    🖨️ Print or Save as PDF
+  </button>
+  
+</body>
+</html>

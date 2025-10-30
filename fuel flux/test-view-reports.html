@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test View Reports Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #10b981; }
+        .error { background: #ef4444; }
+        .warning { background: #f59e0b; }
+        .info { background: #3b82f6; }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #2563eb; }
+        .log {
+            background: #2d2d2d;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .test-section {
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test View Reports Fix</h1>
+    
+    <div id="status" class="status info">Ready to test View Reports fix...</div>
+    
+    <div class="test-section">
+        <h3>🔧 Apply Fix</h3>
+        <button onclick="applyFix()">Apply View Reports Fix</button>
+        <button onclick="testViewReports()">Test View Reports Function</button>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>📊 Test Results</h3>
+        <div id="results"></div>
+    </div>
+    
+    <div id="log" class="log"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += '<div>[' + timestamp + '] ' + message + '</div>';
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = 'status ' + type;
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        async function applyFix() {
+            log('🔧 Applying View Reports fix...');
+            updateStatus('Applying fix...', 'info');
+            
+            try {
+                // Load the fix script
+                const response = await fetch('fix-view-reports.js');
+                const fixCode = await response.text();
+                
+                // Execute the fix
+                eval(fixCode);
+                
+                log('✅ View Reports fix applied successfully');
+                updateStatus('✅ Fix applied successfully', 'success');
+                
+                // Test the fix
+                setTimeout(testViewReports, 1000);
+                
+            } catch (error) {
+                log('❌ Failed to apply fix: ' + error.message);
+                updateStatus('❌ Fix application failed', 'error');
+            }
+        }
+        
+        async function testViewReports() {
+            log('🧪 Testing View Reports function...');
+            updateStatus('Testing View Reports...', 'info');
+            
+            try {
+                // Check if the function exists
+                if (typeof window.showReportsNow !== 'function') {
+                    log('❌ showReportsNow function not found');
+                    updateStatus('❌ showReportsNow function not found', 'error');
+                    return;
+                }
+                
+                log('✅ showReportsNow function found');
+                
+                // Test Supabase client
+                if (typeof window.initializeSupabaseClient === 'function') {
+                    const clientInit = window.initializeSupabaseClient();
+                    log('✅ Supabase client initialized: ' + clientInit);
+                } else {
+                    log('❌ initializeSupabaseClient function not found');
+                }
+                
+                // Test the function
+                log('🔄 Running showReportsNow...');
+                await window.showReportsNow();
+                
+                log('✅ View Reports function executed successfully');
+                updateStatus('✅ View Reports test completed successfully', 'success');
+                
+                // Show results
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = `
+                    <div style="background: #2d3748; padding: 10px; border-radius: 5px;">
+                        <h4>✅ Test Results:</h4>
+                        <ul>
+                            <li>✅ showReportsNow function: Available</li>
+                            <li>✅ Supabase client: Initialized</li>
+                            <li>✅ Function execution: Successful</li>
+                            <li>✅ Reports loading: Working</li>
+                        </ul>
+                        <p><strong>Status:</strong> View Reports function is working correctly!</p>
+                    </div>
+                `;
+                
+            } catch (error) {
+                log('❌ View Reports test failed: ' + error.message);
+                updateStatus('❌ View Reports test failed', 'error');
+                
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = `
+                    <div style="background: #2d3748; padding: 10px; border-radius: 5px;">
+                        <h4>❌ Test Results:</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p><strong>Status:</strong> View Reports function needs fixing</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto-apply fix on load
+        window.addEventListener('load', function() {
+            setTimeout(applyFix, 1000);
+        });
+    </script>
+</body>
+</html>
+

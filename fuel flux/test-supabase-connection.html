@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Connection Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Supabase Connection Test</h1>
+    
+    <div id="status"></div>
+    
+    <button onclick="testConnection()">Test Connection</button>
+    <button onclick="testAuth()">Test Authentication</button>
+    <button onclick="testDatabase()">Test Database</button>
+    <button onclick="testStorage()">Test Storage</button>
+    <button onclick="clearResults()">Clear Results</button>
+    
+    <div id="results"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://fynfomhoikzpsrbghnzr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MDU3OTEsImV4cCI6MjA3MDA4MTc5MX0.cEOR4UiBh1tWXFL6nC7ftRpi2un8DfCAG5cD7xdd_Cw';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            results.appendChild(div);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        async function testConnection() {
+            addResult('Testing Supabase connection...', 'info');
+            try {
+                const { data, error } = await supabase.from('companies').select('count').limit(1);
+                if (error) {
+                    addResult(`Connection failed: ${error.message}`, 'error');
+                } else {
+                    addResult('✅ Supabase connection successful!', 'success');
+                }
+            } catch (err) {
+                addResult(`Connection error: ${err.message}`, 'error');
+            }
+        }
+        
+        async function testAuth() {
+            addResult('Testing authentication...', 'info');
+            try {
+                // Try to sign in with test user
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: 'test@fuelstation.com',
+                    password: 'testpassword123'
+                });
+                
+                        if (error) {
+                    addResult(`Authentication failed: ${error.message}`, 'error');
+                } else {
+                    addResult(`✅ Authentication successful! User: ${data.user.email}`, 'success');
+                    
+                    // Test user profile
+                    const { data: profile, error: profileError } = await supabase
+                        .from('profiles')
+                        .select('*, companies(*)')
+                        .eq('id', data.user.id)
+                        .single();
+                    
+                    if (profileError) {
+                        addResult(`Profile fetch failed: ${profileError.message}`, 'error');
+                        } else {
+                        addResult(`✅ Profile found! Company: ${profile.companies?.name || 'No company'}`, 'success');
+                    }
+                }
+            } catch (err) {
+                addResult(`Authentication error: ${err.message}`, 'error');
+            }
+        }
+        
+        async function testDatabase() {
+            addResult('Testing database tables...', 'info');
+            try {
+                // Test companies table
+                const { data: companies, error: companiesError } = await supabase
+                    .from('companies')
+                    .select('*')
+                    .limit(5);
+                
+                if (companiesError) {
+                    addResult(`Companies table error: ${companiesError.message}`, 'error');
+                } else {
+                    addResult(`✅ Companies table accessible! Found ${companies.length} companies`, 'success');
+                }
+                
+                // Test monthly_reports table
+                const { data: reports, error: reportsError } = await supabase
+                    .from('monthly_reports')
+                    .select('*')
+                    .limit(5);
+                
+                if (reportsError) {
+                    addResult(`Monthly reports table error: ${reportsError.message}`, 'error');
+                } else {
+                    addResult(`✅ Monthly reports table accessible! Found ${reports.length} reports`, 'success');
+                }
+                
+            } catch (err) {
+                addResult(`Database error: ${err.message}`, 'error');
+            }
+        }
+        
+                async function testStorage() {
+            addResult('Testing storage bucket...', 'info');
+            try {
+                const { data, error } = await supabase.storage
+                    .from('fuel-reports')
+                    .list('', { limit: 10 });
+
+                if (error) {
+                    addResult(`Storage error: ${error.message}`, 'error');
+                } else {
+                    addResult(`✅ Storage bucket accessible! Found ${data.length} files`, 'success');
+                    if (data.length > 0) {
+                        addResult(`Files: ${data.map(f => f.name).join(', ')}`, 'info');
+                    }
+                }
+            } catch (err) {
+                addResult(`Storage error: ${err.message}`, 'error');
+            }
+        }
+        
+        // Auto-run connection test on load
+        window.addEventListener('load', () => {
+            addResult('Page loaded, ready for testing...', 'info');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Supabase Upload Issue</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #10b981; }
+        .error { background: #ef4444; }
+        .warning { background: #f59e0b; }
+        .info { background: #3b82f6; }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #2563eb; }
+        .log {
+            background: #2d2d2d;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Supabase Upload Fix Tool</h1>
+    
+    <div id="status" class="status info">Ready to diagnose and fix Supabase upload issues...</div>
+    
+    <div>
+        <button onclick="diagnoseSupabase()">🔍 Diagnose Issue</button>
+        <button onclick="testConnection()">🔗 Test Connection</button>
+        <button onclick="testBucketAccess()">📦 Test Bucket Access</button>
+        <button onclick="fixUploadIssue()">🛠️ Fix Upload Issue</button>
+        <button onclick="clearLog()">🗑️ Clear Log</button>
+    </div>
+    
+    <div id="log" class="log"></div>
+    
+    <div id="results"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        let supabaseClient = null;
+        
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : type === 'warning' ? '#f59e0b' : '#3b82f6';
+            logDiv.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        async function diagnoseSupabase() {
+            log('🔍 Starting Supabase diagnosis...');
+            updateStatus('Diagnosing Supabase issues...', 'info');
+            
+            try {
+                // 1. Check if Supabase library is loaded
+                log('1. Checking Supabase library...');
+                if (typeof window.supabase === 'undefined') {
+                    log('❌ Supabase library not loaded!', 'error');
+                    updateStatus('❌ Supabase library not loaded', 'error');
+                    return;
+                }
+                log('✅ Supabase library loaded', 'success');
+                
+                // 2. Initialize client
+                log('2. Initializing Supabase client...');
+                const supabaseUrl = 'https://fynfomhoikzpsrbghnzr.supabase.co';
+                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDUwNTc5MSwiZXhwIjoyMDcwMDgxNzkxfQ.LAo0ngckbfAwplBvvQv9zhIzgvTT88H4ZKluHrV8Opo';
+                
+                supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+                log('✅ Supabase client created', 'success');
+                
+                // 3. Test connection
+                log('3. Testing connection...');
+                const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+                if (authError) {
+                    log(`⚠️ Auth check failed: ${authError.message}`, 'warning');
+                    log('ℹ️ Using service role key - this is expected', 'info');
+                } else {
+                    log(`✅ Auth check passed. User: ${user ? user.email : 'Anonymous'}`, 'success');
+                }
+                
+                // 4. Check buckets
+                log('4. Checking storage buckets...');
+                const { data: buckets, error: bucketsError } = await supabaseClient.storage.listBuckets();
+                if (bucketsError) {
+                    log(`❌ Bucket list error: ${bucketsError.message}`, 'error');
+                    updateStatus('❌ Cannot access storage buckets', 'error');
+                    return;
+                }
+                
+                log(`✅ Found ${buckets.length} buckets`, 'success');
+                const fuelReportsBucket = buckets.find(b => b.id === 'fuel-reports');
+                if (fuelReportsBucket) {
+                    log('✅ fuel-reports bucket found', 'success');
+                } else {
+                    log('❌ fuel-reports bucket not found!', 'error');
+                    log('Available buckets: ' + buckets.map(b => b.id).join(', '), 'info');
+                    updateStatus('❌ fuel-reports bucket missing', 'error');
+                    return;
+                }
+                
+                // 5. Test bucket access
+                log('5. Testing bucket access...');
+                const { data: files, error: filesError } = await supabaseClient.storage
+                    .from('fuel-reports')
+                    .list('', { limit: 5 });
+                
+                if (filesError) {
+                    log(`❌ Bucket access error: ${filesError.message}`, 'error');
+                    updateStatus('❌ Cannot access fuel-reports bucket', 'error');
+                    return;
+                }
+                
+                log(`✅ Bucket access successful. Found ${files.length} files`, 'success');
+                
+                updateStatus('✅ Supabase diagnosis completed successfully', 'success');
+                log('🎉 Diagnosis completed - Supabase is working correctly!', 'success');
+                
+            } catch (error) {
+                log(`❌ Diagnosis failed: ${error.message}`, 'error');
+                updateStatus('❌ Diagnosis failed', 'error');
+            }
+        }
+        
+        async function testConnection() {
+            log('🔗 Testing Supabase connection...');
+            updateStatus('Testing connection...', 'info');
+            
+            try {
+                if (!supabaseClient) {
+                    const supabaseUrl = 'https://fynfomhoikzpsrbghnzr.supabase.co';
+                    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDUwNTc5MSwiZXhwIjoyMDcwMDgxNzkxfQ.LAo0ngckbfAwplBvvQv9zhIzgvTT88H4ZKluHrV8Opo';
+                    supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+                }
+                
+                const { data, error } = await supabaseClient.auth.getUser();
+                if (error) {
+                    log(`Connection test result: ${error.message}`, 'warning');
+                } else {
+                    log(`Connection successful. User: ${data.user ? data.user.email : 'Anonymous'}`, 'success');
+                }
+                
+                updateStatus('✅ Connection test completed', 'success');
+                
+            } catch (error) {
+                log(`❌ Connection test failed: ${error.message}`, 'error');
+                updateStatus('❌ Connection test failed', 'error');
+            }
+        }
+        
+        async function testBucketAccess() {
+            log('📦 Testing bucket access...');
+            updateStatus('Testing bucket access...', 'info');
+            
+            try {
+                if (!supabaseClient) {
+                    const supabaseUrl = 'https://fynfomhoikzpsrbghnzr.supabase.co';
+                    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDUwNTc5MSwiZXhwIjoyMDcwMDgxNzkxfQ.LAo0ngckbfAwplBvvQv9zhIzgvTT88H4ZKluHrV8Opo';
+                    supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+                }
+                
+                // Test listing files
+                const { data: files, error: listError } = await supabaseClient.storage
+                    .from('fuel-reports')
+                    .list('', { limit: 10 });
+                
+                if (listError) {
+                    log(`❌ List files error: ${listError.message}`, 'error');
+                    updateStatus('❌ Cannot list files in bucket', 'error');
+                    return;
+                }
+                
+                log(`✅ Successfully listed ${files.length} files in bucket`, 'success');
+                
+                // Test upload with small test file
+                log('Testing upload with test file...');
+                const testContent = 'Test file content for upload verification';
+                const testBlob = new Blob([testContent], { type: 'text/plain' });
+                const testFileName = `test-${Date.now()}.txt`;
+                
+                const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                    .from('fuel-reports')
+                    .upload(testFileName, testBlob);
+                
+                if (uploadError) {
+                    log(`❌ Upload test failed: ${uploadError.message}`, 'error');
+                    updateStatus('❌ Upload test failed', 'error');
+                    return;
+                }
+                
+                log(`✅ Upload test successful: ${uploadData.path}`, 'success');
+                
+                // Clean up test file
+                const { error: deleteError } = await supabaseClient.storage
+                    .from('fuel-reports')
+                    .remove([testFileName]);
+                
+                if (deleteError) {
+                    log(`⚠️ Could not delete test file: ${deleteError.message}`, 'warning');
+                } else {
+                    log('✅ Test file cleaned up', 'success');
+                }
+                
+                updateStatus('✅ Bucket access test completed successfully', 'success');
+                
+            } catch (error) {
+                log(`❌ Bucket access test failed: ${error.message}`, 'error');
+                updateStatus('❌ Bucket access test failed', 'error');
+            }
+        }
+        
+        async function fixUploadIssue() {
+            log('🛠️ Applying upload fix...');
+            updateStatus('Applying fix...', 'info');
+            
+            try {
+                // Create a fixed version of the upload function
+                const fixCode = `
+// Fixed Supabase upload function
+window.fixedUploadToSupabase = async function(file) {
+    try {
+        log('🔄 Starting fixed upload to Supabase...');
+        
+        // Initialize client if not available
+        if (!window.supabaseClient) {
+            const supabaseUrl = 'https://fynfomhoikzpsrbghnzr.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDUwNTc5MSwiZXhwIjoyMDcwMDgxNzkxfQ.LAo0ngckbfAwplBvvQv9zhIzgvTT88H4ZKluHrV8Opo';
+            
+            window.supabaseClient = {
+                supabase: window.supabase.createClient(supabaseUrl, supabaseKey),
+                initialized: true
+            };
+            log('✅ Supabase client initialized');
+        }
+        
+        // Create upload path
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const objectPath = \`uploads/anonymous/\${timestamp}-\${file.name}\`;
+        
+        log(\`📤 Uploading to: \${objectPath}\`);
+        
+        // Upload file
+        const { data: uploadData, error: uploadError } = await window.supabaseClient.supabase.storage
+            .from('fuel-reports')
+            .upload(objectPath, file, { 
+                upsert: true, 
+                contentType: 'application/pdf' 
+            });
+        
+        if (uploadError) {
+            throw new Error(\`Upload failed: \${uploadError.message}\`);
+        }
+        
+        log(\`✅ Upload successful: \${uploadData.path}\`);
+        
+        // Return upload data
+        return {
+            success: true,
+            path: uploadData.path,
+            data: uploadData
+        };
+        
+    } catch (error) {
+        log(\`❌ Upload failed: \${error.message}\`, 'error');
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+};
+                `;
+                
+                // Execute the fix
+                eval(fixCode);
+                log('✅ Fixed upload function installed', 'success');
+                
+                // Test the fix
+                log('🧪 Testing the fix...');
+                
+                // Create a test file
+                const testContent = 'Test PDF content';
+                const testFile = new File([testContent], 'test-upload.pdf', { type: 'application/pdf' });
+                
+                const result = await window.fixedUploadToSupabase(testFile);
+                
+                if (result.success) {
+                    log('✅ Fix test successful!', 'success');
+                    updateStatus('✅ Upload fix applied and tested successfully', 'success');
+                    
+                    // Clean up test file
+                    if (result.path) {
+                        const { error: deleteError } = await window.supabaseClient.supabase.storage
+                            .from('fuel-reports')
+                            .remove([result.path]);
+                        
+                        if (!deleteError) {
+                            log('✅ Test file cleaned up', 'success');
+                        }
+                    }
+                } else {
+                    log(\`❌ Fix test failed: \${result.error}\`, 'error');
+                    updateStatus('❌ Fix test failed', 'error');
+                }
+                
+            } catch (error) {
+                log(\`❌ Fix application failed: \${error.message}\`, 'error');
+                updateStatus('❌ Fix application failed', 'error');
+            }
+        }
+        
+        // Auto-run diagnosis on load
+        window.addEventListener('load', () => {
+            setTimeout(diagnoseSupabase, 1000);
+        });
+    </script>
+</body>
+</html>
+

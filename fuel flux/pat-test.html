@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuel Torque PAT Token Tester</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 30px; text-align: center; }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .header p { font-size: 1.1em; opacity: 0.9; }
+        .content { padding: 30px; }
+        .test-section { background: #f8f9fa; border-radius: 10px; padding: 25px; margin-bottom: 25px; border-left: 5px solid #3498db; }
+        .test-section h3 { color: #2c3e50; margin-bottom: 15px; font-size: 1.3em; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #2c3e50; }
+        .input-group input { width: 100%; padding: 12px 15px; border: 2px solid #e1e8ed; border-radius: 8px; font-size: 16px; transition: border-color 0.3s ease; }
+        .input-group input:focus { outline: none; border-color: #3498db; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1); }
+        .btn { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; border: none; padding: 12px 25px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-right: 10px; margin-bottom: 10px; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3); }
+        .btn:active { transform: translateY(0); }
+        .btn-secondary { background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%); }
+        .btn-success { background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); }
+        .btn-warning { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); }
+        .btn-danger { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
+        .results { background: #2c3e50; color: white; border-radius: 10px; padding: 20px; margin-top: 20px; max-height: 500px; overflow-y: auto; }
+        .log-entry { margin-bottom: 15px; padding: 10px; border-radius: 5px; border-left: 4px solid; }
+        .log-success { background: rgba(39, 174, 96, 0.1); border-left-color: #27ae60; }
+        .log-error { background: rgba(231, 76, 60, 0.1); border-left-color: #e74c3c; }
+        .log-info { background: rgba(52, 152, 219, 0.1); border-left-color: #3498db; }
+        .log-warning { background: rgba(243, 156, 18, 0.1); border-left-color: #f39c12; }
+        pre { background: #34495e; color: #ecf0f1; padding: 15px; border-radius: 5px; overflow-x: auto; margin-top: 10px; font-size: 12px; }
+        .status-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; }
+        .status-success { background: #27ae60; }
+        .status-error { background: #e74c3c; }
+        .status-info { background: #3498db; }
+        .status-warning { background: #f39c12; }
+        .progress-bar { width: 100%; height: 6px; background: #ecf0f1; border-radius: 3px; overflow: hidden; margin: 10px 0; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #3498db, #2ecc71); width: 0%; transition: width 0.3s ease; }
+        .summary-card { background: white; border: 2px solid #e1e8ed; border-radius: 10px; padding: 20px; margin: 15px 0; }
+        .summary-card h4 { color: #2c3e50; margin-bottom: 10px; }
+        .summary-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 15px; }
+        .stat-item { text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; }
+        .stat-number { font-size: 2em; font-weight: bold; color: #3498db; }
+        .stat-label { font-size: 0.9em; color: #7f8c8d; margin-top: 5px; }
+        @media (max-width: 768px) { .container { margin: 10px; border-radius: 10px; } .header { padding: 20px; } .header h1 { font-size: 2em; } .content { padding: 20px; } .btn { width: 100%; margin-right: 0; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Fuel Torque PAT Token Tester</h1>
+            <p>Test your Personal Access Token to discover available data and endpoints</p>
+        </div>
+        
+        <div class="content">
+            <div class="test-section">
+                <h3>Step 1: Enter Your PAT Token</h3>
+                <div class="input-group">
+                    <label for="pat-token">Personal Access Token:</label>
+                    <input type="text" id="pat-token" placeholder="Enter your Fuel Torque Personal Access Token" value="t7i0b4eajkaH2zoutN8-exoM62YWTuL">
+                </div>
+                <button class="btn" onclick="testConnection()">🔍 Test Basic Connection</button>
+            </div>
+            
+            <div class="test-section">
+                <h3>Step 2: Discover Available Data</h3>
+                <button class="btn btn-secondary" onclick="discoverEndpoints()">🌐 Find Available Endpoints</button>
+                <button class="btn btn-secondary" onclick="testDataFormats()">📊 Test Data Formats</button>
+                <button class="btn btn-secondary" onclick="testRateLimits()">⏱️ Test Rate Limits</button>
+                <button class="btn btn-warning" onclick="runFullDiscovery()">🚀 Run Full Discovery</button>
+            </div>
+            
+            <div class="test-section">
+                <h3>Step 3: Test Specific Features</h3>
+                <button class="btn btn-success" onclick="testRealTimeData()">⚡ Real-Time Data</button>
+                <button class="btn btn-success" onclick="testHistoricalData()">📈 Historical Data</button>
+                <button class="btn btn-success" onclick="testStationInfo()">🏪 Station Information</button>
+                <button class="btn btn-success" onclick="testPumpData()">⛽ Pump Data</button>
+                <button class="btn btn-success" onclick="testSalesData()">💰 Sales Data</button>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            
+            <div class="results" id="results">
+                <h3>�� Test Results</h3>
+                <p>Click the buttons above to start testing your PAT token...</p>
+            </div>
+            
+            <div class="summary-card" id="summary-card" style="display: none;">
+                <h4>📋 Discovery Summary</h4>
+                <div class="summary-stats" id="summary-stats"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = { successfulConnections: 0, failedConnections: 0, availableEndpoints: [], dataFormats: [], rateLimits: null, errors: [] };
+        const PAT_TOKEN = document.getElementById('pat-token');
+        const RESULTS = document.getElementById('results');
+        const PROGRESS_FILL = document.getElementById('progress-fill');
+        const SUMMARY_CARD = document.getElementById('summary-card');
+        const SUMMARY_STATS = document.getElementById('summary-stats');
+        
+        const BASE_URLS = ['https://api.fueltorque.com/v1', 'https://api.fueltorque.com', 'https://fueltorque.com/api/v1', 'https://fueltorque.com/api', 'https://api.fueltorque.co.za/v1', 'https://api.fueltorque.co.za'];
+        const ENDPOINTS = ['/status', '/health', '/ping', '/stations', '/pumps', '/transactions', '/sales', '/inventory', '/metrics', '/reports', '/daily', '/hourly', '/real-time', '/alerts', '/users', '/company', '/sites'];
+        
+        function log(message, type = 'info', data = null) {
+            const div = document.createElement('div');
+            div.className = `log-entry log-${type}`;
+            const statusIndicator = document.createElement('span');
+            statusIndicator.className = `status-indicator status-${type}`;
+            const messageText = document.createElement('span');
+            messageText.innerHTML = message;
+            div.appendChild(statusIndicator);
+            div.appendChild(messageText);
+            if (data) {
+                const pre = document.createElement('pre');
+                pre.textContent = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+                div.appendChild(pre);
+            }
+            RESULTS.appendChild(div);
+            RESULTS.scrollTop = RESULTS.scrollHeight;
+        }
+        
+        function updateProgress(current, total) {
+            const percentage = (current / total) * 100;
+            PROGRESS_FILL.style.width = percentage + '%';
+        }
+        
+        function updateSummary() {
+            SUMMARY_CARD.style.display = 'block';
+            SUMMARY_STATS.innerHTML = `
+                <div class="stat-item"><div class="stat-number">${testResults.successfulConnections}</div><div class="stat-label">Successful</div></div>
+                <div class="stat-item"><div class="stat-number">${testResults.failedConnections}</div><div class="stat-label">Failed</div></div>
+                <div class="stat-item"><div class="stat-number">${testResults.availableEndpoints.length}</div><div class="stat-label">Endpoints</div></div>
+                <div class="stat-item"><div class="stat-number">${testResults.errors.length}</div><div class="stat-label">Errors</div></div>
+            `;
+        }
+        
+        async function makeRequest(url, options = {}) {
+            const token = PAT_TOKEN.value;
+            if (!token) throw new Error('No PAT token provided');
+            const defaultOptions = {
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                ...options
+            };
+            try {
+                const response = await fetch(url, defaultOptions);
+                return {
+                    ok: response.ok,
+                    status: response.status,
+                    statusText: response.statusText,
+                    data: response.ok ? await response.json() : null,
+                    headers: Object.fromEntries(response.headers.entries())
+                };
+            } catch (error) {
+                return { ok: false, error: error.message };
+            }
+        }
+        
+        async function testConnection() {
+            const token = PAT_TOKEN.value;
+            if (!token) { log('❌ Please enter your PAT token first', 'error'); return; }
+            log('🔍 Testing connection to Fuel Torque API...', 'info');
+            let connected = false;
+            for (let i = 0; i < BASE_URLS.length; i++) {
+                const baseUrl = BASE_URLS[i];
+                updateProgress(i + 1, BASE_URLS.length);
+                try {
+                    const result = await makeRequest(`${baseUrl}/status`);
+                    if (result.ok) {
+                        log(`✅ Connection successful to ${baseUrl}`, 'success');
+                        log(`Status: ${result.status}`, 'info');
+                        if (result.data) log('Response data:', 'info', result.data);
+                        connected = true;
+                        testResults.successfulConnections++;
+                        break;
+                    } else {
+                        log(`❌ Failed to connect to ${baseUrl} (${result.status})`, 'error');
+                        testResults.failedConnections++;
+                    }
+                } catch (error) {
+                    log(`❌ Error connecting to ${baseUrl}: ${error.message}`, 'error');
+                    testResults.failedConnections++;
+                }
+            }
+            if (!connected) {
+                log('❌ Could not connect to any known Fuel Torque endpoints', 'error');
+                log('💡 This might mean:', 'warning');
+                log('   • The PAT token is invalid or expired', 'warning');
+                log('   • The API endpoints are different than expected', 'warning');
+                log('   • There might be network connectivity issues', 'warning');
+                log('   • The API might require different authentication', 'warning');
+            }
+            updateSummary();
+        }
+        
+        async function discoverEndpoints() {
+            const token = PAT_TOKEN.value;
+            if (!token) { log('❌ Please enter your PAT token first', 'error'); return; }
+            log('🔍 Discovering available endpoints...', 'info');
+            let discoveredCount = 0;
+            for (let i = 0; i < ENDPOINTS.length; i++) {
+                const endpoint = ENDPOINTS[i];
+                updateProgress(i + 1, ENDPOINTS.length);
+                for (const baseUrl of BASE_URLS) {
+                    try {
+                        const result = await makeRequest(`${baseUrl}${endpoint}`);
+                        if (result.ok) {
+                            log(`✅ ${endpoint}: Available at ${baseUrl}`, 'success');
+                            if (result.data) log(`Sample data from ${endpoint}:`, 'info', result.data);
+                            testResults.availableEndpoints.push({ endpoint: endpoint, baseUrl: baseUrl, status: result.status, sampleData: result.data });
+                            discoveredCount++;
+                            break;
+                        }
+                    } catch (error) { /* Continue to next base URL */ }
+                }
+                if (!testResults.availableEndpoints.find(e => e.endpoint === endpoint)) {
+                    log(`❌ ${endpoint}: Not available`, 'error');
+                }
+            }
+            log(`🎉 Discovery complete! Found ${discoveredCount} available endpoints`, 'success');
+            updateSummary();
+        }
+        
+        async function testDataFormats() {
+            const token = PAT_TOKEN.value;
+            if (!token) { log('❌ Please enter your PAT token first', 'error'); return; }
+            log('🔍 Testing data formats and parameters...', 'info');
+            const testParams = [
+                { date: new Date().toISOString().split('T')[0] },
+                { start_date: new Date(Date.now() - 86400000).toISOString().split('T')[0], end_date: new Date().toISOString().split('T')[0] },
+                { period: 'today' }, { period: 'yesterday' }, { period: 'this_week' }, { period: 'this_month' },
+                { limit: 10 }, { offset: 0 }, { format: 'json' }
+            ];
+            const testEndpoints = ['/sales', '/transactions', '/reports', '/daily'];
+            for (let i = 0; i < testParams.length; i++) {
+                const params = testParams[i];
+                updateProgress(i + 1, testParams.length);
+                for (const endpoint of testEndpoints) {
+                    for (const baseUrl of BASE_URLS) {
+                        try {
+                            const queryString = new URLSearchParams(params).toString();
+                            const result = await makeRequest(`${baseUrl}${endpoint}?${queryString}`);
+                            if (result.ok) {
+                                log(`✅ Data format test with ${JSON.stringify(params)} at ${endpoint}:`, 'success');
+                                if (result.data) log('Response format:', 'info', result.data);
+                                testResults.dataFormats.push({ params: params, endpoint: endpoint, baseUrl: baseUrl, data: result.data });
+                                break;
+                            }
+                        } catch (error) { /* Continue to next test */ }
+                    }
+                }
+            }
+            log(`📊 Data format testing complete!`, 'success');
+            updateSummary();
+        }
+        
+        async function testRateLimits() {
+            const token = PAT_TOKEN.value;
+            if (!token) { log('❌ Please enter your PAT token first', 'error'); return; }
+            log('⏱️ Testing rate limits...', 'info');
+            const startTime = Date.now();
+            let successCount = 0, errorCount = 0, rateLimitHit = false;
+            for (let i = 0; i < 20; i++) {
+                updateProgress(i + 1, 20);
+                try {
+                    const result = await makeRequest(`${BASE_URLS[0]}/status`);
+                    if (result.ok) successCount++;
+                    else if (result.status === 429) { rateLimitHit = true; errorCount++; log(`⚠️ Rate limit hit after ${i + 1} requests`, 'warning'); break; }
+                    else errorCount++;
+                } catch (error) { errorCount++; }
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            const endTime = Date.now();
+            const duration = endTime - startTime;
+            testResults.rateLimits = { successfulRequests: successCount, failedRequests: errorCount, rateLimitHit: rateLimitHit, duration: duration, requestsPerSecond: (successCount + errorCount) / (duration / 1000) };
+            log(`⏱️ Rate limit test completed in ${duration}ms`, 'success');
+            log(`   Successful requests: ${successCount}`, 'info');
+            log(`   Failed requests: ${errorCount}`, 'info');
+            log(`   Rate limit hit: ${rateLimitHit ? 'Yes' : 'No'}`, 'info');
+            log(`   Requests per second: ${testResults.rateLimits.requestsPerSecond.toFixed(2)}`, 'info');
+            updateSummary();
+        }
+        
+        async function testRealTimeData() {
+            const token = PAT_TOKEN.value;
+            if (!token) { log('❌ Please enter your PAT token first', 'error'); return; }
+            log('⚡ Testing real-time data endpoints...', 'info');
+            const realTimeEndpoints = ['/real-time', '/live', '/current', '/status', '/pumps/status', '/stations/status'];
+            for (let i = 0; i < realTimeEndpoints.length; i++) {
+                const endpoint = realTimeEndpoints[i];
+                updateProgress(i + 1, realTimeEndpoints.length);
+                for (const baseUrl of BASE_URLS) {
+                    try {
+                        const result = await makeRequest(`${baseUrl}${endpoint}`);
+                        if (result.ok) {
+                            log(`✅ Real-time data available at ${endpoint}`, 'success');
+                            if (result.data) log('Real-time data sample:', 'info', result.data);
+                            break;
+                        }
+                    } catch (error) { /* Continue to next base URL */ }
+                }
+            }
+            log('⚡ Real-time data testing complete!', 'success');
+        }
+        
+        async function testHistoricalData() {
+            const token = PAT_TOKEN.value;
+            if (!token) { log('❌ Please enter your PAT token first', 'error'); return; }
+            log('📈 Testing historical data endpoints...', 'info');
+            const historicalEndpoints = ['/sales', '/transactions', '/reports', '/daily', '/hourly', '/monthly', '/history'];
+            for (let i = 0; i < historicalEndpoints.length; i++) {
+                const endpoint = historicalEndpoints[i];
+                updateProgress(i + 1, historicalEndpoints.length);
+                for (const baseUrl of BASE_URLS) {
+                    try {
+                        const result = await makeRequest(`${baseUrl}${endpoint}`);
+                        if (result.ok) {
+                            log(`✅ Historical data available at ${endpoint}`, 'success');
+                            if (result.data) log('Historical data sample:', 'info', result.data);
+                            break;
+                        }
+                    } catch (error) { /* Continue to next base URL */ }
+                }
+            }
+            log('📈 Historical data testing complete!', 'success');
+        }
+        
+        async function testStationInfo() {
+            const token = PAT_TOKEN.value;
+            if (!token) { log('❌ Please enter your PAT token first', 'error'); return; }
+            log('🏪 Testing station information endpoints...', 'info');
+            const stationEndpoints = ['/stations', '/sites', '/company', '/locations', '/info'];
+            for (let i = 0; i < stationEndpoints.length; i++) {
+                const endpoint = stationEndpoints[i];
+                updateProgress(i + 1, stationEndpoints.length);
+                for (const baseUrl of BASE_URLS) {
+                    try {
+                        const result = await makeRequest(`${baseUrl}${endpoint}`);
+                        if (result.ok) {
+                            log(`✅ Station info available at ${endpoint}`, 'success');
+                            if (result.data) log('Station info sample:', 'info', result.data);
+                            break;
+                        }
+                    } catch (error) { /* Continue to next base URL */ }
+                }
+            }
+            log('🏪 Station information testing complete!', 'success');
+        }
+        
+        async function testPumpData() {
+            const token = PAT_TOKEN.value;
+            if (!token) { log('❌ Please enter your PAT token first', 'error'); return; }
+            log('⛽ Testing pump data endpoints...', 'info');
+            const pumpEndpoints = ['/pumps', '/pumps/status', '/pumps/data', '/nozzles', '/tanks'];
+            for (let i = 0; i < pumpEndpoints.length; i++) {
+                const endpoint = pumpEndpoints[i];
+                updateProgress(i + 1, pumpEndpoints.length);
+                for (const baseUrl of BASE_URLS) {
+                    try {
+                        const result = await makeRequest(`${baseUrl}${endpoint}`);
+                        if (result.ok) {
+                            log(`✅ Pump data available at ${endpoint}`, 'success');
+                            if (result.data) log('Pump data sample:', 'info', result.data);
+                            break;
+                        }
+                    } catch (error) { /* Continue to next base URL */ }
+                }
+            }
+            log('⛽ Pump data testing complete!', 'success');
+        }
+        
+        async function testSalesData() {
+            const token = PAT_TOKEN.value;
+            if (!token) { log('❌ Please enter your PAT token first', 'error'); return; }
+            log('💰 Testing sales data endpoints...', 'info');
+            const salesEndpoints = ['/sales', '/transactions', '/revenue', '/income', '/financial'];
+            for (let i = 0; i < salesEndpoints.length; i++) {
+                const endpoint = salesEndpoints[i];
+                updateProgress(i + 1, salesEndpoints.length);
+                for (const baseUrl of BASE_URLS) {
+                    try {
+                        const result = await makeRequest(`${baseUrl}${endpoint}`);
+                        if (result.ok) {
+                            log(`✅ Sales data available at ${endpoint}`, 'success');
+                            if (result.data) log('Sales data sample:', 'info', result.data);
+                            break;
+                        }
+                    } catch (error) { /* Continue to next base URL */ }
+                }
+            }
+            log('💰 Sales data testing complete!', 'success');
+        }
+        
+        async function runFullDiscovery() {
+            log('🚀 Starting full discovery process...', 'info');
+            await testConnection();
+            await discoverEndpoints();
+            await testDataFormats();
+            await testRateLimits();
+            await testRealTimeData();
+            await testHistoricalData();
+            await testStationInfo();
+            await testPumpData();
+            await testSalesData();
+            log('🎉 Full discovery process complete!', 'success');
+            log('📋 Summary of findings:', 'info');
+            log(`   • Available endpoints: ${testResults.availableEndpoints.length}`, 'info');
+            log(`   • Data formats tested: ${testResults.dataFormats.length}`, 'info');
+            log(`   • Rate limits: ${testResults.rateLimits ? 'Tested' : 'Not tested'}`, 'info');
+            log(`   • Total successful connections: ${testResults.successfulConnections}`, 'info');
+            log(`   • Total failed connections: ${testResults.failedConnections}`, 'info');
+            updateSummary();
+        }
+        
+        window.addEventListener('load', () => {
+            log('🔧 PAT Token Tester loaded successfully!', 'info');
+            log('💡 Enter your PAT token and click "Test Basic Connection" to start', 'info');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Test</title>
+</head>
+<body>
+    <h1>PDF Upload Test</h1>
+    <div id="status">Ready to test...</div>
+    <input type="file" id="file-input" accept=".pdf">
+    <button id="test-upload">Test Upload</button>
+    <div id="result"></div>
+    
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const testButton = document.getElementById('test-upload');
+        const status = document.getElementById('status');
+        const result = document.getElementById('result');
+        
+        testButton.addEventListener('click', async () => {
+            const file = fileInput.files[0];
+            if (!file) {
+                status.textContent = 'Please select a PDF file first';
+                return;
+            }
+            
+            status.textContent = 'Testing upload...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const response = await fetch('http://localhost:8787/analyze-report', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                status.textContent = 'Upload successful!';
+                result.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                
+            } catch (error) {
+                status.textContent = 'Upload failed: ' + error.message;
+                result.innerHTML = '<div style="color: red;">Error: ' + error.message + '</div>';
+            }
+        });
+    </script>
+</body>
+</html>
