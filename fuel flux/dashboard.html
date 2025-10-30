@@ -3920,171 +3920,175 @@
           <p>Manage customer interactions, feedback, loyalty, and communications</p>
         </div>
 
-        <div class="users-content">
-          <!-- API Connection Status -->
-          <div class="current-user-card">
-            <div class="user-info">
-              <div class="user-avatar">
-                <span class="avatar-initial">🔗</span>
-              </div>
-              <div class="user-details">
-                <h3>Fuel Torque API Connection</h3>
-                <p>Site: Shell Mapulaneng Bushbuckridge (ID: 651)</p>
-                <span class="user-status" id="api-connection-status">Status: Configured</span>
-              </div>
-            </div>
-            <div class="user-actions">
-              <button class="btn btn-primary" onclick="testApiConnection()">🧪 Test Connection</button>
-              <button class="btn btn-secondary" onclick="configureApiSettings()">⚙️ Configure</button>
-            </div>
-          </div>
-
-          <!-- API Configuration Grid -->
+        <div class="users-content" id="cr-content">
           <div class="users-grid">
-            <!-- API Settings -->
             <div class="user-list-section">
               <div class="section-subheader">
-                <h3>⚙️ API Configuration</h3>
-                <button class="btn btn-success" onclick="saveApiSettings()">💾 Save Settings</button>
+                <h3>📝 Customer Satisfaction Survey</h3>
               </div>
-              
-              <div class="api-settings-form">
+              <form id="cr-survey-form" class="api-settings-form">
                 <div class="form-group">
-                  <label for="api-access-key">Access Key</label>
-                  <input type="password" id="api-access-key" value="9t7i0b4eajkaH2zoutN8-exoM62YWTuL" placeholder="Enter your API access key">
+                  <label for="cr-q-satisfaction">Overall Satisfaction (1-5)</label>
+                  <select id="cr-q-satisfaction">
+                    <option value="5">5 - Excellent</option>
+                    <option value="4">4 - Good</option>
+                    <option value="3">3 - Fair</option>
+                    <option value="2">2 - Poor</option>
+                    <option value="1">1 - Very Poor</option>
+                  </select>
                 </div>
-                
                 <div class="form-group">
-                  <label for="site-id">Site ID</label>
-                  <input type="text" id="site-id" value="651" placeholder="Enter site ID">
+                  <label for="cr-q-speed">Service Speed (1-5)</label>
+                  <select id="cr-q-speed">
+                    <option value="5">5</option>
+                    <option value="4">4</option>
+                    <option value="3">3</option>
+                    <option value="2">2</option>
+                    <option value="1">1</option>
+                  </select>
                 </div>
-                
                 <div class="form-group">
-                  <label for="site-name">Site Name</label>
-                  <input type="text" id="site-name" value="Shell Mapulaneng Bushbuckridge" placeholder="Enter site name">
+                  <label for="cr-q-friendliness">Staff Friendliness (1-5)</label>
+                  <select id="cr-q-friendliness">
+                    <option value="5">5</option>
+                    <option value="4">4</option>
+                    <option value="3">3</option>
+                    <option value="2">2</option>
+                    <option value="1">1</option>
+                  </select>
                 </div>
-                
                 <div class="form-group">
-                  <label for="api-base-url">API Base URL</label>
-                  <input type="text" id="api-base-url" value="https://api.fueltorque.com" placeholder="Enter API base URL">
+                  <label for="cr-q-cleanliness">Cleanliness (1-5)</label>
+                  <select id="cr-q-cleanliness">
+                    <option value="5">5</option>
+                    <option value="4">4</option>
+                    <option value="3">3</option>
+                    <option value="2">2</option>
+                    <option value="1">1</option>
+                  </select>
                 </div>
-              </div>
+                <div class="form-group">
+                  <label for="cr-q-comments">Comments (optional)</label>
+                  <textarea id="cr-q-comments" rows="3" placeholder="Tell us what went well or what to improve"></textarea>
+                </div>
+                <div class="form-group">
+                  <button type="submit" class="button primary">Submit Survey</button>
+                  <span id="cr-survey-status" class="form-hint" style="margin-left: 8px;"></span>
+                </div>
+              </form>
             </div>
 
-            <!-- API Status & Metrics -->
-            <div class="user-analytics-section">
+            <div class="user-list-section">
               <div class="section-subheader">
-                <h3>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 8px; display: inline-block; vertical-align: middle;">
-                    <path d="M3 3V9H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M21 21V15H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M18.49 9A9 9 0 0 0 3.64 5.64L3 9M21 15L20.36 18.36A9 9 0 0 1 5.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  Connection Status
-                </h3>
+                <h3>✅ Recommended Actions</h3>
               </div>
-              
-              <div class="user-metrics-grid">
-                <div class="metric-card">
-                  <div class="metric-icon">🔗</div>
-                  <div class="metric-content">
-                    <h4>Connection Status</h4>
-                    <p id="connection-status">Connected</p>
-                  </div>
-                </div>
-                
-                <div class="metric-card">
-                  <div class="metric-icon">📡</div>
-                  <div class="metric-content">
-                    <h4>Last Sync</h4>
-                    <p id="last-sync-time">2 min ago</p>
-                  </div>
-                </div>
-                
-                <div class="metric-card">
-                  <div class="metric-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M3 3V9H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M21 21V15H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M18.49 9A9 9 0 0 0 3.64 5.64L3 9M21 15L20.36 18.36A9 9 0 0 1 5.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </div>
-                  <div class="metric-content">
-                    <h4>Data Points</h4>
-                    <p id="data-points-count">1,247</p>
-                  </div>
-                </div>
-                
-                <div class="metric-card">
-                  <div class="metric-icon">⚡</div>
-                  <div class="metric-content">
-                    <h4>Response Time</h4>
-                    <p id="response-time">245ms</p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- API Activity Chart -->
-              <div class="user-activity-chart">
-                <h4>API Call Activity</h4>
-                <canvas id="api-activity-chart" width="400" height="200"></canvas>
+              <div id="cr-actions" class="api-settings-form">
+                <ul id="cr-actions-list" class="insights-list"></ul>
+                <p id="cr-actions-empty" class="form-hint">Fill the survey to see recommendations.</p>
               </div>
             </div>
           </div>
+          <script>
+            (function() {
+              const form = document.getElementById('cr-survey-form');
+              if (!form) return;
+              const statusEl = document.getElementById('cr-survey-status');
+              const actionsList = document.getElementById('cr-actions-list');
+              const actionsEmpty = document.getElementById('cr-actions-empty');
 
-          <!-- API Integration Options -->
-          <div class="user-permissions-section">
-            <div class="section-subheader">
-              <h3>🔧 Integration Options</h3>
-            </div>
-            
-            <div class="permissions-grid">
-              <div class="permission-card">
-                <h4>Data Sync Settings</h4>
-                <div class="permission-levels">
-                  <label class="permission-option">
-                    <input type="checkbox" checked> Real-time Updates
-                  </label>
-                  <label class="permission-option">
-                    <input type="checkbox" checked> Historical Data
-                  </label>
-                  <label class="permission-option">
-                    <input type="checkbox"> Automated Reports
-                  </label>
-                </div>
-              </div>
-              
-              <div class="permission-card">
-                <h4>Data Types</h4>
-                <div class="permission-levels">
-                  <label class="permission-option">
-                    <input type="checkbox" checked> Fuel Sales
-                  </label>
-                  <label class="permission-option">
-                    <input type="checkbox" checked> Shop Revenue
-                  </label>
-                  <label class="permission-option">
-                    <input type="checkbox"> Pump Status
-                  </label>
-                </div>
-              </div>
-              
-              <div class="permission-card">
-                <h4>Security & Access</h4>
-                <div class="permission-levels">
-                  <label class="permission-option">
-                    <input type="checkbox" checked> Encrypted Connection
-                  </label>
-                  <label class="permission-option">
-                    <input type="checkbox"> Rate Limiting
-                  </label>
-                  <label class="permission-option">
-                    <input type="checkbox"> Audit Logging
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
+              function getVal(id) { return parseInt(document.getElementById(id).value, 10); }
+              function getText(id) { return (document.getElementById(id).value || '').toLowerCase(); }
+
+              function generateActions(data) {
+                const actions = [];
+                if (data.satisfaction <= 2) {
+                  actions.push('Contact dissatisfied customers and offer a recovery voucher.');
+                  actions.push('Run a 2-week service quality sprint with daily huddles.');
+                }
+                if (data.speed <= 3) {
+                  actions.push('Add peak-hour staffing and fast-lane for quick fills.');
+                }
+                if (data.friendliness <= 3) {
+                  actions.push('Schedule a hospitality refresher and greeting standards.');
+                }
+                if (data.cleanliness <= 3) {
+                  actions.push('Introduce hourly checklist and visible cleaning rotations.');
+                }
+                const c = data.comments;
+                if (c.includes('price') || c.includes('expensive')) {
+                  actions.push('Promote bundle discounts or loyalty points to offset price sensitivity.');
+                }
+                if (c.includes('card') || c.includes('payment') || c.includes('pos')) {
+                  actions.push('Audit card machines and add backup POS to reduce payment friction.');
+                }
+                if (c.includes('queue') || c.includes('line') || c.includes('wait')) {
+                  actions.push('Implement queue monitoring and open extra lane during peaks.');
+                }
+                actions.push('Set a follow-up mini-survey in 30 days to measure impact.');
+                return Array.from(new Set(actions));
+              }
+
+              function renderActions(items) {
+                actionsList.innerHTML = '';
+                if (!items || !items.length) {
+                  actionsEmpty.style.display = 'block';
+                  return;
+                }
+                actionsEmpty.style.display = 'none';
+                items.forEach(text => {
+                  const li = document.createElement('li');
+                  li.className = 'insight-item';
+                  li.innerHTML = '<div class="insight-content"><div class="insight-title">' + text + '</div></div>';
+                  actionsList.appendChild(li);
+                });
+              }
+
+              function save(data) {
+                try { localStorage.setItem('crSurvey', JSON.stringify(data)); } catch (e) {}
+              }
+              function load() {
+                try { return JSON.parse(localStorage.getItem('crSurvey') || 'null'); } catch (e) { return null; }
+              }
+
+              form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const data = {
+                  satisfaction: getVal('cr-q-satisfaction'),
+                  speed: getVal('cr-q-speed'),
+                  friendliness: getVal('cr-q-friendliness'),
+                  cleanliness: getVal('cr-q-cleanliness'),
+                  comments: document.getElementById('cr-q-comments').value || ''
+                };
+                const actions = generateActions({
+                  satisfaction: data.satisfaction,
+                  speed: data.speed,
+                  friendliness: data.friendliness,
+                  cleanliness: data.cleanliness,
+                  comments: getText('cr-q-comments')
+                });
+                renderActions(actions);
+                save(data);
+                if (statusEl) statusEl.textContent = 'Saved. ' + actions.length + ' action(s) suggested.';
+              });
+
+              const saved = load();
+              if (saved) {
+                document.getElementById('cr-q-satisfaction').value = String(saved.satisfaction || 5);
+                document.getElementById('cr-q-speed').value = String(saved.speed || 5);
+                document.getElementById('cr-q-friendliness').value = String(saved.friendliness || 5);
+                document.getElementById('cr-q-cleanliness').value = String(saved.cleanliness || 5);
+                document.getElementById('cr-q-comments').value = saved.comments || '';
+                const actions = generateActions({
+                  satisfaction: saved.satisfaction,
+                  speed: saved.speed,
+                  friendliness: saved.friendliness,
+                  cleanliness: saved.cleanliness,
+                  comments: (saved.comments || '').toLowerCase()
+                });
+                renderActions(actions);
+              }
+            })();
+          </script>
         </div>
       </div>
     </section>
