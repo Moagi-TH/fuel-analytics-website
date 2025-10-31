@@ -2690,6 +2690,7 @@
         </div>
       </a>
       <nav class="nav" style="display: flex !important; visibility: visible !important; z-index: 1000 !important; position: relative !important; background: rgba(11,16,32,0.95) !important; padding: 8px 16px !important; border-radius: 8px !important;">
+        <a href="#operations" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Operations Management</a>
         <a href="#overview" class="nav-link active" style="display: block !important; visibility: visible !important; opacity: 1 !important; color: #4a9eff !important; background: rgba(91, 140, 255, 0.2) !important;">Analytics & Visualizations</a>
         <a href="#renovation" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Renovation</a>
         <a href="#personnel" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Personnel</a>
@@ -2745,6 +2746,14 @@
   </script>
 
   <main class="dashboard-main">
+    <!-- Operations Management (placeholder) -->
+    <section id="operations" class="dashboard-section">
+      <div class="container">
+        <div class="section-header">
+          <h2>Operations Management</h2>
+        </div>
+      </div>
+    </section>
     <!-- Overview Section -->
     <section id="overview" class="dashboard-section">
       <div class="container">
@@ -3261,7 +3270,7 @@
         <!-- KPI Dashboard -->
         <div class="kpi-dashboard">
           <h3>Key Performance Indicators</h3>
-          <div class="metrics-grid">
+          <div class="metrics-grid" style="grid-template-columns: repeat(3, minmax(320px, 1fr));">
             <div class="metric-card">
               <div class="metric-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -3271,17 +3280,6 @@
               <div class="metric-content">
                 <div class="metric-title">Shop to Fuel Ratio</div>
                 <div class="metric-value" id="shop-fuel-ratio-kpi">R 0.00/L</div>
-              </div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="currentColor"/>
-                </svg>
-              </div>
-              <div class="metric-content">
-                <div class="metric-title">Fuel Margins (R)</div>
-                <div class="metric-value" id="fuel-margins-rand">R 0</div>
               </div>
             </div>
             <div class="metric-card">
@@ -4357,6 +4355,7 @@
     <div class="container footer-inner">
       <div>© <span id="year"></span> FUEL FLUX - Analytics Dashboard</div>
       <div class="footer-links">
+        <a href="#operations">Operations Management</a>
         <a href="#overview">Analytics & Visualizations</a>
         <a href="#renovation">Renovation</a>
         <a href="#personnel">Personnel</a>
