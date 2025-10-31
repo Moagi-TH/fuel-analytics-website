@@ -1626,6 +1626,19 @@
       } catch (e) { console.warn('OM duplication failed:', e); }
     });
   </script>
+  <script>
+    // Reorder KPI panel to appear near top of Overview for operator quick access
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        const overviewContainer = document.querySelector('#overview .container');
+        const kpi = overviewContainer ? overviewContainer.querySelector('.kpi-dashboard') : null;
+        const metricsGrid = overviewContainer ? overviewContainer.querySelector('.metrics-grid') : null;
+        if (overviewContainer && kpi && metricsGrid) {
+          overviewContainer.insertBefore(kpi, metricsGrid);
+        }
+      } catch (e) { console.warn('KPI reorder failed:', e); }
+    });
+  </script>
   
   <!-- IMMEDIATE TEST FUNCTION - Available right away -->
   <script>
