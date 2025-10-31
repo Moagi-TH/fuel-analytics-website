@@ -94,16 +94,37 @@
   
   <!-- CRITICAL FUNCTIONS - DEFINED IMMEDIATELY -->
   <script>
-    console.log('🚀 CRITICAL FUNCTIONS: Defining essential functions immediately...');
-    // Template mode disables live Supabase calls and pop-up alerts
-    window.TEMPLATE_MODE = true;
-    
-    // Initialize Supabase client immediately
-    window.initializeSupabaseClient = function() {
+      console.log('🚀 CRITICAL FUNCTIONS: Defining essential functions immediately...');
+      
+      // TEMPLATE MODE: disable live Supabase calls and provide safe stubs
+      window.TEMPLATE_MODE = true;
       if (window.TEMPLATE_MODE) {
-        console.warn('Template mode: skipping Supabase initialization');
-        return false;
+        window.supabaseClient = {
+          supabase: {
+            auth: {
+              getUser: async () => ({ data: { user: null }, error: null }),
+              signOut: async () => ({ error: null })
+            },
+            storage: {
+              from: function() {
+                return {
+                  list: async () => ({ data: [], error: null }),
+                  createSignedUrl: async () => ({ data: { signedUrl: '' }, error: null }),
+                  upload: async () => ({ data: null, error: null }),
+                  remove: async () => ({ data: null, error: null })
+                };
+              }
+            }
+          }
+        };
       }
+      
+      // Initialize Supabase client (no-op in template mode)
+      window.initializeSupabaseClient = function() {
+        if (window.TEMPLATE_MODE) {
+          console.warn('Template mode: Supabase disabled, using stubs.');
+          return true;
+        }
       if (!window.supabaseClient && window.supabase) {
         const supabaseUrl = 'https://fynfomhoikzpsrbghnzr.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDUwNTc5MSwiZXhwIjoyMDcwMDgxNzkxfQ.LAo0ngckbfAwplBvvQv9zhIzgvTT88H4ZKluHrV8Opo';
@@ -417,7 +438,7 @@
             if (analyzeStatus) {
               analyzeStatus.textContent = `⚠️ Supabase not available. Storing locally...`;
           } else {
-            console.warn('⚠️ Supabase not available. Storing locally.');
+            alert('⚠️ Supabase not available. Storing locally.');
             }
             console.warn('⚠️ Supabase client not available, using local storage');
             
@@ -479,20 +500,14 @@
         // Initialize Supabase client
         window.initializeSupabaseClient();
         
-        if (!window.supabaseClient) {
-          console.warn('Supabase client not available (template mode)');
-          return;
-        }
+        if (!window.supabaseClient) { console.warn('Supabase client not available (template mode)'); return; }
         
         // Get files from bucket
         const { data: files, error } = await window.supabaseClient.supabase.storage
           .from('fuel-reports')
           .list('', { limit: 100 });
         
-        if (error) {
-          alert('❌ Error: ' + error.message);
-          return;
-        }
+        if (error) { console.warn('Error:', error?.message || error); return; }
         
         console.log('Files from Supabase:', files);
         
@@ -502,10 +517,7 @@
         
         if (reportsHistory) reportsHistory.style.display = 'block';
         
-        if (!reportsList) {
-          alert('❌ Reports list element not found');
-          return;
-        }
+        if (!reportsList) { console.warn('Reports list element not found'); return; }
         
         // STYLED TO MATCH ENTER DATA FORM
         let html = `
@@ -567,10 +579,7 @@
         
         console.log('✅ Reports loaded successfully! Found ' + files.length + ' report(s) in storage.');
         
-      } catch (error) {
-        console.error('❌ Error:', error);
-        alert('❌ Error: ' + error.message);
-      }
+      } catch (error) { console.warn('Error:', error?.message || error); }
     };
     
     // Essential view performance function - SIMPLIFIED SUPABASE APPROACH
@@ -609,7 +618,7 @@
               
               if (error) {
                 console.error('❌ Error loading performance data:', error);
-                alert('❌ Error loading performance data: ' + error.message);
+                console.warn('Error loading performance data:', error?.message || error);
                 return;
               }
               
@@ -627,7 +636,7 @@
                                    `Data Source: Supabase Storage\n` +
                                    `Last Updated: ${new Date().toLocaleString()}`;
               
-              alert(performanceMsg);
+              console.log(performanceMsg);
               
               // Try to update dashboard metrics if function exists
               if (typeof window.updateDashboardMetrics === 'function') {
@@ -639,19 +648,17 @@
               
             } catch (error) {
               console.error('❌ Error loading performance data:', error);
-              alert('❌ Error loading performance data: ' + error.message);
+              console.warn('Error loading performance data:', error?.message || error);
             }
           } else {
-            alert('⚠️ Supabase client not available. Cannot load performance data.');
+            console.warn('Supabase client not available. Cannot load performance data.');
           }
         } else {
           console.error('❌ Analytics section not found');
-          alert('❌ Error: Analytics section not found. Cannot display performance metrics.');
+          console.warn('Analytics section not found. Cannot display performance metrics.');
         }
       } catch (error) {
-        const errorMsg = '❌ Error viewing performance: ' + error.message;
-        console.error(errorMsg);
-        alert(errorMsg);
+        console.warn('Error viewing performance:', error?.message || error);
       }
     };
     // Essential enter data function - ORIGINAL FUNCTIONALITY RESTORED
@@ -674,16 +681,14 @@
           manualForm.style.display = 'block';
           manualForm.scrollIntoView({ behavior: 'smooth' });
           
-          alert('✅ Manual data entry form opened! Enter fuel prices and shop data for performance metrics.');
+          console.log('Manual data entry form opened for performance metrics.');
           console.log('✅ Manual entry form opened for fuel price data entry');
         } else {
           console.error('❌ Manual entry form not found');
-          alert('❌ Error: Manual entry form not found. Cannot open fuel data entry.');
+          console.warn('Manual entry form not found. Cannot open fuel data entry.');
         }
       } catch (error) {
-        const errorMsg = '❌ Error opening manual entry form: ' + error.message;
-        console.error(errorMsg);
-        alert(errorMsg);
+        console.warn('Error opening manual entry form:', error?.message || error);
       }
     };
     
@@ -808,7 +813,7 @@
             const itemTotal = document.getElementById('item-total')?.value || 0;
             
             if (!itemName) {
-              alert('❌ Please enter an item name');
+              console.warn('Please enter an item name');
               return;
             }
             
@@ -833,7 +838,7 @@
                   throw new Error('Database save failed: ' + error.message);
                 }
                 
-                alert('✅ Renovation item saved to Supabase!\nName: ' + itemName + '\nCost: R' + itemTotal);
+                console.log('Renovation item saved to Supabase:', itemName, itemTotal);
                 console.log('✅ Renovation item saved to Supabase:', data);
                 
                 // Clear form
@@ -845,7 +850,7 @@
                 
               } catch (supabaseError) {
                 console.error('❌ Supabase save error:', supabaseError);
-                alert('❌ Failed to save to Supabase: ' + supabaseError.message + '\nData saved locally as fallback.');
+                console.warn('Failed to save to Supabase, saving locally instead:', supabaseError?.message || supabaseError);
                 
                 // Fallback to local storage
                 const localRenovations = JSON.parse(localStorage.getItem('renovationItems') || '[]');
@@ -853,16 +858,15 @@
                 localStorage.setItem('renovationItems', JSON.stringify(localRenovations));
               }
             } else {
-              console.warn('⚠️ Supabase not available. Saving locally.');
+              console.warn('Supabase not available. Saving locally.');
               const localRenovations = JSON.parse(localStorage.getItem('renovationItems') || '[]');
               localRenovations.push(renovationData);
               localStorage.setItem('renovationItems', JSON.stringify(localRenovations));
-              alert('✅ Renovation item saved locally: ' + itemName);
+              console.log('Renovation item saved locally:', itemName);
             }
             
           } catch (error) {
-            console.error('❌ Error saving renovation item:', error);
-            alert('❌ Error saving renovation item: ' + error.message);
+            console.warn('Error saving renovation item:', error?.message || error);
           }
         };
       }
@@ -899,7 +903,7 @@
               `;
             });
             itemsContainer.innerHTML = html;
-            alert('✅ Loaded ' + data.length + ' renovation items from Supabase');
+            console.log('Loaded', data.length, 'renovation items from Supabase');
           }
         } else {
           // Load from local storage as fallback
@@ -907,10 +911,7 @@
           console.log('📋 Loaded', localItems.length, 'items from local storage');
           console.log('⚠️ Supabase not available. Loaded ' + localItems.length + ' items from local storage.');
         }
-      } catch (error) {
-        console.error('❌ Error loading renovation items:', error);
-        alert('❌ Error loading renovation items: ' + error.message);
-      }
+      } catch (error) { console.warn('Error loading renovation items:', error?.message || error); }
     };
     
     // Comprehensive Supabase test function
@@ -922,10 +923,7 @@
       const clientInit = window.initializeSupabaseClient();
       console.log('Client initialized:', clientInit ? '✅' : '❌');
       
-      if (!clientInit) {
-        alert('❌ Supabase client failed to initialize');
-        return false;
-      }
+      if (!clientInit) { console.warn('Supabase client failed to initialize'); return false; }
       
       // Test 2: Test connection
       console.log('2. Testing Supabase connection...');
@@ -945,17 +943,10 @@
           return false;
         }
         
-        console.log('✅ Bucket access successful. Files found:', files.length);
-        alert('✅ Database connection successful!\n' + 
-              'Files Found: ' + files.length + '\n' + 
-              'Ready to upload and view reports');
+        console.log('Bucket access successful. Files found:', files.length);
         
         return true;
-      } catch (error) {
-        console.error('❌ Bucket test failed:', error);
-        alert('❌ Database connection failed: ' + error.message);
-        return false;
-      }
+      } catch (error) { console.warn('Bucket test failed:', error?.message || error); return false; }
     };
     
     // Test complete upload and retrieval cycle
@@ -1005,7 +996,7 @@
                          `📄 PDF Files: ${pdfFiles.length}\n` +
                          `📋 Reports Loaded: ${testResults.reportsLoaded}`;
         
-        alert(resultMsg);
+        console.log(resultMsg);
         return testResults;
         
       } catch (error) {
@@ -1162,7 +1153,7 @@
         window.initializeSupabaseClient();
         
         if (!window.supabaseClient) {
-          console.warn('Supabase client not available (template mode)');
+          alert('❌ Supabase client not available');
           return;
         }
         
@@ -1227,7 +1218,7 @@
         window.initializeSupabaseClient();
         
         if (!window.supabaseClient) {
-          console.warn('Supabase client not available (template mode)');
+          alert('❌ Supabase client not available');
           return;
         }
         
@@ -1267,7 +1258,7 @@
         window.initializeSupabaseClient();
         
         if (!window.supabaseClient) {
-          console.warn('Supabase client not available (template mode)');
+          alert('❌ Supabase client not available');
           return;
         }
         
@@ -1433,7 +1424,7 @@
         window.initializeSupabaseClient();
         
         if (!window.supabaseClient) {
-          console.warn('Supabase client not available (template mode)');
+          alert('❌ Supabase client not available');
           return;
         }
         
@@ -1489,7 +1480,7 @@
           .list('', { limit: 10 });
         
         if (error) {
-          console.warn('Cannot access Supabase:', error?.message || error);
+          alert('❌ Cannot access Supabase: ' + error.message);
           return;
         }
         
@@ -2647,7 +2638,7 @@
       <nav class="nav" style="display: flex !important; visibility: visible !important; z-index: 1000 !important; position: relative !important; background: rgba(11,16,32,0.95) !important; padding: 8px 16px !important; border-radius: 8px !important;">
         <a href="#overview" class="nav-link active" style="display: block !important; visibility: visible !important; opacity: 1 !important; color: #4a9eff !important; background: rgba(91, 140, 255, 0.2) !important;">Operations Management</a>
         <a href="#renovation" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Renovation</a>
-        <a href="#overview" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Analytics/Metrics</a>
+        <a href="#analytics" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Analytics/Metrics</a>
         <a href="#personnel" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Personnel</a>
         <a href="#customer-relations" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Customer Relations</a>
       </nav>
@@ -2684,42 +2675,10 @@
           activateSection(href.slice(1));
         });
       });
-    })();
-  </script>
-
-  <script>
-    (function mergeSections() {
-      const overview = document.getElementById('overview');
-      const overviewContainer = overview ? overview.querySelector('.container') : null;
-      if (!overviewContainer) return;
-
-      const analyticsSection = document.getElementById('analytics');
-      const analyticsContainer = analyticsSection ? analyticsSection.querySelector('.container') : null;
-      if (analyticsContainer) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'renovation-settings';
-        const header = document.createElement('h3');
-        header.textContent = 'Analytics & Visualizations';
-        wrapper.appendChild(header);
-        wrapper.appendChild(analyticsContainer);
-        overviewContainer.appendChild(wrapper);
-        analyticsSection.style.display = 'none';
-      }
-
-      const reportsSection = document.getElementById('reports');
-      if (reportsSection) {
-        const uploadArea = reportsSection.querySelector('#upload-area');
-        const manualForm = reportsSection.querySelector('#manual-form');
-        const reportsHistory = reportsSection.querySelector('#reports-history');
-        const destWrapper = document.createElement('div');
-        destWrapper.className = 'renovation-settings';
-        const h = document.createElement('h3');
-        h.textContent = 'Data Sources & Management';
-        destWrapper.appendChild(h);
-        if (uploadArea) destWrapper.appendChild(uploadArea);
-        if (manualForm) destWrapper.appendChild(manualForm);
-        if (reportsHistory) destWrapper.appendChild(reportsHistory);
-        if (destWrapper.children.length > 1) overviewContainer.appendChild(destWrapper);
+      // Disable other hashchange redirects in template mode
+      window.TEMPLATE_MODE = true;
+      if (window.TEMPLATE_MODE) {
+        window.addEventListener('hashchange', function(ev) { ev.stopImmediatePropagation(); }, true);
       }
     })();
   </script>
@@ -4313,7 +4272,7 @@
       <div class="footer-links">
         <a href="#overview">Operations Management</a>
         <a href="#renovation">Renovation</a>
-        <a href="#overview">Analytics/Metrics</a>
+        <a href="#analytics">Analytics/Metrics</a>
         <a href="#personnel">Personnel</a>
         <a href="#customer-relations">Customer Relations</a>
       </div>

@@ -94,16 +94,37 @@
   
   <!-- CRITICAL FUNCTIONS - DEFINED IMMEDIATELY -->
   <script>
-    console.log('🚀 CRITICAL FUNCTIONS: Defining essential functions immediately...');
-    // Template mode disables live Supabase calls and pop-up alerts
-    window.TEMPLATE_MODE = true;
-    
-    // Initialize Supabase client immediately
-    window.initializeSupabaseClient = function() {
+      console.log('🚀 CRITICAL FUNCTIONS: Defining essential functions immediately...');
+      
+      // TEMPLATE MODE: disable live Supabase calls and provide safe stubs
+      window.TEMPLATE_MODE = true;
       if (window.TEMPLATE_MODE) {
-        console.warn('Template mode: skipping Supabase initialization');
-        return false;
+        window.supabaseClient = {
+          supabase: {
+            auth: {
+              getUser: async () => ({ data: { user: null }, error: null }),
+              signOut: async () => ({ error: null })
+            },
+            storage: {
+              from: function() {
+                return {
+                  list: async () => ({ data: [], error: null }),
+                  createSignedUrl: async () => ({ data: { signedUrl: '' }, error: null }),
+                  upload: async () => ({ data: null, error: null }),
+                  remove: async () => ({ data: null, error: null })
+                };
+              }
+            }
+          }
+        };
       }
+      
+      // Initialize Supabase client (no-op in template mode)
+      window.initializeSupabaseClient = function() {
+        if (window.TEMPLATE_MODE) {
+          console.warn('Template mode: Supabase disabled, using stubs.');
+          return true;
+        }
       if (!window.supabaseClient && window.supabase) {
         const supabaseUrl = 'https://fynfomhoikzpsrbghnzr.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDUwNTc5MSwiZXhwIjoyMDcwMDgxNzkxfQ.LAo0ngckbfAwplBvvQv9zhIzgvTT88H4ZKluHrV8Opo';
@@ -417,8 +438,8 @@
             if (analyzeStatus) {
               analyzeStatus.textContent = `⚠️ Supabase not available. Storing locally...`;
           } else {
-          console.warn('⚠️ Supabase not available. Storing locally.');
-          }
+            alert('⚠️ Supabase not available. Storing locally.');
+            }
             console.warn('⚠️ Supabase client not available, using local storage');
             
             // Fallback to local storage
@@ -479,17 +500,7 @@
         // Initialize Supabase client
         window.initializeSupabaseClient();
         
-        if (!window.supabaseClient) {
-          console.warn('Supabase client not available (template mode)');
-          // Render an empty list gracefully in template mode
-          const reportsHistory = document.getElementById('reports-history');
-          const reportsList = document.getElementById('reports-list');
-          if (reportsHistory) reportsHistory.style.display = 'block';
-          if (reportsList) {
-            reportsList.innerHTML = `<div class="form-section"><h4>All Reports (0)</h4><p class="form-hint">Template mode: connect Supabase to list reports.</p></div>`;
-          }
-          return;
-        }
+          if (!window.supabaseClient) { console.warn('Supabase client not available (template mode)'); return; }
         
         // Get files from bucket
         const { data: files, error } = await window.supabaseClient.supabase.storage
@@ -1168,10 +1179,7 @@
       try {
         window.initializeSupabaseClient();
         
-        if (!window.supabaseClient) {
-          console.warn('Supabase client not available (template mode)');
-          return;
-        }
+          if (!window.supabaseClient) { console.warn('Supabase client not available (template mode)'); return; }
         
         const { data: files, error } = await window.supabaseClient.supabase.storage
           .from('fuel-reports')
@@ -1233,10 +1241,7 @@
       try {
         window.initializeSupabaseClient();
         
-        if (!window.supabaseClient) {
-          console.warn('Supabase client not available (template mode)');
-          return;
-        }
+          if (!window.supabaseClient) { console.warn('Supabase client not available (template mode)'); return; }
         
         // Get signed URL for the file
         const { data: signedUrl, error } = await window.supabaseClient.supabase.storage
@@ -1273,10 +1278,7 @@
       try {
         window.initializeSupabaseClient();
         
-        if (!window.supabaseClient) {
-          console.warn('Supabase client not available (template mode)');
-          return;
-        }
+          if (!window.supabaseClient) { console.warn('Supabase client not available (template mode)'); return; }
         
         const { error } = await window.supabaseClient.supabase.storage
           .from('fuel-reports')
@@ -1439,10 +1441,7 @@
       try {
         window.initializeSupabaseClient();
         
-        if (!window.supabaseClient) {
-          console.warn('Supabase client not available (template mode)');
-          return;
-        }
+          if (!window.supabaseClient) { console.warn('Supabase client not available (template mode)'); return; }
         
         // Get signed URL for download
         const { data: signedUrl, error } = await window.supabaseClient.supabase.storage
@@ -1495,10 +1494,7 @@
           .from('fuel-reports')
           .list('', { limit: 10 });
         
-        if (error) {
-          console.warn('Cannot access Supabase:', error?.message || error);
-          return;
-        }
+          if (error) { console.warn('Cannot access Supabase:', error?.message || error); return; }
         
         console.log('Raw files from Supabase:', files);
         
@@ -2654,7 +2650,7 @@
       <nav class="nav" style="display: flex !important; visibility: visible !important; z-index: 1000 !important; position: relative !important; background: rgba(11,16,32,0.95) !important; padding: 8px 16px !important; border-radius: 8px !important;">
         <a href="#overview" class="nav-link active" style="display: block !important; visibility: visible !important; opacity: 1 !important; color: #4a9eff !important; background: rgba(91, 140, 255, 0.2) !important;">Operations Management</a>
         <a href="#renovation" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Renovation</a>
-        <a href="#overview" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Analytics/Metrics</a>
+        <a href="#analytics" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Analytics/Metrics</a>
         <a href="#personnel" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Personnel</a>
         <a href="#customer-relations" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Customer Relations</a>
       </nav>
@@ -2697,46 +2693,12 @@
           activateSection(targetId);
         });
       });
-    })();
-  </script>
-
-  <script>
-    (function mergeSections() {
-      // Consolidate Analytics and Reports into Overview without losing elements
-      const overview = document.getElementById('overview');
-      const overviewContainer = overview ? overview.querySelector('.container') : null;
-      if (!overviewContainer) return;
-
-      // Move Analytics content under Overview
-      const analyticsSection = document.getElementById('analytics');
-      const analyticsContainer = analyticsSection ? analyticsSection.querySelector('.container') : null;
-      if (analyticsContainer) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'renovation-settings';
-        const header = document.createElement('h3');
-        header.textContent = 'Analytics & Visualizations';
-        wrapper.appendChild(header);
-        wrapper.appendChild(analyticsContainer);
-        overviewContainer.appendChild(wrapper);
-        analyticsSection.style.display = 'none';
-      }
-
-      // Move Reports management (upload/manual/history) under Overview if present
-      const reportsSection = document.getElementById('reports');
-      if (reportsSection) {
-        const uploadArea = reportsSection.querySelector('#upload-area');
-        const manualForm = reportsSection.querySelector('#manual-form');
-        const reportsHistory = reportsSection.querySelector('#reports-history');
-        const destWrapper = document.createElement('div');
-        destWrapper.className = 'renovation-settings';
-        const h = document.createElement('h3');
-        h.textContent = 'Data Sources & Management';
-        destWrapper.appendChild(h);
-        if (uploadArea) destWrapper.appendChild(uploadArea);
-        if (manualForm) destWrapper.appendChild(manualForm);
-        if (reportsHistory) destWrapper.appendChild(reportsHistory);
-        // Only append if we moved something
-        if (destWrapper.children.length > 1) overviewContainer.appendChild(destWrapper);
+      // Disable any other hashchange redirects in template mode
+      window.TEMPLATE_MODE = true;
+      if (window.TEMPLATE_MODE) {
+        window.addEventListener('hashchange', function(ev) {
+          ev.stopImmediatePropagation();
+        }, true);
       }
     })();
   </script>
@@ -4328,7 +4290,7 @@
       <div class="footer-links">
         <a href="#overview">Operations Management</a>
         <a href="#renovation">Renovation</a>
-        <a href="#overview">Analytics/Metrics</a>
+        <a href="#analytics">Analytics/Metrics</a>
         <a href="#personnel">Personnel</a>
         <a href="#customer-relations">Customer Relations</a>
       </div>
