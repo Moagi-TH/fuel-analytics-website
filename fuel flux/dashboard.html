@@ -3921,27 +3921,25 @@
         </div>
 
         <div class="users-content" id="cr-content">
-          <div class="users-grid">
-            <div class="user-list-section">
-              <div class="section-subheader">
-                <h3>🛠️ Survey Builder</h3>
-              </div>
-              <form id="cr-survey-form" class="api-settings-form">
+          <div class="renovation-settings">
+            <h3>🛠️ Survey Builder</h3>
+            <form id="cr-survey-form" class="api-settings-form">
+              <div class="form-grid">
                 <div class="form-group">
                   <label for="cr-title">Survey Title</label>
-                  <input id="cr-title" type="text" placeholder="e.g., Fuel Station Experience" />
+                  <input id="cr-title" class="form-input" type="text" placeholder="e.g., Fuel Station Experience" />
                 </div>
                 <div class="form-group">
                   <label for="cr-desc">Description</label>
-                  <textarea id="cr-desc" rows="2" placeholder="Short explanation for customers"></textarea>
+                  <textarea id="cr-desc" class="form-input" rows="2" placeholder="Short explanation for customers"></textarea>
                 </div>
                 <div class="form-group">
                   <label for="cr-q-text">Question</label>
-                  <input id="cr-q-text" type="text" placeholder="Enter question text (e.g., How was our service speed?)" />
+                  <input id="cr-q-text" class="form-input" type="text" placeholder="Enter question text (e.g., How was our service speed?)" />
                 </div>
                 <div class="form-group">
                   <label for="cr-q-type">Type</label>
-                  <select id="cr-q-type">
+                  <select id="cr-q-type" class="form-select">
                     <option value="rating">Rating (1-5)</option>
                     <option value="yesno">Yes / No</option>
                     <option value="mc">Multiple Choice</option>
@@ -3950,32 +3948,28 @@
                 </div>
                 <div class="form-group" id="cr-q-options-wrap" style="display:none;">
                   <label for="cr-q-options">Options (comma-separated)</label>
-                  <input id="cr-q-options" type="text" placeholder="e.g., Excellent,Good,Fair,Poor" />
+                  <input id="cr-q-options" class="form-input" type="text" placeholder="e.g., Excellent,Good,Fair,Poor" />
                 </div>
-                <div class="form-group">
-                  <button id="cr-add-q" type="button" class="button secondary">Add Question</button>
-                  <span id="cr-survey-status" class="form-hint" style="margin-left: 8px;"></span>
-                </div>
-              </form>
-              <div class="section-subheader" style="margin-top:12px;">
-                <h3>Questions</h3>
               </div>
-              <div id="cr-survey-questions" class="insights-list"></div>
-              <div class="form-group" style="margin-top:12px;">
-                <button id="cr-save" class="button primary" type="button">Save Survey</button>
-                <button id="cr-export" class="button secondary" type="button">Export JSON</button>
-                <button id="cr-clear" class="button secondary" type="button">Clear</button>
+              <div class="form-actions">
+                <button id="cr-add-q" type="button" class="button secondary">Add Question</button>
+                <span id="cr-survey-status" class="form-hint" style="margin-left: 8px;"></span>
               </div>
+            </form>
+            <h3 style="margin-top:20px;">Questions</h3>
+            <div id="cr-survey-questions" class="insights-list"></div>
+            <div class="form-actions" style="margin-top:12px;">
+              <button id="cr-save" class="button primary" type="button">Save Survey</button>
+              <button id="cr-export" class="button secondary" type="button">Export JSON</button>
+              <button id="cr-clear" class="button secondary" type="button">Clear</button>
             </div>
+          </div>
 
-            <div class="user-list-section">
-              <div class="section-subheader">
-                <h3>✅ Recommended Actions</h3>
-              </div>
-              <div id="cr-actions" class="api-settings-form">
-                <ul id="cr-actions-list" class="insights-list"></ul>
-                <p id="cr-actions-empty" class="form-hint">Fill the survey to see recommendations.</p>
-              </div>
+          <div class="renovation-settings">
+            <h3>✅ Recommended Actions</h3>
+            <div id="cr-actions" class="api-settings-form">
+              <ul id="cr-actions-list" class="insights-list"></ul>
+              <p id="cr-actions-empty" class="form-hint">Add questions above to see recommended actions.</p>
             </div>
           </div>
           <script>
@@ -4103,42 +4097,38 @@
             })();
           </script>
         </div>
-        <div class="users-grid" style="margin-top:16px;">
-          <div class="user-list-section">
-            <div class="section-subheader">
-              <h3>⛽ V Power Rewards Bundles</h3>
+        <div class="renovation-settings" style="margin-top:16px;">
+          <h3>⛽ V Power Rewards Bundles</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="vpr-liters">Liters threshold</label>
+              <input id="vpr-liters" class="form-input" type="number" value="30" />
             </div>
-            <div class="api-settings-form">
-              <div class="form-group">
-                <label for="vpr-liters">Liters threshold</label>
-                <input id="vpr-liters" type="number" value="30" />
-              </div>
-              <div class="form-group">
-                <label for="vpr-item">Bundled shop item</label>
-                <input id="vpr-item" type="text" value="coffee & muffin" />
-              </div>
-              <div class="form-group">
-                <label for="vpr-discount">Discount on item (%)</label>
-                <input id="vpr-discount" type="number" value="10" />
-              </div>
-              <div class="form-group">
-                <label for="vpr-points">Loyalty points</label>
-                <input id="vpr-points" type="number" value="100" />
-              </div>
-              <div class="form-group">
-                <label for="vpr-days">Validity (days)</label>
-                <input id="vpr-days" type="number" value="14" />
-              </div>
-              <div class="form-group">
-                <button id="vpr-generate" type="button" class="button primary">Generate Offer Copy</button>
-              </div>
-              <div class="form-group">
-                <label for="vpr-offer">Offer copy</label>
-                <textarea id="vpr-offer" rows="2" placeholder="Generated marketing copy will appear here" readonly></textarea>
-              </div>
-              <p class="form-hint">Tip: Promote bundles at the pump, POS, and receipt footer to lift attach rate.</p>
+            <div class="form-group">
+              <label for="vpr-item">Bundled shop item</label>
+              <input id="vpr-item" class="form-input" type="text" value="coffee & muffin" />
+            </div>
+            <div class="form-group">
+              <label for="vpr-discount">Discount on item (%)</label>
+              <input id="vpr-discount" class="form-input" type="number" value="10" />
+            </div>
+            <div class="form-group">
+              <label for="vpr-points">Loyalty points</label>
+              <input id="vpr-points" class="form-input" type="number" value="100" />
+            </div>
+            <div class="form-group">
+              <label for="vpr-days">Validity (days)</label>
+              <input id="vpr-days" class="form-input" type="number" value="14" />
             </div>
           </div>
+          <div class="form-actions">
+            <button id="vpr-generate" type="button" class="button primary">Generate Offer Copy</button>
+          </div>
+          <div class="form-group" style="margin-top:12px;">
+            <label for="vpr-offer">Offer copy</label>
+            <textarea id="vpr-offer" class="form-input" rows="2" placeholder="Generated marketing copy will appear here" readonly></textarea>
+          </div>
+          <p class="form-hint">Tip: Promote bundles at the pump, POS, and receipt footer to lift attach rate.</p>
         </div>
         </div>
       </div>
