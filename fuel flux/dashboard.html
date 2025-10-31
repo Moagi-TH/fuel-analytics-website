@@ -1585,6 +1585,36 @@
       });
     }
   </script>
+  <script>
+    (function duplicateToOperationsManagement() {
+      try {
+        const overview = document.getElementById('overview');
+        const overviewContainer = overview ? overview.querySelector('.container') : null;
+        if (!overviewContainer) return;
+
+        function cloneSection(sourceSectionId, titleText) {
+          const sourceSection = document.getElementById(sourceSectionId);
+          if (!sourceSection) return;
+          const sourceContainer = sourceSection.querySelector('.container');
+          if (!sourceContainer) return;
+          const wrapper = document.createElement('div');
+          wrapper.className = 'renovation-settings';
+          const header = document.createElement('h3');
+          header.textContent = titleText;
+          wrapper.appendChild(header);
+          const cloned = sourceContainer.cloneNode(true);
+          cloned.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+          wrapper.appendChild(cloned);
+          overviewContainer.appendChild(wrapper);
+        }
+
+        cloneSection('analytics', 'Analytics & Visualizations');
+        cloneSection('reports', 'Data Sources & Management');
+      } catch (e) {
+        console.warn('OM duplication failed:', e);
+      }
+    })();
+  </script>
   
   <!-- IMMEDIATE TEST FUNCTION - Available right away -->
   <script>
