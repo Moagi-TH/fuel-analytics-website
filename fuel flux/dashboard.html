@@ -2652,6 +2652,35 @@
     </div>
   </header>
 
+  <script>
+    (function() {
+      // Reliable single-click navigation for header links
+      const navLinks = document.querySelectorAll('.nav .nav-link');
+
+      function activateSection(sectionId) {
+        document.querySelectorAll('.nav .nav-link').forEach(l => l.classList.remove('active'));
+        const current = document.querySelector(`.nav .nav-link[href="#${sectionId}"]`);
+        if (current) current.classList.add('active');
+
+        const section = document.getElementById(sectionId);
+        if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        if (window.location.hash !== `#${sectionId}`) {
+          history.pushState(null, '', `#${sectionId}`);
+        }
+      }
+
+      navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          const href = this.getAttribute('href');
+          if (!href || !href.startsWith('#')) return;
+          e.preventDefault();
+          activateSection(href.slice(1));
+        });
+      });
+    })();
+  </script>
+
   <main class="dashboard-main">
     <!-- Overview Section -->
     <section id="overview" class="dashboard-section">
