@@ -3924,58 +3924,48 @@
           <div class="users-grid">
             <div class="user-list-section">
               <div class="section-subheader">
-                <h3>📝 Customer Satisfaction Survey</h3>
+                <h3>🛠️ Survey Builder</h3>
               </div>
               <form id="cr-survey-form" class="api-settings-form">
                 <div class="form-group">
-                  <label for="cr-q-satisfaction">Overall Satisfaction (1-5)</label>
-                  <select id="cr-q-satisfaction">
-                    <option value="5">5 - Excellent</option>
-                    <option value="4">4 - Good</option>
-                    <option value="3">3 - Fair</option>
-                    <option value="2">2 - Poor</option>
-                    <option value="1">1 - Very Poor</option>
+                  <label for="cr-title">Survey Title</label>
+                  <input id="cr-title" type="text" placeholder="e.g., Fuel Station Experience" />
+                </div>
+                <div class="form-group">
+                  <label for="cr-desc">Description</label>
+                  <textarea id="cr-desc" rows="2" placeholder="Short explanation for customers"></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="cr-q-text">Question</label>
+                  <input id="cr-q-text" type="text" placeholder="Enter question text (e.g., How was our service speed?)" />
+                </div>
+                <div class="form-group">
+                  <label for="cr-q-type">Type</label>
+                  <select id="cr-q-type">
+                    <option value="rating">Rating (1-5)</option>
+                    <option value="yesno">Yes / No</option>
+                    <option value="mc">Multiple Choice</option>
+                    <option value="text">Short Text</option>
                   </select>
                 </div>
-                <div class="form-group">
-                  <label for="cr-q-speed">Service Speed (1-5)</label>
-                  <select id="cr-q-speed">
-                    <option value="5">5</option>
-                    <option value="4">4</option>
-                    <option value="3">3</option>
-                    <option value="2">2</option>
-                    <option value="1">1</option>
-                  </select>
+                <div class="form-group" id="cr-q-options-wrap" style="display:none;">
+                  <label for="cr-q-options">Options (comma-separated)</label>
+                  <input id="cr-q-options" type="text" placeholder="e.g., Excellent,Good,Fair,Poor" />
                 </div>
                 <div class="form-group">
-                  <label for="cr-q-friendliness">Staff Friendliness (1-5)</label>
-                  <select id="cr-q-friendliness">
-                    <option value="5">5</option>
-                    <option value="4">4</option>
-                    <option value="3">3</option>
-                    <option value="2">2</option>
-                    <option value="1">1</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label for="cr-q-cleanliness">Cleanliness (1-5)</label>
-                  <select id="cr-q-cleanliness">
-                    <option value="5">5</option>
-                    <option value="4">4</option>
-                    <option value="3">3</option>
-                    <option value="2">2</option>
-                    <option value="1">1</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label for="cr-q-comments">Comments (optional)</label>
-                  <textarea id="cr-q-comments" rows="3" placeholder="Tell us what went well or what to improve"></textarea>
-                </div>
-                <div class="form-group">
-                  <button type="submit" class="button primary">Submit Survey</button>
+                  <button id="cr-add-q" type="button" class="button secondary">Add Question</button>
                   <span id="cr-survey-status" class="form-hint" style="margin-left: 8px;"></span>
                 </div>
               </form>
+              <div class="section-subheader" style="margin-top:12px;">
+                <h3>Questions</h3>
+              </div>
+              <div id="cr-survey-questions" class="insights-list"></div>
+              <div class="form-group" style="margin-top:12px;">
+                <button id="cr-save" class="button primary" type="button">Save Survey</button>
+                <button id="cr-export" class="button secondary" type="button">Export JSON</button>
+                <button id="cr-clear" class="button secondary" type="button">Clear</button>
+              </div>
             </div>
 
             <div class="user-list-section">
@@ -3990,52 +3980,64 @@
           </div>
           <script>
             (function() {
-              const form = document.getElementById('cr-survey-form');
-              if (!form) return;
               const statusEl = document.getElementById('cr-survey-status');
+              const qType = document.getElementById('cr-q-type');
+              const qOptionsWrap = document.getElementById('cr-q-options-wrap');
+              const qOptions = document.getElementById('cr-q-options');
+              const qText = document.getElementById('cr-q-text');
+              const addQ = document.getElementById('cr-add-q');
+              const saveBtn = document.getElementById('cr-save');
+              const exportBtn = document.getElementById('cr-export');
+              const clearBtn = document.getElementById('cr-clear');
+              const titleEl = document.getElementById('cr-title');
+              const descEl = document.getElementById('cr-desc');
+              const listEl = document.getElementById('cr-survey-questions');
               const actionsList = document.getElementById('cr-actions-list');
               const actionsEmpty = document.getElementById('cr-actions-empty');
 
-              function getVal(id) { return parseInt(document.getElementById(id).value, 10); }
-              function getText(id) { return (document.getElementById(id).value || '').toLowerCase(); }
+              qType.addEventListener('change', () => {
+                qOptionsWrap.style.display = qType.value === 'mc' ? 'block' : 'none';
+              });
 
-              function generateActions(data) {
-                const actions = [];
-                if (data.satisfaction <= 2) {
-                  actions.push('Contact dissatisfied customers and offer a recovery voucher.');
-                  actions.push('Run a 2-week service quality sprint with daily huddles.');
-                }
-                if (data.speed <= 3) {
-                  actions.push('Add peak-hour staffing and fast-lane for quick fills.');
-                }
-                if (data.friendliness <= 3) {
-                  actions.push('Schedule a hospitality refresher and greeting standards.');
-                }
-                if (data.cleanliness <= 3) {
-                  actions.push('Introduce hourly checklist and visible cleaning rotations.');
-                }
-                const c = data.comments;
-                if (c.includes('price') || c.includes('expensive')) {
-                  actions.push('Promote bundle discounts or loyalty points to offset price sensitivity.');
-                }
-                if (c.includes('card') || c.includes('payment') || c.includes('pos')) {
-                  actions.push('Audit card machines and add backup POS to reduce payment friction.');
-                }
-                if (c.includes('queue') || c.includes('line') || c.includes('wait')) {
-                  actions.push('Implement queue monitoring and open extra lane during peaks.');
-                }
-                actions.push('Set a follow-up mini-survey in 30 days to measure impact.');
-                return Array.from(new Set(actions));
-              }
+              let schema = { title: '', description: '', questions: [] };
 
-              function renderActions(items) {
-                actionsList.innerHTML = '';
-                if (!items || !items.length) {
-                  actionsEmpty.style.display = 'block';
+              function persist() { try { localStorage.setItem('crSurveySchema', JSON.stringify(schema)); } catch(e) {} }
+              function load() { try { const v = JSON.parse(localStorage.getItem('crSurveySchema')||'null'); return v||null; } catch(e){ return null; } }
+
+              function renderQuestions() {
+                listEl.innerHTML = '';
+                if (!schema.questions.length) {
+                  listEl.innerHTML = '<p class="form-hint">No questions added yet.</p>';
                   return;
                 }
+                schema.questions.forEach((q, idx) => {
+                  const li = document.createElement('div');
+                  li.className = 'insight-item';
+                  li.innerHTML = '<div class="insight-content"><div class="insight-title">' + (idx+1) + '. ' + q.text + ' <span style="opacity:.7">[' + q.type + ']</span></div>' + (q.options && q.options.length ? '<div class="insight-description">Options: ' + q.options.join(', ') + '</div>' : '') + '</div>';
+                  const del = document.createElement('button');
+                  del.className = 'button secondary';
+                  del.textContent = 'Remove';
+                  del.style.marginLeft = '8px';
+                  del.addEventListener('click', () => { schema.questions.splice(idx,1); renderQuestions(); persist(); updateActions(); });
+                  li.appendChild(del);
+                  listEl.appendChild(li);
+                });
+              }
+
+              function updateActions() {
+                const texts = schema.questions.map(q => (q.text||'').toLowerCase());
+                const actions = new Set();
+                if (texts.some(t => t.includes('speed') || t.includes('queue'))) actions.add('Plan peak-hour staffing and queue monitoring.');
+                if (texts.some(t => t.includes('friend') || t.includes('attendant'))) actions.add('Run a hospitality refresher for attendants.');
+                if (texts.some(t => t.includes('clean'))) actions.add('Introduce hourly cleaning checklists and audits.');
+                if (texts.some(t => t.includes('price'))) actions.add('Add loyalty incentives to offset price sensitivity.');
+                if (texts.some(t => t.includes('payment') || t.includes('card') || t.includes('pos'))) actions.add('Audit POS terminals and add backup devices.');
+                actions.add('Offer a small incentive (points/discount) to improve survey response rate.');
+
+                actionsList.innerHTML = '';
+                if (!actions.size) { actionsEmpty.style.display = 'block'; return; }
                 actionsEmpty.style.display = 'none';
-                items.forEach(text => {
+                Array.from(actions).forEach(text => {
                   const li = document.createElement('li');
                   li.className = 'insight-item';
                   li.innerHTML = '<div class="insight-content"><div class="insight-title">' + text + '</div></div>';
@@ -4043,52 +4045,99 @@
                 });
               }
 
-              function save(data) {
-                try { localStorage.setItem('crSurvey', JSON.stringify(data)); } catch (e) {}
-              }
-              function load() {
-                try { return JSON.parse(localStorage.getItem('crSurvey') || 'null'); } catch (e) { return null; }
-              }
+              addQ.addEventListener('click', () => {
+                const text = (qText.value || '').trim();
+                if (!text) { if (statusEl) statusEl.textContent = 'Enter a question first.'; return; }
+                const type = qType.value;
+                const options = type === 'mc' ? (qOptions.value || '').split(',').map(s=>s.trim()).filter(Boolean) : [];
+                schema.questions.push({ text, type, options });
+                qText.value = ''; qOptions.value='';
+                renderQuestions(); persist(); updateActions();
+                if (statusEl) statusEl.textContent = 'Question added.';
+              });
 
-              form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const data = {
-                  satisfaction: getVal('cr-q-satisfaction'),
-                  speed: getVal('cr-q-speed'),
-                  friendliness: getVal('cr-q-friendliness'),
-                  cleanliness: getVal('cr-q-cleanliness'),
-                  comments: document.getElementById('cr-q-comments').value || ''
-                };
-                const actions = generateActions({
-                  satisfaction: data.satisfaction,
-                  speed: data.speed,
-                  friendliness: data.friendliness,
-                  cleanliness: data.cleanliness,
-                  comments: getText('cr-q-comments')
-                });
-                renderActions(actions);
-                save(data);
-                if (statusEl) statusEl.textContent = 'Saved. ' + actions.length + ' action(s) suggested.';
+              saveBtn.addEventListener('click', () => {
+                schema.title = titleEl.value || '';
+                schema.description = descEl.value || '';
+                persist();
+                if (statusEl) statusEl.textContent = 'Survey saved.';
+              });
+
+              exportBtn.addEventListener('click', () => {
+                const blob = new Blob([JSON.stringify(schema, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = 'customer-survey.json'; a.click();
+                URL.revokeObjectURL(url);
+              });
+
+              clearBtn.addEventListener('click', () => {
+                schema = { title: '', description: '', questions: [] };
+                titleEl.value = ''; descEl.value = ''; renderQuestions(); persist(); updateActions();
+                if (statusEl) statusEl.textContent = 'Cleared.';
               });
 
               const saved = load();
-              if (saved) {
-                document.getElementById('cr-q-satisfaction').value = String(saved.satisfaction || 5);
-                document.getElementById('cr-q-speed').value = String(saved.speed || 5);
-                document.getElementById('cr-q-friendliness').value = String(saved.friendliness || 5);
-                document.getElementById('cr-q-cleanliness').value = String(saved.cleanliness || 5);
-                document.getElementById('cr-q-comments').value = saved.comments || '';
-                const actions = generateActions({
-                  satisfaction: saved.satisfaction,
-                  speed: saved.speed,
-                  friendliness: saved.friendliness,
-                  cleanliness: saved.cleanliness,
-                  comments: (saved.comments || '').toLowerCase()
+              if (saved) { schema = saved; titleEl.value = saved.title || ''; descEl.value = saved.description || ''; }
+              renderQuestions(); updateActions();
+
+              // V Power Rewards helper
+              const genBtn = document.getElementById('vpr-generate');
+              const offerOut = document.getElementById('vpr-offer');
+              const liters = document.getElementById('vpr-liters');
+              const item = document.getElementById('vpr-item');
+              const discount = document.getElementById('vpr-discount');
+              const points = document.getElementById('vpr-points');
+              const days = document.getElementById('vpr-days');
+              if (genBtn) {
+                genBtn.addEventListener('click', () => {
+                  const lt = parseInt(liters.value||'30',10);
+                  const it = (item.value||'any shop item');
+                  const dc = parseInt(discount.value||'10',10);
+                  const pt = parseInt(points.value||'100',10);
+                  const dy = parseInt(days.value||'14',10);
+                  const copy = `Fill ${lt}L of V-Power and get ${dc}% off ${it} or +${pt} points. Valid ${dy} days.`;
+                  offerOut.value = copy;
                 });
-                renderActions(actions);
               }
             })();
           </script>
+        </div>
+        <div class="users-grid" style="margin-top:16px;">
+          <div class="user-list-section">
+            <div class="section-subheader">
+              <h3>⛽ V Power Rewards Bundles</h3>
+            </div>
+            <div class="api-settings-form">
+              <div class="form-group">
+                <label for="vpr-liters">Liters threshold</label>
+                <input id="vpr-liters" type="number" value="30" />
+              </div>
+              <div class="form-group">
+                <label for="vpr-item">Bundled shop item</label>
+                <input id="vpr-item" type="text" value="coffee & muffin" />
+              </div>
+              <div class="form-group">
+                <label for="vpr-discount">Discount on item (%)</label>
+                <input id="vpr-discount" type="number" value="10" />
+              </div>
+              <div class="form-group">
+                <label for="vpr-points">Loyalty points</label>
+                <input id="vpr-points" type="number" value="100" />
+              </div>
+              <div class="form-group">
+                <label for="vpr-days">Validity (days)</label>
+                <input id="vpr-days" type="number" value="14" />
+              </div>
+              <div class="form-group">
+                <button id="vpr-generate" type="button" class="button primary">Generate Offer Copy</button>
+              </div>
+              <div class="form-group">
+                <label for="vpr-offer">Offer copy</label>
+                <textarea id="vpr-offer" rows="2" placeholder="Generated marketing copy will appear here" readonly></textarea>
+              </div>
+              <p class="form-hint">Tip: Promote bundles at the pump, POS, and receipt footer to lift attach rate.</p>
+            </div>
         </div>
       </div>
     </section>
