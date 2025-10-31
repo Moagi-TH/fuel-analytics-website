@@ -2652,8 +2652,9 @@
         </div>
       </a>
       <nav class="nav" style="display: flex !important; visibility: visible !important; z-index: 1000 !important; position: relative !important; background: rgba(11,16,32,0.95) !important; padding: 8px 16px !important; border-radius: 8px !important;">
-        <a href="#overview" class="nav-link active" style="display: block !important; visibility: visible !important; opacity: 1 !important; color: #4a9eff !important; background: rgba(91, 140, 255, 0.2) !important;">Analytics & Operations</a>
+        <a href="#overview" class="nav-link active" style="display: block !important; visibility: visible !important; opacity: 1 !important; color: #4a9eff !important; background: rgba(91, 140, 255, 0.2) !important;">Operations Management</a>
         <a href="#renovation" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Renovation</a>
+        <a href="#overview" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Analytics/Metrics</a>
         <a href="#personnel" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Personnel</a>
         <a href="#customer-relations" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Customer Relations</a>
       </nav>
@@ -2696,6 +2697,47 @@
           activateSection(targetId);
         });
       });
+    })();
+  </script>
+
+  <script>
+    (function mergeSections() {
+      // Consolidate Analytics and Reports into Overview without losing elements
+      const overview = document.getElementById('overview');
+      const overviewContainer = overview ? overview.querySelector('.container') : null;
+      if (!overviewContainer) return;
+
+      // Move Analytics content under Overview
+      const analyticsSection = document.getElementById('analytics');
+      const analyticsContainer = analyticsSection ? analyticsSection.querySelector('.container') : null;
+      if (analyticsContainer) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'renovation-settings';
+        const header = document.createElement('h3');
+        header.textContent = 'Analytics & Visualizations';
+        wrapper.appendChild(header);
+        wrapper.appendChild(analyticsContainer);
+        overviewContainer.appendChild(wrapper);
+        analyticsSection.style.display = 'none';
+      }
+
+      // Move Reports management (upload/manual/history) under Overview if present
+      const reportsSection = document.getElementById('reports');
+      if (reportsSection) {
+        const uploadArea = reportsSection.querySelector('#upload-area');
+        const manualForm = reportsSection.querySelector('#manual-form');
+        const reportsHistory = reportsSection.querySelector('#reports-history');
+        const destWrapper = document.createElement('div');
+        destWrapper.className = 'renovation-settings';
+        const h = document.createElement('h3');
+        h.textContent = 'Data Sources & Management';
+        destWrapper.appendChild(h);
+        if (uploadArea) destWrapper.appendChild(uploadArea);
+        if (manualForm) destWrapper.appendChild(manualForm);
+        if (reportsHistory) destWrapper.appendChild(reportsHistory);
+        // Only append if we moved something
+        if (destWrapper.children.length > 1) overviewContainer.appendChild(destWrapper);
+      }
     })();
   </script>
 
@@ -4284,8 +4326,9 @@
     <div class="container footer-inner">
       <div>© <span id="year"></span> FUEL FLUX - Analytics Dashboard</div>
       <div class="footer-links">
-        <a href="#overview">Analytics & Operations</a>
+        <a href="#overview">Operations Management</a>
         <a href="#renovation">Renovation</a>
+        <a href="#overview">Analytics/Metrics</a>
         <a href="#personnel">Personnel</a>
         <a href="#customer-relations">Customer Relations</a>
       </div>
