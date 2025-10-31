@@ -1586,7 +1586,7 @@
     }
   </script>
   <script>
-    (function duplicateToOperationsManagement() {
+    document.addEventListener('DOMContentLoaded', function duplicateToOperationsManagement() {
       try {
         const overview = document.getElementById('overview');
         const overviewContainer = overview ? overview.querySelector('.container') : null;
@@ -1612,10 +1612,8 @@
         const analyticsSection = document.getElementById('analytics');
         if (analyticsSection) analyticsSection.style.display = 'none';
         cloneSection('reports', 'Data Sources & Management');
-      } catch (e) {
-        console.warn('OM duplication failed:', e);
-      }
-    })();
+      } catch (e) { console.warn('OM duplication failed:', e); }
+    });
   </script>
   
   <!-- IMMEDIATE TEST FUNCTION - Available right away -->
