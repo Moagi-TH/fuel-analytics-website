@@ -95,9 +95,15 @@
   <!-- CRITICAL FUNCTIONS - DEFINED IMMEDIATELY -->
   <script>
     console.log('🚀 CRITICAL FUNCTIONS: Defining essential functions immediately...');
+    // Template mode disables live Supabase calls and pop-up alerts
+    window.TEMPLATE_MODE = true;
     
     // Initialize Supabase client immediately
     window.initializeSupabaseClient = function() {
+      if (window.TEMPLATE_MODE) {
+        console.warn('Template mode: skipping Supabase initialization');
+        return false;
+      }
       if (!window.supabaseClient && window.supabase) {
         const supabaseUrl = 'https://fynfomhoikzpsrbghnzr.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5bmZvbWhvaWt6cHNyYmdobnpyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDUwNTc5MSwiZXhwIjoyMDcwMDgxNzkxfQ.LAo0ngckbfAwplBvvQv9zhIzgvTT88H4ZKluHrV8Opo';
@@ -411,8 +417,8 @@
             if (analyzeStatus) {
               analyzeStatus.textContent = `⚠️ Supabase not available. Storing locally...`;
           } else {
-            alert('⚠️ Supabase not available. Storing locally.');
-            }
+          console.warn('⚠️ Supabase not available. Storing locally.');
+          }
             console.warn('⚠️ Supabase client not available, using local storage');
             
             // Fallback to local storage
@@ -474,7 +480,14 @@
         window.initializeSupabaseClient();
         
         if (!window.supabaseClient) {
-          alert('❌ Supabase client not available');
+          console.warn('Supabase client not available (template mode)');
+          // Render an empty list gracefully in template mode
+          const reportsHistory = document.getElementById('reports-history');
+          const reportsList = document.getElementById('reports-list');
+          if (reportsHistory) reportsHistory.style.display = 'block';
+          if (reportsList) {
+            reportsList.innerHTML = `<div class="form-section"><h4>All Reports (0)</h4><p class="form-hint">Template mode: connect Supabase to list reports.</p></div>`;
+          }
           return;
         }
         
@@ -1156,7 +1169,7 @@
         window.initializeSupabaseClient();
         
         if (!window.supabaseClient) {
-          alert('❌ Supabase client not available');
+          console.warn('Supabase client not available (template mode)');
           return;
         }
         
@@ -1221,7 +1234,7 @@
         window.initializeSupabaseClient();
         
         if (!window.supabaseClient) {
-          alert('❌ Supabase client not available');
+          console.warn('Supabase client not available (template mode)');
           return;
         }
         
@@ -1261,7 +1274,7 @@
         window.initializeSupabaseClient();
         
         if (!window.supabaseClient) {
-          alert('❌ Supabase client not available');
+          console.warn('Supabase client not available (template mode)');
           return;
         }
         
@@ -1427,7 +1440,7 @@
         window.initializeSupabaseClient();
         
         if (!window.supabaseClient) {
-          alert('❌ Supabase client not available');
+          console.warn('Supabase client not available (template mode)');
           return;
         }
         
@@ -1483,7 +1496,7 @@
           .list('', { limit: 10 });
         
         if (error) {
-          alert('❌ Cannot access Supabase: ' + error.message);
+          console.warn('Cannot access Supabase:', error?.message || error);
           return;
         }
         
