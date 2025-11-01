@@ -94,8 +94,8 @@
   
   <!-- CRITICAL FUNCTIONS - DEFINED IMMEDIATELY -->
   <script>
-      console.log('🚀 CRITICAL FUNCTIONS: Defining essential functions immediately...');
-      
+    console.log('🚀 CRITICAL FUNCTIONS: Defining essential functions immediately...');
+    
       // TEMPLATE MODE: disable live Supabase calls and provide safe stubs
       window.TEMPLATE_MODE = true;
       if (window.TEMPLATE_MODE) {
@@ -120,7 +120,7 @@
       }
       
       // Initialize Supabase client (no-op in template mode)
-      window.initializeSupabaseClient = function() {
+    window.initializeSupabaseClient = function() {
         if (window.TEMPLATE_MODE) {
           console.warn('Template mode: Supabase disabled, using stubs.');
           return true;
@@ -2793,6 +2793,14 @@
                   <label for="petrol95-delivery-liters">Delivery (L)</label>
                   <input id="petrol95-delivery-liters" class="form-input" type="number" min="0" placeholder="0" />
                 </div>
+                <div class="form-group">
+                  <label for="petrol95-dealer-margin">Dealer Margin (%)</label>
+                  <input id="petrol95-dealer-margin" class="form-input" type="number" min="0" max="100" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="petrol95-company-margin">Fuel Company Margin (%)</label>
+                  <input id="petrol95-company-margin" class="form-input" type="number" min="0" max="100" step="0.01" placeholder="0.00" />
+                </div>
               </div>
               <div class="form-actions">
                 <button class="button primary" id="save-petrol95">Save Petrol 95</button>
@@ -2834,6 +2842,10 @@
                 <div class="form-group">
                   <label for="dieselex-delivery-liters">Delivery (L)</label>
                   <input id="dieselex-delivery-liters" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="dieselex-selected-price">Selected Diesel Price (R/L)</label>
+                  <input id="dieselex-selected-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
                 </div>
               </div>
               <div class="form-actions">
@@ -3459,18 +3471,18 @@
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
                 </svg>
-              </div>
+            </div>
               <div class="metric-content">
                 <div class="metric-title">Shop to Fuel Ratio</div>
                 <div class="metric-value" id="shop-fuel-ratio-kpi">R 0.00/L</div>
-              </div>
+            </div>
             </div>
             <div class="metric-card">
               <div class="metric-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M7 14l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-              </div>
+            </div>
               <div class="metric-content">
                 <div class="metric-title">Revenue Growth Rate</div>
                 <div class="metric-value" id="revenue-growth-rate">0%</div>
@@ -4250,8 +4262,8 @@
                 <div class="form-group" id="cr-q-options-wrap" style="display:none;">
                   <label for="cr-q-options">Options (comma-separated)</label>
                   <input id="cr-q-options" class="form-input" type="text" placeholder="e.g., Excellent,Good,Fair,Poor" />
-                </div>
               </div>
+            </div>
               <div class="form-actions">
                 <button id="cr-add-q" type="button" class="button secondary">Add Question</button>
                 <span id="cr-survey-status" class="form-hint" style="margin-left: 8px;"></span>
@@ -4263,16 +4275,16 @@
               <button id="cr-save" class="button primary" type="button">Save Survey</button>
               <button id="cr-export" class="button secondary" type="button">Export JSON</button>
               <button id="cr-clear" class="button secondary" type="button">Clear</button>
-            </div>
-          </div>
-
+                  </div>
+                </div>
+                
           <div class="renovation-settings">
             <h3>✅ Recommended Actions</h3>
             <div id="cr-actions" class="api-settings-form">
               <ul id="cr-actions-list" class="insights-list"></ul>
               <p id="cr-actions-empty" class="form-hint">Add questions above to see recommended actions.</p>
-            </div>
-          </div>
+                  </div>
+                </div>
           <script>
             (function() {
               const statusEl = document.getElementById('cr-survey-status');
@@ -4397,40 +4409,40 @@
               }
             })();
           </script>
-        </div>
+                </div>
         <div class="renovation-settings" style="margin-top:16px;">
           <h3>⛽ V Power Rewards Bundles</h3>
           <div class="form-grid">
             <div class="form-group">
               <label for="vpr-liters">Liters threshold</label>
               <input id="vpr-liters" class="form-input" type="number" value="30" />
-            </div>
+              </div>
             <div class="form-group">
               <label for="vpr-item">Bundled shop item</label>
               <input id="vpr-item" class="form-input" type="text" value="coffee & muffin" />
-            </div>
+                </div>
             <div class="form-group">
               <label for="vpr-discount">Discount on item (%)</label>
               <input id="vpr-discount" class="form-input" type="number" value="10" />
-            </div>
+              </div>
             <div class="form-group">
               <label for="vpr-points">Loyalty points</label>
               <input id="vpr-points" class="form-input" type="number" value="100" />
-            </div>
+                </div>
             <div class="form-group">
               <label for="vpr-days">Validity (days)</label>
               <input id="vpr-days" class="form-input" type="number" value="14" />
+              </div>
             </div>
-          </div>
           <div class="form-actions">
             <button id="vpr-generate" type="button" class="button primary">Generate Offer Copy</button>
           </div>
           <div class="form-group" style="margin-top:12px;">
             <label for="vpr-offer">Offer copy</label>
             <textarea id="vpr-offer" class="form-input" rows="2" placeholder="Generated marketing copy will appear here" readonly></textarea>
-          </div>
-          <p class="form-hint">Tip: Promote bundles at the pump, POS, and receipt footer to lift attach rate.</p>
         </div>
+          <p class="form-hint">Tip: Promote bundles at the pump, POS, and receipt footer to lift attach rate.</p>
+      </div>
     </section>
 
     <!-- Expansion Section -->
