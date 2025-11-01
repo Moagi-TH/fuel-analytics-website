@@ -2737,50 +2737,132 @@
         <!-- Wet Stock Panel -->
         <div id="wet-stock" class="renovation-settings">
           <h3>Wet Stock</h3>
-          <div class="metrics-grid" style="margin-bottom: 16px;">
-            <div class="metric-card">
-              <div class="metric-icon">⛽</div>
-              <div class="metric-content">
-                <div class="metric-title">Current Tank Levels</div>
-                <div class="metric-value" id="tank-levels-total">0 L</div>
+          <div class="analysis-grid" style="margin-bottom: 16px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+            <!-- Petrol 95 -->
+            <div class="analysis-card" id="wet-petrol95">
+              <h4>Petrol 95</h4>
+              <div class="metrics-grid" style="margin-bottom: 12px;">
+                <div class="metric-card">
+                  <div class="metric-icon">⛽</div>
+                  <div class="metric-content">
+                    <div class="metric-title">Tank Level</div>
+                    <div class="metric-value" id="petrol95-level">0 L</div>
+                  </div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-icon">📦</div>
+                  <div class="metric-content">
+                    <div class="metric-title">Last Delivery</div>
+                    <div class="metric-value" id="petrol95-delivery">—</div>
+                  </div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-icon">⚖️</div>
+                  <div class="metric-content">
+                    <div class="metric-title">Variance</div>
+                    <div class="metric-value" id="petrol95-variance">0.0%</div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="petrol95-dip">Record Dip (L)</label>
+                  <input id="petrol95-dip" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="petrol95-delivery-liters">Delivery (L)</label>
+                  <input id="petrol95-delivery-liters" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-petrol95">Save Petrol 95</button>
+                <button class="button secondary" id="reconcile-petrol95">Reconcile</button>
               </div>
             </div>
-            <div class="metric-card">
-              <div class="metric-icon">📦</div>
-              <div class="metric-content">
-                <div class="metric-title">Last Delivery</div>
-                <div class="metric-value" id="last-delivery">—</div>
+
+            <!-- Diesel Ex -->
+            <div class="analysis-card" id="wet-dieselex">
+              <h4>Diesel Ex</h4>
+              <div class="metrics-grid" style="margin-bottom: 12px;">
+                <div class="metric-card">
+                  <div class="metric-icon">⛽</div>
+                  <div class="metric-content">
+                    <div class="metric-title">Tank Level</div>
+                    <div class="metric-value" id="dieselex-level">0 L</div>
+                  </div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-icon">📦</div>
+                  <div class="metric-content">
+                    <div class="metric-title">Last Delivery</div>
+                    <div class="metric-value" id="dieselex-delivery">—</div>
+                  </div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-icon">⚖️</div>
+                  <div class="metric-content">
+                    <div class="metric-title">Variance</div>
+                    <div class="metric-value" id="dieselex-variance">0.0%</div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="dieselex-dip">Record Dip (L)</label>
+                  <input id="dieselex-dip" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="dieselex-delivery-liters">Delivery (L)</label>
+                  <input id="dieselex-delivery-liters" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-dieselex">Save Diesel Ex</button>
+                <button class="button secondary" id="reconcile-dieselex">Reconcile</button>
               </div>
             </div>
-            <div class="metric-card">
-              <div class="metric-icon">⚖️</div>
-              <div class="metric-content">
-                <div class="metric-title">Variance</div>
-                <div class="metric-value" id="wet-variance">0.0%</div>
+
+            <!-- V-Power Diesel -->
+            <div class="analysis-card" id="wet-vpowerdiesel">
+              <h4>V-Power Diesel</h4>
+              <div class="metrics-grid" style="margin-bottom: 12px;">
+                <div class="metric-card">
+                  <div class="metric-icon">⛽</div>
+                  <div class="metric-content">
+                    <div class="metric-title">Tank Level</div>
+                    <div class="metric-value" id="vpd-level">0 L</div>
+                  </div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-icon">📦</div>
+                  <div class="metric-content">
+                    <div class="metric-title">Last Delivery</div>
+                    <div class="metric-value" id="vpd-delivery">—</div>
+                  </div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-icon">⚖️</div>
+                  <div class="metric-content">
+                    <div class="metric-title">Variance</div>
+                    <div class="metric-value" id="vpd-variance">0.0%</div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="vpd-dip">Record Dip (L)</label>
+                  <input id="vpd-dip" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="vpd-delivery-liters">Delivery (L)</label>
+                  <input id="vpd-delivery-liters" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-vpd">Save V-Power Diesel</button>
+                <button class="button secondary" id="reconcile-vpd">Reconcile</button>
               </div>
             </div>
-          </div>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="record-dip">Record Dip (L)</label>
-              <input id="record-dip" class="form-input" type="number" min="0" placeholder="0" />
-            </div>
-            <div class="form-group">
-              <label for="record-delivery-liters">Delivery (L)</label>
-              <input id="record-delivery-liters" class="form-input" type="number" min="0" placeholder="0" />
-            </div>
-            <div class="form-group">
-              <label for="record-delivery-product">Product</label>
-              <select id="record-delivery-product" class="form-select">
-                <option>Diesel Ex</option>
-                <option>V-Power 95</option>
-                <option>V-Power Diesel</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-actions">
-            <button class="button primary" id="save-wet-stock">Save Wet Stock</button>
-            <button class="button secondary" id="reconcile-wet-stock">Reconcile</button>
           </div>
         </div>
 
