@@ -2763,6 +2763,20 @@
                     <div class="metric-value" id="petrol95-variance">0.0%</div>
                   </div>
                 </div>
+                <div class="metric-card">
+                  <div class="metric-icon">📈</div>
+                  <div class="metric-content">
+                    <div class="metric-title">Current Demand</div>
+                    <div class="metric-value" id="petrol95-demand-current">0 L/day</div>
+                  </div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-icon">🔮</div>
+                  <div class="metric-content">
+                    <div class="metric-title">Forecasted Demand</div>
+                    <div class="metric-value" id="petrol95-demand-forecast">—</div>
+                  </div>
+                </div>
               </div>
               <div class="form-grid">
                 <div class="form-group">
@@ -2781,6 +2795,16 @@
                   <label for="petrol95-company-margin">Fuel Company Margin (%)</label>
                   <input id="petrol95-company-margin" class="form-input" type="number" min="0" max="100" step="0.01" placeholder="0.00" />
                 </div>
+                <div class="form-group">
+                  <label for="petrol95-source">Data Source</label>
+                  <select id="petrol95-source" class="form-select">
+                    <option value="manual" selected>Manual Entry</option>
+                    <option value="pdf">From PDF Extraction</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button secondary" id="load-petrol95-report">Load From Latest Report</button>
               </div>
               <div class="form-actions">
                 <button class="button primary" id="save-petrol95">Save Petrol 95</button>
@@ -2813,6 +2837,20 @@
                     <div class="metric-value" id="dieselex-variance">0.0%</div>
                   </div>
                 </div>
+                <div class="metric-card">
+                  <div class="metric-icon">📈</div>
+                  <div class="metric-content">
+                    <div class="metric-title">Current Demand</div>
+                    <div class="metric-value" id="dieselex-demand-current">0 L/day</div>
+                  </div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-icon">🔮</div>
+                  <div class="metric-content">
+                    <div class="metric-title">Forecasted Demand</div>
+                    <div class="metric-value" id="dieselex-demand-forecast">—</div>
+                  </div>
+                </div>
               </div>
               <div class="form-grid">
                 <div class="form-group">
@@ -2827,6 +2865,16 @@
                   <label for="dieselex-selected-price">Selected Diesel Price (R/L)</label>
                   <input id="dieselex-selected-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
                 </div>
+                <div class="form-group">
+                  <label for="dieselex-source">Data Source</label>
+                  <select id="dieselex-source" class="form-select">
+                    <option value="manual" selected>Manual Entry</option>
+                    <option value="pdf">From PDF Extraction</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button secondary" id="load-dieselex-report">Load From Latest Report</button>
               </div>
               <div class="form-actions">
                 <button class="button primary" id="save-dieselex">Save Diesel Ex</button>
@@ -2859,6 +2907,20 @@
                     <div class="metric-value" id="vpd-variance">0.0%</div>
                   </div>
                 </div>
+                <div class="metric-card">
+                  <div class="metric-icon">📈</div>
+                  <div class="metric-content">
+                    <div class="metric-title">Current Demand</div>
+                    <div class="metric-value" id="vpd-demand-current">0 L/day</div>
+                  </div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-icon">🔮</div>
+                  <div class="metric-content">
+                    <div class="metric-title">Forecasted Demand</div>
+                    <div class="metric-value" id="vpd-demand-forecast">—</div>
+                  </div>
+                </div>
               </div>
               <div class="form-grid">
                 <div class="form-group">
@@ -2869,6 +2931,20 @@
                   <label for="vpd-delivery-liters">Delivery (L)</label>
                   <input id="vpd-delivery-liters" class="form-input" type="number" min="0" placeholder="0" />
                 </div>
+                <div class="form-group">
+                  <label for="vpd-selected-price">Selected Diesel Price (R/L)</label>
+                  <input id="vpd-selected-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="vpd-source">Data Source</label>
+                  <select id="vpd-source" class="form-select">
+                    <option value="manual" selected>Manual Entry</option>
+                    <option value="pdf">From PDF Extraction</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button secondary" id="load-vpd-report">Load From Latest Report</button>
               </div>
               <div class="form-actions">
                 <button class="button primary" id="save-vpd">Save V-Power Diesel</button>
