@@ -3014,26 +3014,634 @@
               </div>
             </div>
           </div>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="dry-item-name">Item</label>
-              <input id="dry-item-name" class="form-input" type="text" placeholder="e.g., Coffee & Muffin" />
+
+          <!-- Dry Stock Categories Grid -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-top: 24px;">
+            
+            <!-- Airtime -->
+            <div class="analysis-card">
+              <h4>Airtime</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="airtime-item">Item</label>
+                  <input id="airtime-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="airtime-qty">Qty Received</label>
+                  <input id="airtime-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="airtime-cost">Unit Cost (R)</label>
+                  <input id="airtime-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="airtime-price">Unit Price (R)</label>
+                  <input id="airtime-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-airtime">Save</button>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="dry-qty">Qty Received</label>
-              <input id="dry-qty" class="form-input" type="number" min="0" placeholder="0" />
+
+            <!-- Bakery -->
+            <div class="analysis-card">
+              <h4>Bakery</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="bakery-item">Item</label>
+                  <input id="bakery-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="bakery-qty">Qty Received</label>
+                  <input id="bakery-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="bakery-cost">Unit Cost (R)</label>
+                  <input id="bakery-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="bakery-price">Unit Price (R)</label>
+                  <input id="bakery-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-bakery">Save</button>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="dry-cost">Unit Cost (R)</label>
-              <input id="dry-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+
+            <!-- Bakery Zero Rated -->
+            <div class="analysis-card">
+              <h4>Bakery Zero Rated</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="bakery-zr-item">Item</label>
+                  <input id="bakery-zr-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="bakery-zr-qty">Qty Received</label>
+                  <input id="bakery-zr-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="bakery-zr-cost">Unit Cost (R)</label>
+                  <input id="bakery-zr-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="bakery-zr-price">Unit Price (R)</label>
+                  <input id="bakery-zr-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-bakery-zr">Save</button>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="dry-price">Unit Price (R)</label>
-              <input id="dry-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+
+            <!-- Beverage -->
+            <div class="analysis-card">
+              <h4>Beverage</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="beverage-item">Item</label>
+                  <input id="beverage-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="beverage-qty">Qty Received</label>
+                  <input id="beverage-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="beverage-cost">Unit Cost (R)</label>
+                  <input id="beverage-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="beverage-price">Unit Price (R)</label>
+                  <input id="beverage-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-beverage">Save</button>
+              </div>
             </div>
-          </div>
-          <div class="form-actions">
-            <button class="button primary" id="save-dry-stock">Save Dry Stock</button>
+
+            <!-- Biltong -->
+            <div class="analysis-card">
+              <h4>Biltong</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="biltong-item">Item</label>
+                  <input id="biltong-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="biltong-qty">Qty Received</label>
+                  <input id="biltong-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="biltong-cost">Unit Cost (R)</label>
+                  <input id="biltong-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="biltong-price">Unit Price (R)</label>
+                  <input id="biltong-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-biltong">Save</button>
+              </div>
+            </div>
+
+            <!-- Braai Products -->
+            <div class="analysis-card">
+              <h4>Braai Products</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="braai-item">Item</label>
+                  <input id="braai-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="braai-qty">Qty Received</label>
+                  <input id="braai-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="braai-cost">Unit Cost (R)</label>
+                  <input id="braai-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="braai-price">Unit Price (R)</label>
+                  <input id="braai-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-braai">Save</button>
+              </div>
+            </div>
+
+            <!-- Cosmetics -->
+            <div class="analysis-card">
+              <h4>Cosmetics</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="cosmetics-item">Item</label>
+                  <input id="cosmetics-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="cosmetics-qty">Qty Received</label>
+                  <input id="cosmetics-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="cosmetics-cost">Unit Cost (R)</label>
+                  <input id="cosmetics-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="cosmetics-price">Unit Price (R)</label>
+                  <input id="cosmetics-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-cosmetics">Save</button>
+              </div>
+            </div>
+
+            <!-- Dairy -->
+            <div class="analysis-card">
+              <h4>Dairy</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="dairy-item">Item</label>
+                  <input id="dairy-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="dairy-qty">Qty Received</label>
+                  <input id="dairy-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="dairy-cost">Unit Cost (R)</label>
+                  <input id="dairy-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="dairy-price">Unit Price (R)</label>
+                  <input id="dairy-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-dairy">Save</button>
+              </div>
+            </div>
+
+            <!-- Dairy Zero Rated -->
+            <div class="analysis-card">
+              <h4>Dairy Zero Rated</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="dairy-zr-item">Item</label>
+                  <input id="dairy-zr-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="dairy-zr-qty">Qty Received</label>
+                  <input id="dairy-zr-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="dairy-zr-cost">Unit Cost (R)</label>
+                  <input id="dairy-zr-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="dairy-zr-price">Unit Price (R)</label>
+                  <input id="dairy-zr-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-dairy-zr">Save</button>
+              </div>
+            </div>
+
+            <!-- Deli -->
+            <div class="analysis-card">
+              <h4>Deli</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="deli-item">Item</label>
+                  <input id="deli-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="deli-qty">Qty Received</label>
+                  <input id="deli-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="deli-cost">Unit Cost (R)</label>
+                  <input id="deli-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="deli-price">Unit Price (R)</label>
+                  <input id="deli-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-deli">Save</button>
+              </div>
+            </div>
+
+            <!-- Energy Drinks -->
+            <div class="analysis-card">
+              <h4>Energy Drinks</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="energy-item">Item</label>
+                  <input id="energy-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="energy-qty">Qty Received</label>
+                  <input id="energy-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="energy-cost">Unit Cost (R)</label>
+                  <input id="energy-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="energy-price">Unit Price (R)</label>
+                  <input id="energy-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-energy">Save</button>
+              </div>
+            </div>
+
+            <!-- Fuel Zero Rated -->
+            <div class="analysis-card">
+              <h4>Fuel Zero Rated</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="fuel-zr-item">Item</label>
+                  <input id="fuel-zr-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="fuel-zr-qty">Qty Received</label>
+                  <input id="fuel-zr-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="fuel-zr-cost">Unit Cost (R)</label>
+                  <input id="fuel-zr-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="fuel-zr-price">Unit Price (R)</label>
+                  <input id="fuel-zr-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-fuel-zr">Save</button>
+              </div>
+            </div>
+
+            <!-- Groceries -->
+            <div class="analysis-card">
+              <h4>Groceries</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="groceries-item">Item</label>
+                  <input id="groceries-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="groceries-qty">Qty Received</label>
+                  <input id="groceries-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="groceries-cost">Unit Cost (R)</label>
+                  <input id="groceries-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="groceries-price">Unit Price (R)</label>
+                  <input id="groceries-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-groceries">Save</button>
+              </div>
+            </div>
+
+            <!-- Ice -->
+            <div class="analysis-card">
+              <h4>Ice</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="ice-item">Item</label>
+                  <input id="ice-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="ice-qty">Qty Received</label>
+                  <input id="ice-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="ice-cost">Unit Cost (R)</label>
+                  <input id="ice-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="ice-price">Unit Price (R)</label>
+                  <input id="ice-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-ice">Save</button>
+              </div>
+            </div>
+
+            <!-- Ice Cream -->
+            <div class="analysis-card">
+              <h4>Ice Cream</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="icecream-item">Item</label>
+                  <input id="icecream-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="icecream-qty">Qty Received</label>
+                  <input id="icecream-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="icecream-cost">Unit Cost (R)</label>
+                  <input id="icecream-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="icecream-price">Unit Price (R)</label>
+                  <input id="icecream-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-icecream">Save</button>
+              </div>
+            </div>
+
+            <!-- Lotto -->
+            <div class="analysis-card">
+              <h4>Lotto</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="lotto-item">Item</label>
+                  <input id="lotto-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="lotto-qty">Qty Received</label>
+                  <input id="lotto-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="lotto-cost">Unit Cost (R)</label>
+                  <input id="lotto-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="lotto-price">Unit Price (R)</label>
+                  <input id="lotto-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-lotto">Save</button>
+              </div>
+            </div>
+
+            <!-- Motor Spares -->
+            <div class="analysis-card">
+              <h4>Motor Spares</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="motor-item">Item</label>
+                  <input id="motor-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="motor-qty">Qty Received</label>
+                  <input id="motor-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="motor-cost">Unit Cost (R)</label>
+                  <input id="motor-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="motor-price">Unit Price (R)</label>
+                  <input id="motor-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-motor">Save</button>
+              </div>
+            </div>
+
+            <!-- OTC Medication -->
+            <div class="analysis-card">
+              <h4>OTC Medication</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="otc-item">Item</label>
+                  <input id="otc-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="otc-qty">Qty Received</label>
+                  <input id="otc-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="otc-cost">Unit Cost (R)</label>
+                  <input id="otc-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="otc-price">Unit Price (R)</label>
+                  <input id="otc-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-otc">Save</button>
+              </div>
+            </div>
+
+            <!-- Oil -->
+            <div class="analysis-card">
+              <h4>Oil</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="oil-item">Item</label>
+                  <input id="oil-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="oil-qty">Qty Received</label>
+                  <input id="oil-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="oil-cost">Unit Cost (R)</label>
+                  <input id="oil-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="oil-price">Unit Price (R)</label>
+                  <input id="oil-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-oil">Save</button>
+              </div>
+            </div>
+
+            <!-- Packaging -->
+            <div class="analysis-card">
+              <h4>Packaging</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="packaging-item">Item</label>
+                  <input id="packaging-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="packaging-qty">Qty Received</label>
+                  <input id="packaging-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="packaging-cost">Unit Cost (R)</label>
+                  <input id="packaging-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="packaging-price">Unit Price (R)</label>
+                  <input id="packaging-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-packaging">Save</button>
+              </div>
+            </div>
+
+            <!-- Pharmacy -->
+            <div class="analysis-card">
+              <h4>Pharmacy</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="pharmacy-item">Item</label>
+                  <input id="pharmacy-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="pharmacy-qty">Qty Received</label>
+                  <input id="pharmacy-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="pharmacy-cost">Unit Cost (R)</label>
+                  <input id="pharmacy-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="pharmacy-price">Unit Price (R)</label>
+                  <input id="pharmacy-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-pharmacy">Save</button>
+              </div>
+            </div>
+
+            <!-- Snacks -->
+            <div class="analysis-card">
+              <h4>Snacks</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="snacks-item">Item</label>
+                  <input id="snacks-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="snacks-qty">Qty Received</label>
+                  <input id="snacks-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="snacks-cost">Unit Cost (R)</label>
+                  <input id="snacks-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="snacks-price">Unit Price (R)</label>
+                  <input id="snacks-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-snacks">Save</button>
+              </div>
+            </div>
+
+            <!-- Sweets/Chocolates -->
+            <div class="analysis-card">
+              <h4>Sweets/Chocolates</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="sweets-item">Item</label>
+                  <input id="sweets-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="sweets-qty">Qty Received</label>
+                  <input id="sweets-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="sweets-cost">Unit Cost (R)</label>
+                  <input id="sweets-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="sweets-price">Unit Price (R)</label>
+                  <input id="sweets-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-sweets">Save</button>
+              </div>
+            </div>
+
+            <!-- Tobacco -->
+            <div class="analysis-card">
+              <h4>Tobacco</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="tobacco-item">Item</label>
+                  <input id="tobacco-item" class="form-input" type="text" placeholder="Item name" />
+                </div>
+                <div class="form-group">
+                  <label for="tobacco-qty">Qty Received</label>
+                  <input id="tobacco-qty" class="form-input" type="number" min="0" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="tobacco-cost">Unit Cost (R)</label>
+                  <input id="tobacco-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label for="tobacco-price">Unit Price (R)</label>
+                  <input id="tobacco-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button primary" id="save-tobacco">Save</button>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
