@@ -2731,6 +2731,107 @@
       <div class="container">
         <div class="section-header">
           <h2>Operations Management</h2>
+          <p>Day-to-day controls for fuel (wet stock) and shop (dry stock) operations</p>
+        </div>
+
+        <!-- Wet Stock Panel -->
+        <div id="wet-stock" class="renovation-settings">
+          <h3>Wet Stock</h3>
+          <div class="metrics-grid" style="margin-bottom: 16px;">
+            <div class="metric-card">
+              <div class="metric-icon">⛽</div>
+              <div class="metric-content">
+                <div class="metric-title">Current Tank Levels</div>
+                <div class="metric-value" id="tank-levels-total">0 L</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon">📦</div>
+              <div class="metric-content">
+                <div class="metric-title">Last Delivery</div>
+                <div class="metric-value" id="last-delivery">—</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon">⚖️</div>
+              <div class="metric-content">
+                <div class="metric-title">Variance</div>
+                <div class="metric-value" id="wet-variance">0.0%</div>
+              </div>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="record-dip">Record Dip (L)</label>
+              <input id="record-dip" class="form-input" type="number" min="0" placeholder="0" />
+            </div>
+            <div class="form-group">
+              <label for="record-delivery-liters">Delivery (L)</label>
+              <input id="record-delivery-liters" class="form-input" type="number" min="0" placeholder="0" />
+            </div>
+            <div class="form-group">
+              <label for="record-delivery-product">Product</label>
+              <select id="record-delivery-product" class="form-select">
+                <option>Diesel Ex</option>
+                <option>V-Power 95</option>
+                <option>V-Power Diesel</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="button primary" id="save-wet-stock">Save Wet Stock</button>
+            <button class="button secondary" id="reconcile-wet-stock">Reconcile</button>
+          </div>
+        </div>
+
+        <!-- Dry Stock Panel -->
+        <div id="dry-stock" class="renovation-settings">
+          <h3>Dry Stock</h3>
+          <div class="metrics-grid" style="margin-bottom: 16px;">
+            <div class="metric-card">
+              <div class="metric-icon">🛒</div>
+              <div class="metric-content">
+                <div class="metric-title">Top Selling Item</div>
+                <div class="metric-value" id="top-item">—</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon">📉</div>
+              <div class="metric-content">
+                <div class="metric-title">Stockouts</div>
+                <div class="metric-value" id="stockouts">0</div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon">💹</div>
+              <div class="metric-content">
+                <div class="metric-title">Gross Margin</div>
+                <div class="metric-value" id="dry-gm">0.0%</div>
+              </div>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="dry-item-name">Item</label>
+              <input id="dry-item-name" class="form-input" type="text" placeholder="e.g., Coffee & Muffin" />
+            </div>
+            <div class="form-group">
+              <label for="dry-qty">Qty Received</label>
+              <input id="dry-qty" class="form-input" type="number" min="0" placeholder="0" />
+            </div>
+            <div class="form-group">
+              <label for="dry-cost">Unit Cost (R)</label>
+              <input id="dry-cost" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+            </div>
+            <div class="form-group">
+              <label for="dry-price">Unit Price (R)</label>
+              <input id="dry-price" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="button primary" id="save-dry-stock">Save Dry Stock</button>
+            <button class="button secondary" id="reconcile-dry-stock">Reconcile</button>
+          </div>
         </div>
       </div>
     </section>
