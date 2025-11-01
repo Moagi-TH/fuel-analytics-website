@@ -2778,13 +2778,6 @@
                   </div>
                 </div>
                 <div class="metric-card">
-                  <div class="metric-icon">⚖️</div>
-                  <div class="metric-content">
-                    <div class="metric-title">Variance</div>
-                    <div class="metric-value" id="petrol95-variance">0.0%</div>
-                  </div>
-                </div>
-                <div class="metric-card">
                   <div class="metric-icon">📈</div>
                   <div class="metric-content">
                     <div class="metric-title">Current Demand</div>
@@ -2820,6 +2813,25 @@
               <div class="form-actions">
                 <button class="button primary" id="save-petrol95">Save Petrol 95</button>
               </div>
+
+              <!-- AI Ordering Suggestion (Petrol 95) -->
+              <div class="renovation-settings" style="margin-top: 12px;">
+                <h4>AI Order Suggestion</h4>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="petrol95-order-qty">Recommended Order (L)</label>
+                    <input id="petrol95-order-qty" class="form-input" type="number" min="0" placeholder="—" readonly />
+                  </div>
+                  <div class="form-group">
+                    <label for="petrol95-order-when">When to Order</label>
+                    <input id="petrol95-order-when" class="form-input" type="text" placeholder="—" readonly />
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <button class="button secondary" id="run-ai-petrol95">Run AI Suggestion</button>
+                </div>
+                <p class="form-hint">Based on recent Petrol 95 performance; forecasting API integration coming soon.</p>
+              </div>
             </div>
 
             <!-- Diesel Ex -->
@@ -2838,13 +2850,6 @@
                   <div class="metric-content">
                     <div class="metric-title">Last Delivery</div>
                     <div class="metric-value" id="dieselex-delivery">—</div>
-                  </div>
-                </div>
-                <div class="metric-card">
-                  <div class="metric-icon">⚖️</div>
-                  <div class="metric-content">
-                    <div class="metric-title">Variance</div>
-                    <div class="metric-value" id="dieselex-variance">0.0%</div>
                   </div>
                 </div>
                 <div class="metric-card">
@@ -2920,13 +2925,6 @@
                   <div class="metric-content">
                     <div class="metric-title">Last Delivery</div>
                     <div class="metric-value" id="vpd-delivery">—</div>
-                  </div>
-                </div>
-                <div class="metric-card">
-                  <div class="metric-icon">⚖️</div>
-                  <div class="metric-content">
-                    <div class="metric-title">Variance</div>
-                    <div class="metric-value" id="vpd-variance">0.0%</div>
                   </div>
                 </div>
                 <div class="metric-card">
