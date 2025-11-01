@@ -2695,6 +2695,7 @@
         <a href="#renovation" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Renovation</a>
         <a href="#personnel" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Personnel</a>
         <a href="#customer-relations" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Customer Relations</a>
+        <a href="#bank-reconciliation" class="nav-link" style="display: block !important; visibility: visible !important; opacity: 1 !important;">Bank Reconciliation</a>
       </nav>
       <div class="header-actions">
         <span id="user-email" class="user-email"></span>
@@ -2751,7 +2752,7 @@
       <div class="container">
         <div class="section-header">
           <h2>Operations Management</h2>
-          <p>Day-to-day controls for fuel (wet stock) and shop (dry stock) operations</p>
+          <p>Demand forecasting for fuel (wet stock) and shop (dry stock) operations</p>
         </div>
 
         <!-- Wet Stock Panel -->
@@ -2818,7 +2819,6 @@
               </div>
               <div class="form-actions">
                 <button class="button primary" id="save-petrol95">Save Petrol 95</button>
-                <button class="button secondary" id="reconcile-petrol95">Reconcile</button>
               </div>
             </div>
 
@@ -2878,7 +2878,6 @@
               </div>
               <div class="form-actions">
                 <button class="button primary" id="save-dieselex">Save Diesel Ex</button>
-                <button class="button secondary" id="reconcile-dieselex">Reconcile</button>
               </div>
             </div>
 
@@ -2934,7 +2933,6 @@
               </div>
               <div class="form-actions">
                 <button class="button primary" id="save-vpd">Save V-Power Diesel</button>
-                <button class="button secondary" id="reconcile-vpd">Reconcile</button>
               </div>
             </div>
           </div>
@@ -2986,11 +2984,46 @@
           </div>
           <div class="form-actions">
             <button class="button primary" id="save-dry-stock">Save Dry Stock</button>
-            <button class="button secondary" id="reconcile-dry-stock">Reconcile</button>
           </div>
         </div>
       </div>
     </section>
+  
+  <!-- Bank Reconciliation Section -->
+  <section id="bank-reconciliation" class="dashboard-section alt">
+    <div class="container">
+      <div class="section-header">
+        <h2>Bank Reconciliation</h2>
+        <p>Match banked amounts to sales totals across cash, card and other tenders</p>
+      </div>
+
+      <div class="renovation-settings">
+        <h3>Daily Reconciliation</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="rec-cash-banked">Cash Banked (R)</label>
+            <input id="rec-cash-banked" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+          </div>
+          <div class="form-group">
+            <label for="rec-card-settled">Card Settlements (R)</label>
+            <input id="rec-card-settled" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+          </div>
+          <div class="form-group">
+            <label for="rec-total-sales">Total Sales (R)</label>
+            <input id="rec-total-sales" class="form-input" type="number" min="0" step="0.01" placeholder="0.00" />
+          </div>
+          <div class="form-group">
+            <label for="rec-variance">Variance</label>
+            <input id="rec-variance" class="form-input" type="text" placeholder="Auto-calculated" readonly />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="button secondary" id="upload-bank-statement">Upload Bank Statement</button>
+          <button class="button primary" id="save-reconciliation">Save Reconciliation</button>
+        </div>
+      </div>
+    </div>
+  </section>
     <!-- Overview Section -->
     <section id="overview" class="dashboard-section">
       <div class="container">
@@ -4597,6 +4630,7 @@
         <a href="#renovation">Renovation</a>
         <a href="#personnel">Personnel</a>
         <a href="#customer-relations">Customer Relations</a>
+        <a href="#bank-reconciliation">Bank Reconciliation</a>
       </div>
     </div>
   </footer>
