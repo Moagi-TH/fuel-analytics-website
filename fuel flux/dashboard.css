@@ -58,7 +58,7 @@ body {
 .header-inner { 
   display: flex; 
   align-items: center; 
-  gap: 24px; 
+  gap: 16px; 
   padding: 16px 0; 
 }
 

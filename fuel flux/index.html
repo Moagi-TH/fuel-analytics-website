@@ -3,15 +3,18 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>FUEL FLUX Analytics Platform — Turn PDFs into Profit</title>
-    <meta name="description" content="Upload your monthly PDF reports and instantly get clear dashboards, insights, and secure storage. Grow profit with data you already have." />
-    <meta property="og:title" content="FUEL FLUX Analytics Platform — Turn PDFs into Profit" />
-          <meta property="og:description" content="Upload monthly PDFs. Get dashboards, trends, and insights. Secure, simple, and built for fuel businesses." />
+    <title>FUEL FLUX — Integrated Information System for Fuel Operators</title>
+            <meta name="description" content="Integrated information system that enables fuel operators to increase traffic and profits through data analysis. Integrate all systems for seamless management." />
+    <meta property="og:title" content="FUEL FLUX — Integrated Information System for Fuel Operators" />
+          <meta property="og:description" content="Increase traffic and profits through comprehensive data analysis. Integrated systems make fuel station management effortless." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="" />
     <meta property="og:image" content="" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cpath fill='%2309172b' d='M0 0h96v96H0z'/%3E%3Cpath fill='%23a9f' d='M22 70V22a6 6 0 0 1 6-6h20a6 6 0 0 1 6 6v6h8a6 6 0 0 1 6 6v14h2a6 6 0 0 1 6 6v10a10 10 0 1 1-20 0V50h-2v20a6 6 0 0 1-6 6H28a6 6 0 0 1-6-6z'/%3E%3Cpath fill='%23fff' d='M36 28h8v12h-8zM66 36h6v14a3 3 0 1 0 6 0v-8h-2v-6a3 3 0 0 0-3-3h-7z'/%3E%3C/svg%3E" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cpath fill='%2309172b' d='M0 0h96v96H0z'/%3E%3Cpath fill='%233b82f6' d='M22 70V22a6 6 0 0 1 6-6h20a6 6 0 0 1 6 6v6h8a6 6 0 0 1 6 6v14h2a6 6 0 0 1 6 6v10a10 10 0 1 1-20 0V50h-2v20a6 6 0 0 1-6 6H28a6 6 0 0 1-6-6z'/%3E%3Cpath fill='%23fff' d='M36 28h8v12h-8zM66 36h6v14a3 3 0 1 0 6 0v-8h-2v-6a3 3 0 0 0-3-3h-7z'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css" />
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./supabase-client.js"></script>
@@ -26,33 +29,31 @@
     <script defer src="script.js"></script>
   </head>
   <body>
-    <header class="header" data-sticky>
-      <div class="container nav">
-        <a href="#home" class="brand" aria-label="FUEL FLUX Analytics Home">
-          <span class="logo" aria-hidden="true">
-            <!-- Inline SVG logo -->
-            <svg width="28" height="28" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="6" y="10" width="28" height="44" rx="5" fill="currentColor" opacity="0.15"/>
-              <rect x="12" y="16" width="16" height="16" rx="2" fill="currentColor"/>
-              <path d="M38 22h8a4 4 0 0 1 4 4v10h2a4 4 0 0 1 4 4v6a7 7 0 1 1-14 0V36h-4" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-            </svg>
-          </span>
-          <span class="brand-name">FUEL FLUX</span>
+    <header class="header site-header" data-sticky>
+      <div class="container header-inner">
+        <a href="#home" class="brand" aria-label="FUEL FLUX Information System Home">
+          <div class="logo-container">
+            <div class="logo-icon">F</div>
+            <div class="logo-text">
+              <span class="logo-fuel">FUEL</span>
+              <span class="logo-flux">FLUX</span>
+            </div>
+          </div>
         </a>
         <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
-        <nav class="menu" aria-label="Primary">
-          <a href="#operations" style="white-space: nowrap;">Operations Management</a>
-          <a href="#overview" style="white-space: nowrap;">Analytics & Visualizations</a>
-          <a href="#renovation" style="white-space: nowrap;">Renovation</a>
-          <a href="#personnel" style="white-space: nowrap;">Personnel</a>
-          <a href="#customer-relations" style="white-space: nowrap;">Customer Relations</a>
+        <nav class="nav" aria-label="Primary">
+          <a href="dashboard.html#overview" class="nav-link">Analytics & Visualizations</a>
+          <a href="dashboard.html#operations" class="nav-link">Operations Management</a>
+          <a href="dashboard.html#renovation" class="nav-link">Renovation Management</a>
+          <a href="dashboard.html#deal-maker" class="nav-link">Deal Maker</a>
+          <a href="dashboard.html#customer-relations" class="nav-link">Customer Relations</a>
+          <a href="dashboard.html#bank-reconciliation" class="nav-link">Bank Reconciliation</a>
         </nav>
-        <div class="cta auth-controls" style="gap:8px">
-          <a class="btn btn-primary" href="dashboard.html">Launch Dashboard</a>
+        <div class="header-actions auth-controls">
           <button class="btn btn-ghost auth-when-signed-out" data-open-auth>Sign in</button>
           <div class="auth-when-signed-in" data-account style="display:none">
-            <span class="small" data-user-email></span>
-            <button class="btn btn-secondary" data-signout>Sign out</button>
+            <span class="small user-email" data-user-email></span>
+            <button class="btn btn-secondary button secondary" data-signout>Sign out</button>
           </div>
         </div>
       </div>
@@ -62,120 +63,199 @@
       <section class="hero">
         <div class="container hero-grid">
           <div class="hero-copy">
-            <div class="eyebrow">FUEL FLUX Analytics Platform</div>
-            <h1>Integrated Information System for Fuel Operators</h1>
-                          <p class="sub">An integrated information system that enables fuel operators to increase customer traffic whilst achieving the appropriate margins and sales targets.</p>
+            <div class="eyebrow">FUEL FLUX Information System</div>
+            <h1>Integrated Information System for Fueling Station Operators</h1>
+            <p class="sub">Enable fueling station operators to increase traffic and profits through comprehensive data analysis for all aspects of your fueling entity. Integrated systems make management a breeze. Works seamlessly for all fueling stations, from rural locations to busy city centers.</p>
             <div class="cta-row">
-              <a class="btn btn-primary" href="dashboard.html">Launch Dashboard</a>
+              <a class="btn btn-primary" href="dashboard.html#overview">Launch Information System</a>
               <button class="btn btn-ghost" data-open-demo>See Demo</button>
             </div>
-            <div class="proof">
-              <div class="stars" aria-hidden="true">★★★★★</div>
-              <span>Trusted by fuel station owners for data-driven growth</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- All Features Section -->
+      <section id="features" class="section">
+        <div class="container">
+          <div class="section-head">
+            <h2>Complete Information System</h2>
+            <p class="muted">Comprehensive tools for all aspects of your fueling entity</p>
+          </div>
+          <div class="features-grid">
+            <div class="feature-item">
+              <div class="feature-icon">
+                <svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="8" y="8" width="48" height="48" rx="8" fill="currentColor" opacity="0.1"/>
+                  <path d="M32 16L36 28L48 32L36 36L32 48L28 36L16 32L28 28L32 16Z" fill="currentColor"/>
+                  <rect x="12" y="50" width="40" height="6" rx="3" fill="currentColor" opacity="0.3"/>
+                  <circle cx="24" cy="40" r="3" fill="currentColor" opacity="0.5"/>
+                  <circle cx="40" cy="40" r="3" fill="currentColor" opacity="0.5"/>
+                </svg>
+              </div>
+              <h3>Operations Management</h3>
+              <p>Tools and processes to streamline daily operations and improve site performance.</p>
+            </div>
+
+            <div class="feature-item">
+              <div class="feature-icon">
+                <svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="8" y="8" width="48" height="48" rx="8" fill="currentColor" opacity="0.1"/>
+                  <path d="M16 44L22 32L28 38L32 28L40 24L48 36" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                  <circle cx="22" cy="32" r="3" fill="currentColor"/>
+                  <circle cx="28" cy="38" r="3" fill="currentColor"/>
+                  <circle cx="32" cy="28" r="3" fill="currentColor"/>
+                  <circle cx="40" cy="24" r="3" fill="currentColor"/>
+                  <circle cx="48" cy="36" r="3" fill="currentColor"/>
+                  <line x1="16" y1="48" x2="48" y2="48" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+                  <line x1="16" y1="16" x2="16" y2="48" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+                </svg>
+              </div>
+              <h3>Analytics & Visualizations</h3>
+              <p>Comprehensive information system with KPIs and visualizations that provide clear, actionable insights.</p>
+            </div>
+
+            <div class="feature-item">
+              <div class="feature-icon">
+                <svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="8" y="8" width="48" height="48" rx="8" fill="currentColor" opacity="0.1"/>
+                  <rect x="20" y="18" width="24" height="18" rx="2" fill="currentColor" opacity="0.2"/>
+                  <path d="M20 18L32 12L44 18V36L32 42L20 36V18Z" stroke="currentColor" stroke-width="2.5" fill="none"/>
+                  <line x1="32" y1="12" x2="32" y2="42" stroke="currentColor" stroke-width="2.5"/>
+                  <line x1="20" y1="27" x2="44" y2="27" stroke="currentColor" stroke-width="2.5"/>
+                  <circle cx="28" cy="24" r="2" fill="currentColor"/>
+                  <circle cx="36" cy="30" r="2" fill="currentColor"/>
+                </svg>
+              </div>
+              <h3>Renovation Management</h3>
+              <p>Plan and track renovation projects with budgets, timelines and ROI.</p>
+            </div>
+
+            <div class="feature-item">
+              <div class="feature-icon">
+                <svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="8" y="8" width="48" height="48" rx="8" fill="currentColor" opacity="0.1"/>
+                  <path d="M32 16C38.6274 16 44 21.3726 44 28C44 34.6274 38.6274 40 32 40C25.3726 40 20 34.6274 20 28C20 21.3726 25.3726 16 32 16Z" fill="currentColor"/>
+                  <path d="M28 28L30 30L36 24" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M24 48L40 48" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                  <path d="M28 52L36 52" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+                </svg>
+              </div>
+              <h3>Deal Maker</h3>
+              <p>Create and manage promotional deals based on low-moving inventory to boost sales.</p>
+            </div>
+
+            <div class="feature-item">
+              <div class="feature-icon">
+                <svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="8" y="8" width="48" height="48" rx="8" fill="currentColor" opacity="0.1"/>
+                  <circle cx="24" cy="26" r="6" fill="currentColor" opacity="0.3"/>
+                  <circle cx="40" cy="26" r="6" fill="currentColor" opacity="0.3"/>
+                  <path d="M16 40C16 36 18 34 24 34C30 34 32 36 32 40" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                  <path d="M32 40C32 36 34 34 40 34C46 34 48 36 48 40" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                  <path d="M28 50C28 48 29 46 32 46C35 46 36 48 36 50" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+                </svg>
+              </div>
+              <h3>Customer Relations</h3>
+              <p>Build surveys, manage loyalty bundles and strengthen customer engagement.</p>
+            </div>
+
+            <div class="feature-item">
+              <div class="feature-icon">
+                <svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="8" y="8" width="48" height="48" rx="8" fill="currentColor" opacity="0.1"/>
+                  <rect x="18" y="20" width="28" height="20" rx="2" fill="currentColor" opacity="0.2"/>
+                  <rect x="20" y="24" width="24" height="2" rx="1" fill="currentColor"/>
+                  <rect x="20" y="30" width="18" height="2" rx="1" fill="currentColor"/>
+                  <rect x="20" y="36" width="20" height="2" rx="1" fill="currentColor"/>
+                  <path d="M38 30L42 34L46 28" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                  <circle cx="24" cy="16" r="3" fill="currentColor"/>
+                  <circle cx="40" cy="16" r="3" fill="currentColor"/>
+                </svg>
+              </div>
+              <h3>Bank Reconciliation</h3>
+              <p>Reconcile multiple data sources and identify discrepancies in cash and card settlements.</p>
             </div>
           </div>
-          <div class="hero-art">
-            <!-- Dashboard mockup SVG -->
-            <svg class="mockup" viewBox="0 0 600 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Analytics dashboard mockup">
-              <defs>
-                <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="#3b82f6"/>
-                  <stop offset="100%" stop-color="#1e40af"/>
-                </linearGradient>
-              </defs>
-              <rect x="0" y="0" width="600" height="520" rx="24" fill="#0b1a2e"/>
-              <rect x="24" y="24" width="552" height="80" rx="14" fill="#0f2441"/>
-              <rect x="48" y="44" width="160" height="40" rx="8" fill="#182c4f"/>
-              <rect x="220" y="44" width="120" height="40" rx="8" fill="#182c4f"/>
-              <rect x="352" y="44" width="100" height="40" rx="8" fill="#182c4f"/>
-              <rect x="464" y="44" width="96" height="40" rx="8" fill="url(#g1)"/>
-              <rect x="24" y="120" width="360" height="240" rx="16" fill="#0f2441"/>
-              <g transform="translate(44,144)">
-                <rect width="320" height="24" rx="6" fill="#1b355e"/>
-                <rect y="48" width="280" height="12" rx="6" fill="#1b355e"/>
-                <rect y="68" width="220" height="12" rx="6" fill="#1b355e"/>
-                <rect y="88" width="260" height="12" rx="6" fill="#1b355e"/>
-                <rect y="108" width="240" height="12" rx="6" fill="#1b355e"/>
-                <g transform="translate(0,140)">
-                  <rect width="36" height="80" rx="6" fill="#3b82f6"/>
-                  <rect x="44" y="20" width="36" height="60" rx="6" fill="#1e40af"/>
-                  <rect x="88" y="10" width="36" height="70" rx="6" fill="#3b82f6"/>
-                  <rect x="132" y="30" width="36" height="50" rx="6" fill="#1e40af"/>
-                  <rect x="176" y="8" width="36" height="72" rx="6" fill="#3b82f6"/>
-                  <rect x="220" y="36" width="36" height="44" rx="6" fill="#1e40af"/>
-                </g>
-              </g>
-              <rect x="396" y="120" width="180" height="110" rx="16" fill="#0f2441"/>
-              <g transform="translate(416,140)">
-                <circle cx="28" cy="28" r="28" fill="url(#g1)"/>
-                <path d="M28 10v36M10 28h36" stroke="#0b1a2e" stroke-width="6" stroke-linecap="round"/>
-                <rect x="0" y="70" width="140" height="10" rx="5" fill="#1b355e"/>
-                <rect x="0" y="88" width="120" height="10" rx="5" fill="#1b355e"/>
-              </g>
-              <rect x="396" y="246" width="180" height="114" rx="16" fill="#0f2441"/>
-              <g transform="translate(416,266)">
-                <rect width="140" height="16" rx="8" fill="#1b355e"/>
-                <rect y="28" width="120" height="12" rx="6" fill="#1b355e"/>
-                <rect y="48" width="100" height="12" rx="6" fill="#1b355e"/>
-                <rect y="68" width="128" height="12" rx="6" fill="#1b355e"/>
-              </g>
-              <rect x="24" y="368" width="552" height="128" rx="16" fill="#0f2441"/>
-              <g transform="translate(44,392)">
-                <rect width="100" height="16" rx="8" fill="#1b355e"/>
-                <rect x="0" y="30" width="520" height="12" rx="6" fill="#1b355e"/>
-                <rect x="0" y="50" width="480" height="12" rx="6" fill="#1b355e"/>
-                <rect x="0" y="70" width="500" height="12" rx="6" fill="#1b355e"/>
-              </g>
-            </svg>
+        </div>
+      </section>
+
+      <!-- How It Works Section -->
+      <section id="how-it-works" class="section alt">
+        <div class="container">
+          <div class="section-head">
+            <h2>How It Works</h2>
+            <p class="muted">Integrate your existing data sources seamlessly into a unified information system</p>
           </div>
-        </div>
-      </section>
-
-      <!-- Operations Management Section -->
-      <section id="operations" class="section">
-        <div class="container">
-          <h2>Operations Management</h2>
-          <p class="muted">Tools and processes to streamline daily operations and improve site performance.</p>
-        </div>
-      </section>
-
-      <!-- Analytics & Visualizations Section -->
-      <section id="overview" class="section">
-        <div class="container">
-          <h2>Analytics & Visualizations</h2>
-          <p class="muted">Dashboards, KPIs and charts that provide clear, actionable insights.</p>
-        </div>
-      </section>
-
-      <!-- Renovation Section -->
-      <section id="renovation" class="section">
-        <div class="container">
-          <h2>Renovation</h2>
-          <p class="muted">Plan and track renovation projects with budgets, timelines and ROI.</p>
-        </div>
-      </section>
-
-      <!-- Personnel Section -->
-      <section id="personnel" class="section">
-        <div class="container">
-          <h2>Personnel</h2>
-          <p class="muted">Monitor team performance and identify training opportunities.</p>
-        </div>
-      </section>
-
-      <!-- Customer Relations Section -->
-      <section id="customer-relations" class="section">
-        <div class="container">
-          <h2>Customer Relations</h2>
-          <p class="muted">Build surveys, manage loyalty bundles and strengthen customer engagement.</p>
+          <div class="workflow-map">
+            <div class="workflow-step workflow-step-start">
+              <div class="step-icon">
+                <svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="8" y="8" width="48" height="48" rx="8" fill="currentColor" opacity="0.1"/>
+                  <rect x="12" y="16" width="40" height="32" rx="4" fill="currentColor" opacity="0.2"/>
+                  <path d="M20 28L26 34L44 18" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M32 24L32 48M20 36L44 36" stroke="currentColor" stroke-width="2" opacity="0.4"/>
+                </svg>
+              </div>
+              <h3>Data Sources</h3>
+              <p>Connect your existing fueling station data management systems. Shell sites use PDF monthly reports, while other sites may integrate via APIs or other data sources.</p>
+              <div class="data-sources-list">
+                <span class="source-tag">PDF Reports</span>
+                <span class="source-tag">API Integration</span>
+                <span class="source-tag">CSV Imports</span>
+                <span class="source-tag">Manual Entry</span>
+              </div>
+            </div>
+            <div class="workflow-arrow">→</div>
+            <div class="workflow-step">
+              <div class="step-icon">
+                <svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="8" y="8" width="48" height="48" rx="8" fill="currentColor" opacity="0.1"/>
+                  <circle cx="32" cy="32" r="16" fill="currentColor" opacity="0.2"/>
+                  <path d="M24 32L30 38L40 26" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="48" cy="16" r="4" fill="currentColor" opacity="0.6"/>
+                  <circle cx="16" cy="48" r="4" fill="currentColor" opacity="0.6"/>
+                </svg>
+              </div>
+              <h3>Data Integration</h3>
+              <p>All data sources are unified and processed through our intelligent integration layer, making management effortless regardless of your original data format.</p>
+            </div>
+            <div class="workflow-arrow">→</div>
+            <div class="workflow-step">
+              <div class="step-icon">
+                <svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="8" y="8" width="48" height="48" rx="8" fill="currentColor" opacity="0.1"/>
+                  <path d="M16 44L22 32L28 38L32 28L40 24L48 36" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                  <circle cx="22" cy="32" r="3" fill="currentColor"/>
+                  <circle cx="28" cy="38" r="3" fill="currentColor"/>
+                  <circle cx="32" cy="28" r="3" fill="currentColor"/>
+                  <circle cx="40" cy="24" r="3" fill="currentColor"/>
+                  <circle cx="48" cy="36" r="3" fill="currentColor"/>
+                </svg>
+              </div>
+              <h3>Analysis & Insights</h3>
+              <p>Comprehensive data analysis across all aspects of your fueling entity - operations, sales, inventory, renovations, and customer relations - delivers actionable insights.</p>
+            </div>
+            <div class="workflow-arrow">→</div>
+            <div class="workflow-step workflow-step-end">
+              <div class="step-icon">
+                <svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="8" y="8" width="48" height="48" rx="8" fill="currentColor" opacity="0.1"/>
+                  <path d="M32 16L36 28L48 32L36 36L32 48L28 36L16 32L28 28L32 16Z" fill="currentColor"/>
+                  <circle cx="32" cy="32" r="4" fill="white" opacity="0.9"/>
+                </svg>
+              </div>
+              <h3>Increased Traffic & Profits</h3>
+              <p>Make data-driven decisions that increase customer traffic, optimize margins, and boost overall profitability through strategic insights from every facet of your operation.</p>
+            </div>
+          </div>
         </div>
       </section>
 
       <section id="overview" class="section">
         <div class="container">
           <div class="section-head">
-            <h2>Powerful Analytics Dashboard</h2>
-            <p class="muted">Comprehensive performance tracking with real-time insights and trend analysis for fuel station operations</p>
+            <h2>Comprehensive Information System</h2>
+            <p class="muted">Complete performance tracking with real-time insights and trend analysis for fuel station operations</p>
           </div>
           <div class="grid cards-3">
             <article class="card">
@@ -299,32 +379,32 @@
         </div>
       </section>
 
-      <section id="how" class="section alt">
+      <section id="how" class="section">
         <div class="container">
           <div class="section-head">
-            <h2>How it works</h2>
-            <p class="muted">Simple three-step process to transform your data</p>
+            <h2>Simple Integration Process</h2>
+            <p class="muted">Connect your existing data sources in three easy steps</p>
           </div>
           <ol class="steps">
             <li>
               <div class="step-num">1</div>
               <div class="step-body">
-                <h3>Upload your monthly PDF</h3>
-                <p>Drag and drop your monthly fuel business report. Our system instantly extracts all the key data.</p>
+                <h3>Connect Your Data Source</h3>
+                <p>Upload PDF monthly reports (like Shell sites), integrate via API, import CSV files, or enter data manually. Works with your existing fueling station data management systems.</p>
               </div>
             </li>
             <li>
               <div class="step-num">2</div>
               <div class="step-body">
-                <h3>System analyzes the data</h3>
-                <p>Automatically extracts fuel sales, shop revenue, quantities, and calculates shop-fuel ratios.</p>
+                <h3>Unified Integration</h3>
+                <p>All data sources are seamlessly integrated into one unified information system, making management effortless regardless of format.</p>
               </div>
             </li>
             <li>
               <div class="step-num">3</div>
               <div class="step-body">
-                <h3>Get insights & analytics</h3>
-                <p>View interactive dashboards, track performance trends, and receive data-driven business recommendations.</p>
+                <h3>Analyze & Optimize</h3>
+                <p>Access comprehensive analysis across all aspects of your fueling entity. Get actionable insights to increase traffic and boost profits.</p>
               </div>
             </li>
           </ol>
@@ -365,19 +445,19 @@
             <h2>Ready to transform your fuel business analytics?</h2>
                           <p class="muted">Join fuel business owners who are already making data-driven decisions with automated insights.</p>
             <div class="cta-row">
-              <a class="btn btn-primary" href="dashboard.html">Launch Dashboard</a>
+              <a class="btn btn-primary" href="dashboard.html#overview">Launch Information System</a>
               <a class="btn btn-secondary" href="mailto:hello@example.com?subject=Fuel%20Analytics%20Demo" aria-label="Request demo">Request Demo</a>
             </div>
             <ul class="checks tight">
               <li>No setup required</li>
               <li>Instant analysis</li>
               <li>Secure data storage</li>
-              <li>Professional dashboards</li>
+              <li>Professional information system</li>
             </ul>
           </div>
           <div class="phone">
-            <!-- Dashboard preview -->
-            <svg viewBox="0 0 260 520" role="img" aria-label="Dashboard preview">
+            <!-- Information System preview -->
+            <svg viewBox="0 0 260 520" role="img" aria-label="Information system preview">
               <rect x="6" y="6" width="248" height="508" rx="36" fill="#0f2441" stroke="#1b355e" stroke-width="4"/>
               <rect x="28" y="60" width="204" height="60" rx="12" fill="#182c4f"/>
               <rect x="28" y="132" width="204" height="120" rx="12" fill="#182c4f"/>
@@ -427,18 +507,17 @@
     <footer class="footer">
       <div class="container foot">
         <a href="#home" class="brand small">
-          <span class="logo" aria-hidden="true">
-            <svg width="22" height="22" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="6" y="10" width="28" height="44" rx="5" fill="currentColor" opacity="0.2"/>
-              <rect x="12" y="16" width="16" height="16" rx="2" fill="currentColor"/>
-              <path d="M38 22h8a4 4 0 0 1 4 4v10h2a4 4 0 0 1 4 4v6a7 7 0 1 1-14 0V36h-4" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-            </svg>
-          </span>
-          <span class="brand-name">FUEL FLUX</span>
+          <div class="logo-container">
+            <div class="logo-icon" style="width: 40px; height: 40px; font-size: 24px;">F</div>
+            <div class="logo-text">
+              <span class="logo-fuel">FUEL</span>
+              <span class="logo-flux">FLUX</span>
+            </div>
+          </div>
         </a>
         <nav class="foot-links">
           <a href="#security">Security</a>
-          <a href="dashboard.html">Dashboard</a>
+          <a href="dashboard.html">Information System</a>
           <a href="mailto:hello@example.com">Contact</a>
         </nav>
         <div class="legal">

@@ -2,7 +2,7 @@
 
 (function () {
   const navToggle = document.querySelector('.nav-toggle');
-  const menu = document.querySelector('.menu');
+  const menu = document.querySelector('.nav');
   const year = document.getElementById('year');
   const demoOpen = document.querySelector('[data-open-demo]');
   const modal = document.querySelector('[data-modal]');
