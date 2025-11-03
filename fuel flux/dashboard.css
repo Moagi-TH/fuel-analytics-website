@@ -2523,11 +2523,12 @@ canvas {
 }
 
 #wet-vpowerdiesel .forms-column {
-  flex: 1.8 1 560px; /* wider column for inputs + customer accounts */
+  flex: 2.2 1 640px; /* prioritize space for AI & Customer Accounts */
   display: flex;
   flex-direction: column;
   gap: 16px;
   align-items: stretch;
+  min-width: 0; /* allow children to expand fully in flex layout */
 }
 
 #wet-vpowerdiesel .forms-column .form-grid {
@@ -2544,6 +2545,17 @@ canvas {
 
 #wet-vpowerdiesel .forms-column > * {
   width: 100%;
+}
+
+/* Ensure AI Price & Order Suggestion and Customer Accounts use full width */
+#wet-vpowerdiesel .forms-column .renovation-settings,
+#wet-vpowerdiesel .forms-column .customer-accounts-panel {
+  max-width: none;
+}
+
+/* Make inputs inside AI suggestion stretch nicely on wide screens */
+#wet-vpowerdiesel .forms-column .renovation-settings .form-grid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
 .customer-accounts-heading h5 {
