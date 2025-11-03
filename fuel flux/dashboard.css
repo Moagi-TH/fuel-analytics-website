@@ -2491,6 +2491,42 @@ canvas {
   gap: 12px;
 }
 
+#wet-vpowerdiesel .wet-horizontal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+#wet-vpowerdiesel .metrics-column {
+  flex: 1 1 360px;
+  display: flex;
+}
+
+#wet-vpowerdiesel .metrics-column .metrics-grid {
+  flex: 1;
+  margin-bottom: 0;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+#wet-vpowerdiesel .forms-column {
+  flex: 1 1 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+#wet-vpowerdiesel .forms-column .form-grid {
+  margin-bottom: 0;
+}
+
+#wet-vpowerdiesel .forms-column .form-actions {
+  margin-top: 0;
+}
+
+#wet-vpowerdiesel .forms-column .renovation-settings {
+  margin-top: 0 !important;
+}
+
 .customer-accounts-heading h5 {
   margin: 0;
   font-size: 16px;
@@ -2592,6 +2628,10 @@ canvas {
   .customer-accounts-actions {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  #wet-vpowerdiesel .wet-horizontal {
+    flex-direction: column;
   }
 }
 
