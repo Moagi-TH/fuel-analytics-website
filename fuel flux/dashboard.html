@@ -3240,7 +3240,7 @@
         <!-- Wet Stock Panel -->
         <div id="wet-stock" class="renovation-settings">
           <h3>Wet Stock</h3>
-          <div class="analysis-grid" style="margin-bottom: 16px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+          <div class="analysis-grid" style="margin-bottom: 16px;">
             <!-- Petrol 95 -->
             <div class="analysis-card" id="wet-petrol95">
               <h4>Petrol 95</h4>
@@ -3324,107 +3324,28 @@
                 </div>
                 <p class="form-hint">Based on recent performance; forecasting API integration coming soon.</p>
               </div>
-            </div>
 
-            <!-- Customer Accounts (Petrol 95) -->
-            <div class="analysis-card" id="wet-petrol95-accounts">
-              <h4>Customer Accounts (Petrol 95)</h4>
-              <p class="form-hint">Customer accounts form the baseline for Petrol 95 demand forecasting and ordering.</p>
-              <div id="petrol95-accounts-list" class="form-grid"></div>
-              <div class="form-actions" style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
-                <button class="button secondary small" id="add-petrol95-account">+ Add Account</button>
-                <button class="button secondary small" id="clear-petrol95-accounts">Clear All</button>
-                <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
-                  <strong>Total Contracted Daily Demand:</strong>
-                  <span id="petrol95-accounts-total">0 L/day</span>
+              <!-- Customer Accounts (Petrol 95) -->
+              <div class="customer-accounts-panel">
+                <div class="customer-accounts-heading">
+                  <h5>Customer Accounts</h5>
+                  <p class="form-hint">Active account liters provide the baseline for forecasting and order planning.</p>
+                </div>
+                <div id="petrol95-accounts-list" class="customer-accounts-list"></div>
+                <div class="customer-accounts-actions">
+                  <div class="customer-accounts-buttons">
+                    <button class="button secondary small" id="add-petrol95-account">+ Add Account</button>
+                    <button class="button secondary small" id="clear-petrol95-accounts">Clear All</button>
+                  </div>
+                  <div class="customer-accounts-total">
+                    <span>Total Contracted Daily Demand:</span>
+                    <strong id="petrol95-accounts-total">0 L/day</strong>
+                  </div>
+                </div>
+                <div class="form-actions" style="margin-top: 8px;">
+                  <button class="button primary small" id="apply-petrol95-accounts">Apply to Petrol 95 Forecast</button>
                 </div>
               </div>
-              <div class="form-actions" style="margin-top: 8px;">
-                <button class="button primary" id="apply-petrol95-accounts">Apply to Petrol 95 Forecast</button>
-              </div>
-              <p class="form-hint">Total active accounts' daily liters are used as the starting basis for forecast and order suggestions.</p>
-
-              <script>
-                (function() {
-                  function parseLitersFromText(text) {
-                    if (!text) return 0;
-                    const match = String(text).replace(/,/g, '').match(/([0-9]+(?:\.[0-9]+)?)/);
-                    return match ? parseFloat(match[1]) : 0;
-                  }
-
-                  const storageKey = 'petrol95Accounts';
-                  const listEl = document.getElementById('petrol95-accounts-list');
-                  const totalEl = document.getElementById('petrol95-accounts-total');
-                  const addBtn = document.getElementById('add-petrol95-account');
-                  const clearBtn = document.getElementById('clear-petrol95-accounts');
-                  const applyBtn = document.getElementById('apply-petrol95-accounts');
-
-                  if (!listEl || !addBtn) return;
-
-                  function loadAccounts() {
-                    try { return JSON.parse(localStorage.getItem(storageKey) || '[]'); } catch (_) { return []; }
-                  }
-                  function saveAccounts(a) { try { localStorage.setItem(storageKey, JSON.stringify(a)); } catch (_) {} }
-                  function computeTotal(a) { return Math.max(0, Math.round(a.filter(x => x.active !== false).reduce((s, x) => s + (Number(x.dailyLiters)||0), 0))); }
-
-                  function render() {
-                    const accounts = loadAccounts();
-                    listEl.innerHTML = '';
-                    if (accounts.length === 0) {
-                      const empty = document.createElement('div');
-                      empty.className = 'form-group';
-                      empty.innerHTML = '<div class="form-input" style="background:#f5f5f5;">No customer accounts yet.</div>';
-                      listEl.appendChild(empty);
-                    } else {
-                      accounts.forEach((acc, idx) => {
-                        const row = document.createElement('div');
-                        row.className = 'form-group';
-                        row.style.marginBottom = '8px';
-                        row.innerHTML = `
-                          <div class="input-row" style="gap: 8px;">
-                            <input type="text" placeholder="Account Name" value="${acc.name || ''}" data-field="name" data-index="${idx}" class="form-input" />
-                            <input type="number" min="0" step="1" placeholder="Daily Liters" value="${acc.dailyLiters || ''}" data-field="dailyLiters" data-index="${idx}" class="form-input" />
-                            <label style="display:flex; align-items:center; gap:6px; white-space:nowrap;">
-                              <input type="checkbox" ${acc.active === false ? '' : 'checked'} data-field="active" data-index="${idx}" /> Active
-                            </label>
-                            <button class="button secondary small" data-action="delete" data-index="${idx}">Remove</button>
-                          </div>`;
-                        listEl.appendChild(row);
-                      });
-                    }
-                    totalEl.textContent = computeTotal(accounts) + ' L/day';
-                  }
-
-                  function updateFromEvent(e) {
-                    const t = e.target; const f = t.getAttribute('data-field'); const i = t.getAttribute('data-index');
-                    if (f == null || i == null) return;
-                    const a = loadAccounts(); const idx = Number(i); if (!a[idx]) return;
-                    if (f === 'active') a[idx].active = t.checked; else if (f === 'dailyLiters') a[idx].dailyLiters = Number(t.value||0); else if (f === 'name') a[idx].name = t.value||'';
-                    saveAccounts(a); render();
-                  }
-
-                  function handleClick(e) {
-                    const act = e.target.getAttribute('data-action'); const i = e.target.getAttribute('data-index');
-                    if (act === 'delete' && i != null) { const a = loadAccounts(); a.splice(Number(i),1); saveAccounts(a); render(); }
-                  }
-
-                  addBtn.addEventListener('click', function(){ const a = loadAccounts(); a.push({name:'', dailyLiters:0, active:true}); saveAccounts(a); render(); });
-                  clearBtn.addEventListener('click', function(){ if (confirm('Clear all customer accounts?')) { saveAccounts([]); render(); } });
-                  listEl.addEventListener('input', updateFromEvent);
-                  listEl.addEventListener('change', updateFromEvent);
-                  listEl.addEventListener('click', handleClick);
-
-                  applyBtn.addEventListener('click', function(){
-                    const base = computeTotal(loadAccounts());
-                    const forecastEl = document.getElementById('petrol95-demand-forecast'); if (forecastEl) forecastEl.textContent = base + ' L/day';
-                    const tankText = document.getElementById('petrol95-level')?.textContent || '0'; const tankLevel = parseLitersFromText(tankText);
-                    const recommended = Math.max(0, Math.round(base * 7 - tankLevel)); const orderQtyEl = document.getElementById('petrol95-order-qty'); if (orderQtyEl) orderQtyEl.value = recommended;
-                    const orderWhenEl = document.getElementById('petrol95-order-when'); if (orderWhenEl) orderWhenEl.value = base > 0 ? (tankLevel > base * 2 ? 'In 2-3 days' : 'Order Today') : '—';
-                  });
-
-                  render();
-                })();
-              </script>
             </div>
 
             <!-- Diesel Ex -->
@@ -3506,167 +3427,28 @@
                 </div>
                 <p class="form-hint">Suggested price will populate the Price field above. Based on recent performance; forecasting API integration coming soon.</p>
               </div>
-            </div>
 
-            <!-- Customer Accounts (Diesel) -->
-            <div class="analysis-card" id="wet-diesel-accounts">
-              <h4>Customer Accounts (Diesel)</h4>
-              <p class="form-hint">Customer accounts form the baseline for diesel demand forecasting and ordering.</p>
-              <div id="diesel-accounts-list" class="form-grid">
-                <!-- Rows will be rendered here -->
-              </div>
-              <div class="form-actions" style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
-                <button class="button secondary small" id="add-diesel-account">+ Add Account</button>
-                <button class="button secondary small" id="clear-diesel-accounts">Clear All</button>
-                <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
-                  <strong>Total Contracted Daily Demand:</strong>
-                  <span id="diesel-accounts-total">0 L/day</span>
+              <!-- Customer Accounts (Diesel) -->
+              <div class="customer-accounts-panel">
+                <div class="customer-accounts-heading">
+                  <h5>Customer Accounts</h5>
+                  <p class="form-hint">Customer account demand anchors Diesel Ex forecasting and ordering decisions.</p>
+                </div>
+                <div id="diesel-accounts-list" class="customer-accounts-list"></div>
+                <div class="customer-accounts-actions">
+                  <div class="customer-accounts-buttons">
+                    <button class="button secondary small" id="add-diesel-account">+ Add Account</button>
+                    <button class="button secondary small" id="clear-diesel-accounts">Clear All</button>
+                  </div>
+                  <div class="customer-accounts-total">
+                    <span>Total Contracted Daily Demand:</span>
+                    <strong id="diesel-accounts-total">0 L/day</strong>
+                  </div>
+                </div>
+                <div class="form-actions" style="margin-top: 8px;">
+                  <button class="button primary small" id="apply-diesel-accounts">Apply to Diesel Ex Forecast</button>
                 </div>
               </div>
-              <div class="form-actions" style="margin-top: 8px;">
-                <button class="button primary" id="apply-diesel-accounts">Apply to Diesel Ex Forecast</button>
-              </div>
-              <p class="form-hint">Total active accounts' daily liters will be used as the starting basis for forecasted demand and order quantity suggestions.</p>
-
-              <script>
-                (function() {
-                  function parseLitersFromText(text) {
-                    if (!text) return 0;
-                    const match = String(text).replace(/,/g, '').match(/([0-9]+(?:\.[0-9]+)?)/);
-                    return match ? parseFloat(match[1]) : 0;
-                  }
-
-                  const storageKey = 'dieselAccounts';
-                  const listEl = document.getElementById('diesel-accounts-list');
-                  const totalEl = document.getElementById('diesel-accounts-total');
-                  const addBtn = document.getElementById('add-diesel-account');
-                  const clearBtn = document.getElementById('clear-diesel-accounts');
-                  const applyBtn = document.getElementById('apply-diesel-accounts');
-
-                  if (!listEl || !addBtn) return; // Section not on page
-
-                  function loadAccounts() {
-                    try {
-                      const raw = localStorage.getItem(storageKey);
-                      return raw ? JSON.parse(raw) : [];
-                    } catch (_) {
-                      return [];
-                    }
-                  }
-
-                  function saveAccounts(accounts) {
-                    try { localStorage.setItem(storageKey, JSON.stringify(accounts)); } catch (_) {}
-                  }
-
-                  function computeTotal(accounts) {
-                    const total = accounts.filter(a => a.active !== false).reduce((sum, a) => sum + (Number(a.dailyLiters) || 0), 0);
-                    return Math.max(0, Math.round(total));
-                  }
-
-                  function render() {
-                    const accounts = loadAccounts();
-                    listEl.innerHTML = '';
-
-                    if (accounts.length === 0) {
-                      const empty = document.createElement('div');
-                      empty.className = 'form-group';
-                      empty.innerHTML = '<div class="form-input" style="background:#f5f5f5;">No customer accounts yet.</div>';
-                      listEl.appendChild(empty);
-                    } else {
-                      accounts.forEach((acc, idx) => {
-                        const row = document.createElement('div');
-                        row.className = 'form-group';
-                        row.style.marginBottom = '8px';
-                        row.innerHTML = `
-                          <div class="input-row" style="gap: 8px;">
-                            <input type="text" placeholder="Account Name" value="${acc.name || ''}" data-field="name" data-index="${idx}" class="form-input" />
-                            <input type="number" min="0" step="1" placeholder="Daily Liters" value="${acc.dailyLiters || ''}" data-field="dailyLiters" data-index="${idx}" class="form-input" />
-                            <label style="display:flex; align-items:center; gap:6px; white-space:nowrap;">
-                              <input type="checkbox" ${acc.active === false ? '' : 'checked'} data-field="active" data-index="${idx}" /> Active
-                            </label>
-                            <button class="button secondary small" data-action="delete" data-index="${idx}">Remove</button>
-                          </div>
-                        `;
-                        listEl.appendChild(row);
-                      });
-                    }
-
-                    const total = computeTotal(accounts);
-                    totalEl.textContent = total + ' L/day';
-                  }
-
-                  function updateFromEvent(e) {
-                    const target = e.target;
-                    const field = target.getAttribute('data-field');
-                    const index = target.getAttribute('data-index');
-                    if (field == null || index == null) return;
-                    const accounts = loadAccounts();
-                    const idx = Number(index);
-                    if (!accounts[idx]) return;
-                    if (field === 'active') {
-                      accounts[idx].active = target.checked;
-                    } else if (field === 'dailyLiters') {
-                      accounts[idx].dailyLiters = Number(target.value || 0);
-                    } else if (field === 'name') {
-                      accounts[idx].name = target.value || '';
-                    }
-                    saveAccounts(accounts);
-                    render();
-                  }
-
-                  function handleClick(e) {
-                    const action = e.target.getAttribute('data-action');
-                    const index = e.target.getAttribute('data-index');
-                    if (action === 'delete' && index != null) {
-                      const accounts = loadAccounts();
-                      accounts.splice(Number(index), 1);
-                      saveAccounts(accounts);
-                      render();
-                    }
-                  }
-
-                  addBtn.addEventListener('click', function() {
-                    const accounts = loadAccounts();
-                    accounts.push({ name: '', dailyLiters: 0, active: true });
-                    saveAccounts(accounts);
-                    render();
-                  });
-
-                  clearBtn.addEventListener('click', function() {
-                    if (confirm('Clear all customer accounts?')) {
-                      saveAccounts([]);
-                      render();
-                    }
-                  });
-
-                  listEl.addEventListener('input', updateFromEvent);
-                  listEl.addEventListener('change', updateFromEvent);
-                  listEl.addEventListener('click', handleClick);
-
-                  applyBtn.addEventListener('click', function() {
-                    const accounts = loadAccounts();
-                    const base = computeTotal(accounts);
-                    // Update the Diesel Ex forecast metric
-                    const forecastEl = document.getElementById('dieselex-demand-forecast');
-                    if (forecastEl) forecastEl.textContent = base + ' L/day';
-
-                    // Update order suggestion using simple heuristic: 7 days coverage minus current tank level
-                    const tankText = document.getElementById('dieselex-level')?.textContent || '0';
-                    const tankLevel = parseLitersFromText(tankText);
-                    const recommended = Math.max(0, Math.round(base * 7 - tankLevel));
-                    const orderQtyEl = document.getElementById('dieselex-order-qty');
-                    if (orderQtyEl) orderQtyEl.value = recommended;
-
-                    const orderWhenEl = document.getElementById('dieselex-order-when');
-                    if (orderWhenEl) {
-                      orderWhenEl.value = base > 0 ? (tankLevel > base * 2 ? 'In 2-3 days' : 'Order Today') : '—';
-                    }
-                  });
-
-                  // Initial render
-                  render();
-                })();
-              </script>
             </div>
 
             <!-- V-Power Diesel -->
@@ -3748,110 +3530,271 @@
                 </div>
                 <p class="form-hint">Suggested price will populate the Price field above. Based on recent performance; forecasting API integration coming soon.</p>
               </div>
-            </div>
-            
-            <!-- Customer Accounts (V-Power Diesel) -->
-            <div class="analysis-card" id="wet-vpd-accounts">
-              <h4>Customer Accounts (V-Power Diesel)</h4>
-              <p class="form-hint">Customer accounts form the baseline for V-Power Diesel demand forecasting and ordering.</p>
-              <div id="vpd-accounts-list" class="form-grid"></div>
-              <div class="form-actions" style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
-                <button class="button secondary small" id="add-vpd-account">+ Add Account</button>
-                <button class="button secondary small" id="clear-vpd-accounts">Clear All</button>
-                <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
-                  <strong>Total Contracted Daily Demand:</strong>
-                  <span id="vpd-accounts-total">0 L/day</span>
+
+              <!-- Customer Accounts (V-Power Diesel) -->
+              <div class="customer-accounts-panel">
+                <div class="customer-accounts-heading">
+                  <h5>Customer Accounts</h5>
+                  <p class="form-hint">Use customer account demand to set V-Power Diesel forecast expectations.</p>
+                </div>
+                <div id="vpd-accounts-list" class="customer-accounts-list"></div>
+                <div class="customer-accounts-actions">
+                  <div class="customer-accounts-buttons">
+                    <button class="button secondary small" id="add-vpd-account">+ Add Account</button>
+                    <button class="button secondary small" id="clear-vpd-accounts">Clear All</button>
+                  </div>
+                  <div class="customer-accounts-total">
+                    <span>Total Contracted Daily Demand:</span>
+                    <strong id="vpd-accounts-total">0 L/day</strong>
+                  </div>
+                </div>
+                <div class="form-actions" style="margin-top: 8px;">
+                  <button class="button primary small" id="apply-vpd-accounts">Apply to V-Power Diesel Forecast</button>
                 </div>
               </div>
-              <div class="form-actions" style="margin-top: 8px;">
-                <button class="button primary" id="apply-vpd-accounts">Apply to V-Power Diesel Forecast</button>
-              </div>
-              <p class="form-hint">Total active accounts' daily liters are used as the starting basis for forecast and order suggestions.</p>
-
-              <script>
-                (function() {
-                  function parseLitersFromText(text) {
-                    if (!text) return 0;
-                    const match = String(text).replace(/,/g, '').match(/([0-9]+(?:\.[0-9]+)?)/);
-                    return match ? parseFloat(match[1]) : 0;
-                  }
-
-                  const storageKey = 'vpdAccounts';
-                  const listEl = document.getElementById('vpd-accounts-list');
-                  const totalEl = document.getElementById('vpd-accounts-total');
-                  const addBtn = document.getElementById('add-vpd-account');
-                  const clearBtn = document.getElementById('clear-vpd-accounts');
-                  const applyBtn = document.getElementById('apply-vpd-accounts');
-
-                  if (!listEl || !addBtn) return;
-
-                  function loadAccounts() {
-                    try { return JSON.parse(localStorage.getItem(storageKey) || '[]'); } catch (_) { return []; }
-                  }
-                  function saveAccounts(a) { try { localStorage.setItem(storageKey, JSON.stringify(a)); } catch (_) {} }
-                  function computeTotal(a) { return Math.max(0, Math.round(a.filter(x => x.active !== false).reduce((s, x) => s + (Number(x.dailyLiters)||0), 0))); }
-
-                  function render() {
-                    const accounts = loadAccounts();
-                    listEl.innerHTML = '';
-                    if (accounts.length === 0) {
-                      const empty = document.createElement('div');
-                      empty.className = 'form-group';
-                      empty.innerHTML = '<div class="form-input" style="background:#f5f5f5;">No customer accounts yet.</div>';
-                      listEl.appendChild(empty);
-                    } else {
-                      accounts.forEach((acc, idx) => {
-                        const row = document.createElement('div');
-                        row.className = 'form-group';
-                        row.style.marginBottom = '8px';
-                        row.innerHTML = `
-                          <div class="input-row" style="gap: 8px;">
-                            <input type="text" placeholder="Account Name" value="${acc.name || ''}" data-field="name" data-index="${idx}" class="form-input" />
-                            <input type="number" min="0" step="1" placeholder="Daily Liters" value="${acc.dailyLiters || ''}" data-field="dailyLiters" data-index="${idx}" class="form-input" />
-                            <label style="display:flex; align-items:center; gap:6px; white-space:nowrap;">
-                              <input type="checkbox" ${acc.active === false ? '' : 'checked'} data-field="active" data-index="${idx}" /> Active
-                            </label>
-                            <button class="button secondary small" data-action="delete" data-index="${idx}">Remove</button>
-                          </div>`;
-                        listEl.appendChild(row);
-                      });
-                    }
-                    totalEl.textContent = computeTotal(accounts) + ' L/day';
-                  }
-
-                  function updateFromEvent(e) {
-                    const t = e.target; const f = t.getAttribute('data-field'); const i = t.getAttribute('data-index');
-                    if (f == null || i == null) return;
-                    const a = loadAccounts(); const idx = Number(i); if (!a[idx]) return;
-                    if (f === 'active') a[idx].active = t.checked; else if (f === 'dailyLiters') a[idx].dailyLiters = Number(t.value||0); else if (f === 'name') a[idx].name = t.value||'';
-                    saveAccounts(a); render();
-                  }
-
-                  function handleClick(e) {
-                    const act = e.target.getAttribute('data-action'); const i = e.target.getAttribute('data-index');
-                    if (act === 'delete' && i != null) { const a = loadAccounts(); a.splice(Number(i),1); saveAccounts(a); render(); }
-                  }
-
-                  addBtn.addEventListener('click', function(){ const a = loadAccounts(); a.push({name:'', dailyLiters:0, active:true}); saveAccounts(a); render(); });
-                  clearBtn.addEventListener('click', function(){ if (confirm('Clear all customer accounts?')) { saveAccounts([]); render(); } });
-                  listEl.addEventListener('input', updateFromEvent);
-                  listEl.addEventListener('change', updateFromEvent);
-                  listEl.addEventListener('click', handleClick);
-
-                  applyBtn.addEventListener('click', function(){
-                    const base = computeTotal(loadAccounts());
-                    const forecastEl = document.getElementById('vpd-demand-forecast'); if (forecastEl) forecastEl.textContent = base + ' L/day';
-                    const tankText = document.getElementById('vpd-level')?.textContent || '0'; const tankLevel = parseLitersFromText(tankText);
-                    const recommended = Math.max(0, Math.round(base * 7 - tankLevel)); const orderQtyEl = document.getElementById('vpd-order-qty'); if (orderQtyEl) orderQtyEl.value = recommended;
-                    const orderWhenEl = document.getElementById('vpd-order-when'); if (orderWhenEl) orderWhenEl.value = base > 0 ? (tankLevel > base * 2 ? 'In 2-3 days' : 'Order Today') : '—';
-                  });
-
-                  render();
-                })();
-              </script>
             </div>
           </div>
         </div>
+
+        <script>
+          (function() {
+            const configs = [
+              {
+                storageKey: 'petrol95Accounts',
+                listId: 'petrol95-accounts-list',
+                addId: 'add-petrol95-account',
+                clearId: 'clear-petrol95-accounts',
+                totalId: 'petrol95-accounts-total',
+                applyId: 'apply-petrol95-accounts',
+                forecastId: 'petrol95-demand-forecast',
+                tankId: 'petrol95-level',
+                orderQtyId: 'petrol95-order-qty',
+                orderWhenId: 'petrol95-order-when'
+              },
+              {
+                storageKey: 'dieselAccounts',
+                listId: 'diesel-accounts-list',
+                addId: 'add-diesel-account',
+                clearId: 'clear-diesel-accounts',
+                totalId: 'diesel-accounts-total',
+                applyId: 'apply-diesel-accounts',
+                forecastId: 'dieselex-demand-forecast',
+                tankId: 'dieselex-level',
+                orderQtyId: 'dieselex-order-qty',
+                orderWhenId: 'dieselex-order-when'
+              },
+              {
+                storageKey: 'vpdAccounts',
+                listId: 'vpd-accounts-list',
+                addId: 'add-vpd-account',
+                clearId: 'clear-vpd-accounts',
+                totalId: 'vpd-accounts-total',
+                applyId: 'apply-vpd-accounts',
+                forecastId: 'vpd-demand-forecast',
+                tankId: 'vpd-level',
+                orderQtyId: 'vpd-order-qty',
+                orderWhenId: 'vpd-order-when'
+              }
+            ];
+
+            const parseLitersFromText = (text) => {
+              if (!text) return 0;
+              const match = String(text).replace(/,/g, '').match(/([0-9]+(?:\.[0-9]+)?)/);
+              return match ? parseFloat(match[1]) : 0;
+            };
+
+            const escapeHtml = (value) => {
+              return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+            };
+
+            const computeBaseline = (accounts) => {
+              return Math.max(0,
+                Math.round(
+                  (accounts || [])
+                    .filter((account) => account && account.active !== false)
+                    .reduce((sum, account) => sum + (Number(account.dailyLiters) || 0), 0)
+                )
+              );
+            };
+
+            configs.forEach(initCustomerAccounts);
+
+            function initCustomerAccounts(config) {
+              const listEl = document.getElementById(config.listId);
+              const addBtn = document.getElementById(config.addId);
+              const clearBtn = document.getElementById(config.clearId);
+              const totalEl = document.getElementById(config.totalId);
+              const applyBtn = document.getElementById(config.applyId);
+
+              if (!listEl || !addBtn || !clearBtn || !totalEl || !applyBtn) {
+                return;
+              }
+
+              const load = () => {
+                try {
+                  return JSON.parse(localStorage.getItem(config.storageKey) || '[]');
+                } catch (_) {
+                  return [];
+                }
+              };
+
+              const save = (data) => {
+                try {
+                  localStorage.setItem(config.storageKey, JSON.stringify(data));
+                } catch (_) {}
+              };
+
+              const updateTotal = (accounts) => {
+                const base = computeBaseline(accounts ?? load());
+                totalEl.textContent = base + ' L/day';
+              };
+
+              const render = () => {
+                const accounts = load();
+                listEl.innerHTML = '';
+
+                if (!accounts.length) {
+                  const emptyState = document.createElement('div');
+                  emptyState.className = 'customer-accounts-empty';
+                  emptyState.textContent = 'No customer accounts yet.';
+                  listEl.appendChild(emptyState);
+                } else {
+                  accounts.forEach((account, index) => {
+                    const row = document.createElement('div');
+                    row.className = 'customer-account-row';
+                    row.innerHTML = `
+                      <div class="customer-account-row-inner">
+                        <input
+                          type="text"
+                          class="form-input"
+                          placeholder="Account Name"
+                          value="${escapeHtml(account.name || '')}"
+                          data-field="name"
+                          data-index="${index}"
+                        />
+                        <input
+                          type="number"
+                          class="form-input"
+                          min="0"
+                          step="1"
+                          placeholder="Daily Liters"
+                          value="${account.dailyLiters ?? ''}"
+                          data-field="dailyLiters"
+                          data-index="${index}"
+                        />
+                        <label class="customer-account-active">
+                          <input
+                            type="checkbox"
+                            ${account.active === false ? '' : 'checked'}
+                            data-field="active"
+                            data-index="${index}"
+                          />
+                          <span>Active</span>
+                        </label>
+                        <button class="button secondary small" data-action="delete" data-index="${index}">Remove</button>
+                      </div>
+                    `;
+                    listEl.appendChild(row);
+                  });
+                }
+
+                updateTotal(accounts);
+              };
+
+              const handleFieldChange = (event) => {
+                const field = event.target.getAttribute('data-field');
+                if (!field) return;
+                const index = Number(event.target.getAttribute('data-index'));
+                if (Number.isNaN(index)) return;
+
+                const accounts = load();
+                const account = accounts[index];
+                if (!account) return;
+
+                if (field === 'active') {
+                  account.active = event.target.checked;
+                } else if (field === 'dailyLiters') {
+                  account.dailyLiters = Number(event.target.value || 0);
+                } else if (field === 'name') {
+                  account.name = event.target.value || '';
+                }
+
+                save(accounts);
+
+                if (field !== 'name') {
+                  updateTotal(accounts);
+                }
+              };
+
+              const handleDelete = (event) => {
+                const action = event.target.getAttribute('data-action');
+                if (action !== 'delete') return;
+                const index = Number(event.target.getAttribute('data-index'));
+                if (Number.isNaN(index)) return;
+
+                const accounts = load();
+                accounts.splice(index, 1);
+                save(accounts);
+                render();
+              };
+
+              const applyBaselineToForecast = () => {
+                const accounts = load();
+                const base = computeBaseline(accounts);
+
+                if (config.forecastId) {
+                  const forecastEl = document.getElementById(config.forecastId);
+                  if (forecastEl) {
+                    forecastEl.textContent = base + ' L/day';
+                  }
+                }
+
+                const tankLevel = parseLitersFromText(document.getElementById(config.tankId)?.textContent || '0');
+                const recommended = Math.max(0, Math.round(base * 7 - tankLevel));
+                const orderQtyEl = document.getElementById(config.orderQtyId);
+                if (orderQtyEl) {
+                  orderQtyEl.value = recommended;
+                }
+
+                const orderWhenEl = document.getElementById(config.orderWhenId);
+                if (orderWhenEl) {
+                  if (base <= 0) {
+                    orderWhenEl.value = '—';
+                  } else {
+                    orderWhenEl.value = tankLevel > base * 2 ? 'In 2-3 days' : 'Order Today';
+                  }
+                }
+              };
+
+              addBtn.addEventListener('click', () => {
+                const accounts = load();
+                accounts.push({ name: '', dailyLiters: 0, active: true });
+                save(accounts);
+                render();
+              });
+
+              clearBtn.addEventListener('click', () => {
+                if (confirm('Clear all customer accounts?')) {
+                  save([]);
+                  render();
+                }
+              });
+
+              listEl.addEventListener('input', handleFieldChange);
+              listEl.addEventListener('change', handleFieldChange);
+              listEl.addEventListener('click', handleDelete);
+
+              applyBtn.addEventListener('click', applyBaselineToForecast);
+
+              render();
+            }
+          })();
+        </script>
 
         <!-- Dry Stock Panel -->
         <div id="dry-stock" class="renovation-settings">
