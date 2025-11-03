@@ -2498,21 +2498,31 @@ canvas {
 }
 
 #wet-vpowerdiesel .metrics-column {
-  flex: 1 1 360px;
+  flex: 1.5 1 440px;
   display: flex;
+  align-items: stretch;
 }
 
 #wet-vpowerdiesel .metrics-column .metrics-grid {
   flex: 1;
   margin-bottom: 0;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 24px;
+}
+
+#wet-vpowerdiesel .metrics-column .metric-card {
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 #wet-vpowerdiesel .forms-column {
-  flex: 1 1 360px;
+  flex: 1 1 340px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  align-items: stretch;
 }
 
 #wet-vpowerdiesel .forms-column .form-grid {
@@ -2525,6 +2535,10 @@ canvas {
 
 #wet-vpowerdiesel .forms-column .renovation-settings {
   margin-top: 0 !important;
+}
+
+#wet-vpowerdiesel .forms-column > * {
+  width: 100%;
 }
 
 .customer-accounts-heading h5 {
@@ -2632,6 +2646,39 @@ canvas {
 
   #wet-vpowerdiesel .wet-horizontal {
     flex-direction: column;
+  }
+}
+
+#wet-vpowerdiesel {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 1024px) {
+  #wet-vpowerdiesel .wet-horizontal {
+    flex-wrap: nowrap;
+  }
+
+  #wet-vpowerdiesel .metrics-column,
+  #wet-vpowerdiesel .forms-column {
+    flex: 1 1 0;
+  }
+
+  #wet-vpowerdiesel .metrics-column .metrics-grid {
+    grid-template-columns: repeat(2, minmax(200px, 1fr));
+  }
+}
+
+@media (min-width: 1440px) {
+  #wet-vpowerdiesel .metrics-column {
+    flex: 1.7 1 520px;
+  }
+
+  #wet-vpowerdiesel .forms-column {
+    flex: 1 1 340px;
+  }
+
+  #wet-vpowerdiesel .metrics-column .metrics-grid {
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
   }
 }
 
