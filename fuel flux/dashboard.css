@@ -2508,11 +2508,14 @@ canvas {
   flex: 1;
   margin-bottom: 0;
   grid-template-columns: repeat(2, minmax(200px, 1fr));
-  gap: 24px;
+  gap: 16px; /* tighter spacing to remove large white gaps */
+  align-items: start; /* prevent stretch */
+  align-content: start;
+  grid-auto-rows: minmax(120px, auto);
 }
 
 #wet-vpowerdiesel .metrics-column .metric-card {
-  min-height: 180px;
+  min-height: 140px;
   display: flex;
   flex-direction: column;
   justify-content: center;
