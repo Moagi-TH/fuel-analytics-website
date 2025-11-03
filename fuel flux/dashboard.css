@@ -2498,7 +2498,8 @@ canvas {
 }
 
 #wet-vpowerdiesel .metrics-column {
-  flex: 1.5 1 440px;
+  flex: 1 1 380px; /* narrower than forms so Customer Accounts can breathe */
+  max-width: 620px;
   display: flex;
   align-items: stretch;
 }
@@ -2506,7 +2507,7 @@ canvas {
 #wet-vpowerdiesel .metrics-column .metrics-grid {
   flex: 1;
   margin-bottom: 0;
-  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  grid-template-columns: repeat(2, minmax(200px, 1fr));
   gap: 24px;
 }
 
@@ -2518,7 +2519,7 @@ canvas {
 }
 
 #wet-vpowerdiesel .forms-column {
-  flex: 1 1 340px;
+  flex: 1.8 1 560px; /* wider column for inputs + customer accounts */
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -2664,21 +2665,16 @@ canvas {
   }
 
   #wet-vpowerdiesel .metrics-column .metrics-grid {
-    grid-template-columns: repeat(2, minmax(200px, 1fr));
+    grid-template-columns: repeat(2, minmax(190px, 1fr));
   }
 }
 
 @media (min-width: 1440px) {
-  #wet-vpowerdiesel .metrics-column {
-    flex: 1.7 1 520px;
-  }
-
-  #wet-vpowerdiesel .forms-column {
-    flex: 1 1 340px;
-  }
+  #wet-vpowerdiesel .metrics-column { flex: 1 1 520px; }
+  #wet-vpowerdiesel .forms-column { flex: 2 1 680px; }
 
   #wet-vpowerdiesel .metrics-column .metrics-grid {
-    grid-template-columns: repeat(2, minmax(220px, 1fr));
+    grid-template-columns: repeat(2, minmax(200px, 1fr));
   }
 }
 
