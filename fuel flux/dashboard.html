@@ -295,7 +295,7 @@
               }
               
               // AUTO-TRIGGER EDGE FUNCTION ANALYSIS AFTER UPLOAD
-              console.log("🤖 Auto-triggering edge function analysis after upload..."); // Auto-trigger starting
+              console.log("Auto-triggering edge function analysis after upload..."); // Auto-trigger starting
               if (analyzeStatus) {
                 analyzeStatus.textContent = `📤 Analyzing ${file.name} with edge function...`;
               }
@@ -343,9 +343,9 @@
                   
                   // Simple retry for 502 errors
                   if (res.status === 502 && errorText.includes("overloaded")) {
-                    console.log("⚠️ AI model overloaded, will retry in 3 seconds...");
+                    console.log("⚠️ Model overloaded, will retry in 3 seconds...");
                     if (analyzeStatus) {
-                      analyzeStatus.textContent = `⚠️ AI overloaded, retrying...`;
+                      analyzeStatus.textContent = `⚠️ Overloaded, retrying...`;
                     }
                     
                     setTimeout(async () => {
@@ -1183,7 +1183,7 @@
     };
     // Analyze specific report using edge function
     window.analyzeReport = async function(fileName) {
-      console.log("🤖 Analyzing report:", fileName);
+      console.log("Analyzing report:", fileName);
       
       try {
         // Show status
@@ -3306,9 +3306,9 @@
                 <button class="button primary" id="save-petrol95">Save Petrol 95</button>
               </div>
 
-              <!-- AI Ordering Suggestion (Petrol 95) -->
+              <!-- Ordering Suggestion (Petrol 95) -->
               <div class="renovation-settings" style="margin-top: 12px;">
-                <h4>AI Order Suggestion</h4>
+                <h4>Order Suggestion</h4>
                 <div class="form-grid">
                   <div class="form-group">
                     <label for="petrol95-order-qty">Recommended Order (L)</label>
@@ -3320,7 +3320,7 @@
                   </div>
                 </div>
                 <div class="form-actions">
-                  <button class="button secondary" id="run-ai-petrol95">Run AI Suggestion</button>
+                  <button class="button secondary" id="run-ai-petrol95">Run Suggestion</button>
                 </div>
                 <p class="form-hint">Based on recent performance; forecasting API integration coming soon.</p>
               </div>
@@ -3409,9 +3409,9 @@
                 <button class="button primary" id="save-dieselex">Save Diesel Ex</button>
               </div>
 
-              <!-- AI Pricing & Ordering (Diesel Ex) -->
+              <!-- Pricing & Ordering (Diesel Ex) -->
               <div class="renovation-settings" style="margin-top: 12px;">
-                <h4>AI Price & Order Suggestion</h4>
+                <h4>Price & Order Suggestion</h4>
                 <div class="form-grid">
                   <div class="form-group">
                     <label for="dieselex-order-qty">Recommended Order (L)</label>
@@ -3423,7 +3423,7 @@
                   </div>
                 </div>
                 <div class="form-actions">
-                  <button class="button secondary" id="run-ai-dieselex">Run AI Suggestion</button>
+                  <button class="button secondary" id="run-ai-dieselex">Run Suggestion</button>
                 </div>
                 <p class="form-hint">Suggested price will populate the Price field above. Based on recent performance; forecasting API integration coming soon.</p>
               </div>
@@ -3518,9 +3518,9 @@
 
                 </div>
 
-                <!-- AI Pricing & Ordering (V-Power Diesel) -->
+                <!-- Pricing & Ordering (V-Power Diesel) -->
                 <div class="renovation-settings ai-suggestion">
-                  <h4>AI Price & Order Suggestion</h4>
+                  <h4>Price & Order Suggestion</h4>
                   <div class="form-grid">
                     <div class="form-group">
                       <label for="vpd-order-qty">Recommended Order (L)</label>
@@ -3531,8 +3531,8 @@
                       <input id="vpd-order-when" class="form-input" type="text" placeholder="—" readonly />
                     </div>
                   </div>
-                  <div class="form-actions">
-                    <button class="button secondary" id="run-ai-vpd">Run AI Suggestion</button>
+                    <div class="form-actions">
+                      <button class="button secondary" id="run-ai-vpd">Run Suggestion</button>
                   </div>
                   <p class="form-hint">Suggested price will populate the Price field above. Based on recent performance; forecasting API integration coming soon.</p>
                 </div>
@@ -3863,7 +3863,7 @@
                   <input id="airtime-demand" class="form-input" type="number" min="0" placeholder="0" />
                 </div>
                 <div class="form-group">
-                  <label for="airtime-forecast">Forecasted Demand (AI Calculated)</label>
+                  <label for="airtime-forecast">Forecasted Demand</label>
                   <div id="airtime-forecast" class="form-input" style="background-color: #f5f5f5; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; min-height: 2.5rem; display: flex; align-items: center;">
                     <span style="color: #666;">Calculating...</span>
                   </div>
@@ -3873,9 +3873,9 @@
                 <button class="button primary" id="save-airtime">Save</button>
               </div>
 
-              <!-- AI Price & Order Suggestion -->
+              <!-- Price & Order Suggestion -->
               <div class="renovation-settings" style="margin-top: 12px;">
-                <h4>AI Price & Order Suggestion</h4>
+                <h4>Price & Order Suggestion</h4>
                 <div class="form-grid">
                   <div class="form-group">
                     <label for="airtime-order-qty">Recommended Order (L)</label>
@@ -3887,7 +3887,7 @@
                   </div>
                 </div>
                 <div class="form-actions">
-                  <button class="button secondary" id="run-ai-airtime">Run AI Suggestion</button>
+                  <button class="button secondary" id="run-ai-airtime">Run Suggestion</button>
                 </div>
                 <p class="form-hint">Suggested price will populate the Price field above. Based on recent performance; forecasting API integration coming soon.</p>
               </div>
@@ -3930,7 +3930,7 @@
 
               <!-- AI Price & Order Suggestion -->
               <div class="renovation-settings" style="margin-top: 12px;">
-                <h4>AI Price & Order Suggestion</h4>
+                <h4>Price & Order Suggestion</h4>
                 <div class="form-grid">
                   <div class="form-group">
                     <label for="bakery-order-qty">Recommended Order (L)</label>
@@ -5950,7 +5950,7 @@
       (function(){
         // Simple helper to simulate AI API
         async function callAI(endpoint, payload) {
-          console.log('🤖 AI API stub:', endpoint, payload);
+          console.log('Computation API stub:', endpoint, payload);
           await new Promise(r => setTimeout(r, 400));
           return { ok: true, endpoint, payload, timestamp: new Date().toISOString() };
         }
@@ -6072,6 +6072,31 @@
         wire('gen-monthly-report', () => onGenReport('monthly-report'));
         wire('gen-annual-budget', () => onGenReport('annual-budget'));
         wire('gen-capex-report', () => onGenReport('capital-investment'));
+      })();
+    </script>
+
+    <script>
+      (function(){
+        // Remove visible mentions of "AI" across the page (labels only; logic unchanged)
+        function replaceTextIn(node, from, to){
+          if (!node || !from) return;
+          const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, null);
+          const targets = [];
+          while (walker.nextNode()) targets.push(walker.currentNode);
+          targets.forEach(t => { if (from.test(t.nodeValue)) t.nodeValue = t.nodeValue.replace(from, to); });
+        }
+        const rules = [
+          [/\bAI Price & Order Suggestion\b/g, 'Price & Order Suggestion'],
+          [/\bAI Order Suggestion\b/g, 'Order Suggestion'],
+          [/\bRun AI Suggestion\b/g, 'Run Suggestion'],
+          [/\(AI Calculated\)/g, ''],
+          [/\bAI model\b/g, 'Model'],
+          [/\bAI API\b/g, 'Computation API'],
+          [/\bAI\b/g, ''] // final fallback
+        ];
+        document.addEventListener('DOMContentLoaded', () => {
+          rules.forEach(([from, to]) => replaceTextIn(document.body, from, to));
+        });
       })();
     </script>
 
