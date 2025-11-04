@@ -5960,8 +5960,71 @@
           return isNaN(v) ? 0 : v;
         }
 
+        function getTextNumber(selector){
+          const el = document.querySelector(selector);
+          if (!el) return 0;
+          const raw = (el.textContent || '').replace(/[^0-9.\-]/g, '');
+          const n = parseFloat(raw || '0');
+          return isNaN(n) ? 0 : n;
+        }
+
+        function setIfPresent(id, value){ const el = document.getElementById(id); if (el) el.value = String(value ?? ''); }
+
+        function sumItemTotalsFromState(){
+          try {
+            const st = window.renovationState;
+            if (!st || !Array.isArray(st.items)) return 0;
+            return st.items.reduce((sum, it) => {
+              const candidates = [it.total, it.itemTotal, it.cost, it.amount, it.item_cost];
+              const val = candidates.map(x => Number(x)).find(x => !isNaN(x) && x > 0) || 0;
+              return sum + val;
+            }, 0);
+          } catch(_) { return 0; }
+        }
+
+        function sumMonthlyRevenueImpactFromState(){
+          try {
+            const st = window.renovationState;
+            const currentRevenue = getTextNumber('#current-monthly-revenue');
+            if (!st || !Array.isArray(st.items)) return 0;
+            return st.items.reduce((sum, it) => {
+              const abs = Number(it.revenueIncreaseAmount);
+              if (!isNaN(abs) && abs !== 0) return sum + abs;
+              const pct = Number(it.revenueIncreasePct);
+              if (!isNaN(pct) && pct !== 0 && currentRevenue > 0) return sum + currentRevenue * (pct/100);
+              return sum;
+            }, 0);
+          } catch(_) { return 0; }
+        }
+
+        function syncFinancialInputsFromPlanning(){
+          // Project settings
+          const discount = parseFloat(document.getElementById('discount-rate')?.value || '');
+          const horizon = parseFloat(document.getElementById('project-horizon')?.value || '');
+          if (!isNaN(discount)) setIfPresent('npv-discount', discount);
+          if (!isNaN(horizon)) { setIfPresent('npv-months', horizon); setIfPresent('amo-months', horizon); }
+
+          // Investment principal
+          let initial = sumItemTotalsFromState();
+          if (!initial) initial = getNumber('item-total');
+          if (initial) { setIfPresent('npv-initial', initial); setIfPresent('amo-principal', initial); }
+
+          // Monthly cashflow from planning
+          let monthlyImpact = sumMonthlyRevenueImpactFromState();
+          if (!monthlyImpact) {
+            const abs = getNumber('item-revenue-increase-amount');
+            if (abs) monthlyImpact = abs; else {
+              const pct = getNumber('item-revenue-increase-pct');
+              const base = getTextNumber('#current-monthly-revenue');
+              if (pct && base) monthlyImpact = base * (pct/100);
+            }
+          }
+          if (monthlyImpact) setIfPresent('npv-cashflow', monthlyImpact);
+        }
+
         // NPV calculation (monthly cashflow discounting)
         async function onCalcNPV(){
+          syncFinancialInputsFromPlanning();
           const initial = getNumber('npv-initial');
           const discountAnnual = getNumber('npv-discount');
           const months = Math.max(1, Math.round(getNumber('npv-months')));
@@ -5976,6 +6039,7 @@
 
         // Amortisation payment (PMT)
         async function onCalcAmort(){
+          syncFinancialInputsFromPlanning();
           const P = getNumber('amo-principal');
           const rateAnnual = getNumber('amo-rate');
           const n = Math.max(1, Math.round(getNumber('amo-months')));
