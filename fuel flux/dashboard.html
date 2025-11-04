@@ -5946,6 +5946,71 @@
       </div>
     </section>
 
+    <script>
+      (function(){
+        // Simple helper to simulate AI API
+        async function callAI(endpoint, payload) {
+          console.log('🤖 AI API stub:', endpoint, payload);
+          await new Promise(r => setTimeout(r, 400));
+          return { ok: true, endpoint, payload, timestamp: new Date().toISOString() };
+        }
+
+        function getNumber(id){
+          const v = parseFloat(document.getElementById(id)?.value || '0');
+          return isNaN(v) ? 0 : v;
+        }
+
+        // NPV calculation (monthly cashflow discounting)
+        async function onCalcNPV(){
+          const initial = getNumber('npv-initial');
+          const discountAnnual = getNumber('npv-discount');
+          const months = Math.max(1, Math.round(getNumber('npv-months')));
+          const cash = getNumber('npv-cashflow');
+          const r = (discountAnnual/100)/12;
+          let pv = 0;
+          for(let t=1;t<=months;t++){ pv += cash / Math.pow(1+r, t); }
+          const npv = pv - initial;
+          await callAI('finance/npv', { initial, discountAnnual, months, cash });
+          document.getElementById('npv-result').textContent = `NPV: R ${npv.toFixed(2)}`;
+        }
+
+        // Amortisation payment (PMT)
+        async function onCalcAmort(){
+          const P = getNumber('amo-principal');
+          const rateAnnual = getNumber('amo-rate');
+          const n = Math.max(1, Math.round(getNumber('amo-months')));
+          const i = (rateAnnual/100)/12;
+          const payment = i === 0 ? (P/n) : (P * i) / (1 - Math.pow(1+i, -n));
+          await callAI('finance/amortisation', { P, rateAnnual, n });
+          document.getElementById('amo-result').textContent = `Monthly Payment: R ${payment.toFixed(2)}`;
+        }
+
+        // Plausibility (stub scoring)
+        async function onPlausibility(){
+          const notes = document.getElementById('plausibility-notes')?.value || '';
+          await callAI('finance/plausibility', { notes });
+          const score = Math.min(99, Math.max(0, 70 + (notes.length%30)-10));
+          document.getElementById('plausibility-result').textContent = `Plausibility Score: ${score}%`;
+        }
+
+        // Report generators (stubs)
+        async function onGenReport(type){
+          const res = await callAI(`reports/${type}`, { section: 'renovation' });
+          const out = document.getElementById('ai-report-output');
+          out.textContent = `Generated ${type.replace('-', ' ')} at ${res.timestamp}.\n(This is a placeholder. Connect real AI endpoint here.)`;
+        }
+
+        // Wire buttons once DOM is ready
+        function wire(id, fn){ const el = document.getElementById(id); if(el) el.addEventListener('click', fn); }
+        wire('calc-npv', onCalcNPV);
+        wire('calc-amortisation', onCalcAmort);
+        wire('run-plausibility', onPlausibility);
+        wire('gen-monthly-report', () => onGenReport('monthly-report'));
+        wire('gen-annual-budget', () => onGenReport('annual-budget'));
+        wire('gen-capex-report', () => onGenReport('capital-investment'));
+      })();
+    </script>
+
     <!-- Analytics Section -->
     <section id="analytics" class="dashboard-section">
       <div class="container">
@@ -6622,6 +6687,100 @@
                 <div class="chart-container">
                   <canvas id="kpi-chart" height="300"></canvas>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Financial Calculators -->
+          <div class="renovation-settings" id="ai-financial-calculators" style="margin-top: 24px;">
+            <h3>AI Financial Calculators</h3>
+            <div class="form-grid">
+              <!-- Net Present Value (NPV) -->
+              <div class="form-group" style="grid-column: span 2;">
+                <h4 style="margin: 0 0 8px 0;">Net Present Value (NPV)</h4>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="npv-initial">Initial Investment (ZAR)</label>
+                    <input id="npv-initial" class="form-input" type="number" step="0.01" placeholder="0.00" />
+                  </div>
+                  <div class="form-group">
+                    <label for="npv-discount">Discount Rate (% annual)</label>
+                    <input id="npv-discount" class="form-input" type="number" step="0.01" placeholder="12" />
+                  </div>
+                  <div class="form-group">
+                    <label for="npv-months">Months</label>
+                    <input id="npv-months" class="form-input" type="number" step="1" min="1" placeholder="60" />
+                  </div>
+                  <div class="form-group">
+                    <label for="npv-cashflow">Monthly Cash Flow (ZAR)</label>
+                    <input id="npv-cashflow" class="form-input" type="number" step="0.01" placeholder="0.00" />
+                  </div>
+                </div>
+                <div class="form-actions" style="margin-top: 8px;">
+                  <button class="button primary" id="calc-npv">Calculate NPV (AI)</button>
+                </div>
+                <div id="npv-result" class="form-input" style="background:#0f162e; padding: 12px; margin-top: 8px;">—</div>
+              </div>
+
+              <!-- Amortisation -->
+              <div class="form-group" style="grid-column: span 2;">
+                <h4 style="margin: 0 0 8px 0;">Amortisation</h4>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="amo-principal">Principal (ZAR)</label>
+                    <input id="amo-principal" class="form-input" type="number" step="0.01" placeholder="0.00" />
+                  </div>
+                  <div class="form-group">
+                    <label for="amo-rate">Interest Rate (% annual)</label>
+                    <input id="amo-rate" class="form-input" type="number" step="0.01" placeholder="12" />
+                  </div>
+                  <div class="form-group">
+                    <label for="amo-months">Term (months)</label>
+                    <input id="amo-months" class="form-input" type="number" step="1" min="1" placeholder="60" />
+                  </div>
+                </div>
+                <div class="form-actions" style="margin-top: 8px;">
+                  <button class="button primary" id="calc-amortisation">Calculate Amortisation (AI)</button>
+                </div>
+                <div id="amo-result" class="form-input" style="background:#0f162e; padding: 12px; margin-top: 8px;">—</div>
+              </div>
+
+              <!-- Plausibility Check -->
+              <div class="form-group" style="grid-column: span 2;">
+                <h4 style="margin: 0 0 8px 0;">Plausibility Check</h4>
+                <div class="form-grid">
+                  <div class="form-group" style="grid-column: span 2;">
+                    <label for="plausibility-notes">Assumptions / Notes</label>
+                    <textarea id="plausibility-notes" class="form-input" rows="3" placeholder="Describe the assumptions, vendor quotes, expected throughput, etc."></textarea>
+                  </div>
+                </div>
+                <div class="form-actions" style="margin-top: 8px;">
+                  <button class="button primary" id="run-plausibility">Run Plausibility (AI)</button>
+                </div>
+                <div id="plausibility-result" class="form-input" style="background:#0f162e; padding: 12px; margin-top: 8px;">—</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Report Generators -->
+          <div class="renovation-settings" id="ai-report-generators" style="margin-top: 16px;">
+            <h3>AI Report Generators</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Monthly Report Creator</label>
+                <button class="button primary" id="gen-monthly-report">Generate Monthly Report</button>
+              </div>
+              <div class="form-group">
+                <label>Annual Budget Document Maker</label>
+                <button class="button primary" id="gen-annual-budget">Generate Annual Budget</button>
+              </div>
+              <div class="form-group">
+                <label>Capital Investment Report</label>
+                <button class="button primary" id="gen-capex-report">Generate Capex Report</button>
+              </div>
+              <div class="form-group" style="grid-column: span 2;">
+                <label>Output</label>
+                <div id="ai-report-output" class="form-input" style="background:#0f162e; padding: 12px; min-height: 100px;">—</div>
               </div>
             </div>
           </div>
