@@ -1,3 +1,32 @@
+/* Align Petrol 95 and Diesel Ex blocks so AI + Accounts start at same height */
+#wet-petrol95, #wet-dieselex {
+  display: flex;
+  flex-direction: column;
+}
+
+#wet-petrol95 .metrics-grid, #wet-dieselex .metrics-grid {
+  align-items: start;
+  align-content: start;
+  grid-auto-rows: minmax(120px, auto);
+}
+
+/* Equalize form area height across the two cards so the next sections align */
+#wet-petrol95 .form-grid, #wet-dieselex .form-grid {
+  min-height: 180px;
+}
+
+/* Ensure the suggestion and accounts panels use the full card width */
+#wet-petrol95 .renovation-settings,
+#wet-dieselex .renovation-settings,
+#wet-petrol95 .customer-accounts-panel,
+#wet-dieselex .customer-accounts-panel {
+  width: 100%;
+}
+
+@media (min-width: 1200px) {
+  /* Slightly increase form min-height on larger screens for consistent alignment */
+  #wet-petrol95 .form-grid, #wet-dieselex .form-grid { min-height: 200px; }
+}
 :root {
   --bg: #0b1020;
   --panel: #0f162e;
