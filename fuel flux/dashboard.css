@@ -2492,15 +2492,14 @@ canvas {
 }
 
 #wet-vpowerdiesel .wet-horizontal {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(360px, 1fr) minmax(520px, 1.2fr);
   gap: 24px;
-  align-items: flex-start;
+  align-items: start;
 }
 
 #wet-vpowerdiesel .metrics-column {
-  flex: 1 1 380px; /* narrower than forms so Customer Accounts can breathe */
-  max-width: 620px;
+  grid-column: 1;
   display: flex;
   align-items: stretch;
 }
@@ -2523,12 +2522,12 @@ canvas {
 }
 
 #wet-vpowerdiesel .forms-column {
-  flex: 2.2 1 640px; /* prioritize space for AI & Customer Accounts */
+  grid-column: 2;
   display: flex;
   flex-direction: column;
   gap: 16px;
   align-items: stretch;
-  min-width: 0; /* allow children to expand fully in flex layout */
+  min-width: 0;
 }
 
 #wet-vpowerdiesel .forms-column .form-grid {
@@ -2556,6 +2555,24 @@ canvas {
 /* Make inputs inside AI suggestion stretch nicely on wide screens */
 #wet-vpowerdiesel .forms-column .renovation-settings .form-grid {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+/* Span AI card and Customer Accounts across both columns to fill space below metrics */
+#wet-vpowerdiesel .ai-suggestion,
+#wet-vpowerdiesel .ai-accounts {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 1024px) {
+  #wet-vpowerdiesel .wet-horizontal {
+    grid-template-columns: 1fr;
+  }
+  #wet-vpowerdiesel .metrics-column,
+  #wet-vpowerdiesel .forms-column,
+  #wet-vpowerdiesel .ai-suggestion,
+  #wet-vpowerdiesel .ai-accounts {
+    grid-column: 1;
+  }
 }
 
 .customer-accounts-heading h5 {

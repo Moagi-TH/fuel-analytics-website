@@ -3516,45 +3516,46 @@
                     <button class="button primary" id="save-vpd">Save V-Power Diesel</button>
                   </div>
 
-                  <!-- AI Pricing & Ordering (V-Power Diesel) -->
-                  <div class="renovation-settings">
-                    <h4>AI Price & Order Suggestion</h4>
-                    <div class="form-grid">
-                      <div class="form-group">
-                        <label for="vpd-order-qty">Recommended Order (L)</label>
-                        <input id="vpd-order-qty" class="form-input" type="number" min="0" placeholder="—" readonly />
-                      </div>
-                      <div class="form-group">
-                        <label for="vpd-order-when">When to Order</label>
-                        <input id="vpd-order-when" class="form-input" type="text" placeholder="—" readonly />
-                      </div>
-                    </div>
-                    <div class="form-actions">
-                      <button class="button secondary" id="run-ai-vpd">Run AI Suggestion</button>
-                    </div>
-                    <p class="form-hint">Suggested price will populate the Price field above. Based on recent performance; forecasting API integration coming soon.</p>
-                  </div>
+                </div>
 
-                  <!-- Customer Accounts (V-Power Diesel) -->
-                  <div class="customer-accounts-panel">
-                    <div class="customer-accounts-heading">
-                      <h5>Customer Accounts</h5>
-                      <p class="form-hint">Use customer account demand to set V-Power Diesel forecast expectations.</p>
+                <!-- AI Pricing & Ordering (V-Power Diesel) -->
+                <div class="renovation-settings ai-suggestion">
+                  <h4>AI Price & Order Suggestion</h4>
+                  <div class="form-grid">
+                    <div class="form-group">
+                      <label for="vpd-order-qty">Recommended Order (L)</label>
+                      <input id="vpd-order-qty" class="form-input" type="number" min="0" placeholder="—" readonly />
                     </div>
-                    <div id="vpd-accounts-list" class="customer-accounts-list"></div>
-                    <div class="customer-accounts-actions">
-                      <div class="customer-accounts-buttons">
-                        <button class="button secondary small" id="add-vpd-account">+ Add Account</button>
-                        <button class="button secondary small" id="clear-vpd-accounts">Clear All</button>
-                      </div>
-                      <div class="customer-accounts-total">
-                        <span>Total Contracted Daily Demand:</span>
-                        <strong id="vpd-accounts-total">0 L/day</strong>
-                      </div>
+                    <div class="form-group">
+                      <label for="vpd-order-when">When to Order</label>
+                      <input id="vpd-order-when" class="form-input" type="text" placeholder="—" readonly />
                     </div>
-                    <div class="form-actions" style="margin-top: 8px;">
-                      <button class="button primary small" id="apply-vpd-accounts">Apply to V-Power Diesel Forecast</button>
+                  </div>
+                  <div class="form-actions">
+                    <button class="button secondary" id="run-ai-vpd">Run AI Suggestion</button>
+                  </div>
+                  <p class="form-hint">Suggested price will populate the Price field above. Based on recent performance; forecasting API integration coming soon.</p>
+                </div>
+
+                <!-- Customer Accounts (V-Power Diesel) -->
+                <div class="customer-accounts-panel ai-accounts">
+                  <div class="customer-accounts-heading">
+                    <h5>Customer Accounts</h5>
+                    <p class="form-hint">Use customer account demand to set V-Power Diesel forecast expectations.</p>
+                  </div>
+                  <div id="vpd-accounts-list" class="customer-accounts-list"></div>
+                  <div class="customer-accounts-actions">
+                    <div class="customer-accounts-buttons">
+                      <button class="button secondary small" id="add-vpd-account">+ Add Account</button>
+                      <button class="button secondary small" id="clear-vpd-accounts">Clear All</button>
                     </div>
+                    <div class="customer-accounts-total">
+                      <span>Total Contracted Daily Demand:</span>
+                      <strong id="vpd-accounts-total">0 L/day</strong>
+                    </div>
+                  </div>
+                  <div class="form-actions" style="margin-top: 8px;">
+                    <button class="button primary small" id="apply-vpd-accounts">Apply to V-Power Diesel Forecast</button>
                   </div>
                 </div>
               </div>
